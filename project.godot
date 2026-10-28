@@ -1,0 +1,27 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section]
+;   param=value
+
+config_version=5
+
+[application]
+
+config/name="uncharted-territory"
+; 当前入口为张宏伟的地牢独立测试场景（第 1-2 天验证用）。
+; 俞吉依整合完成后，改回 res://scenes/main.tscn。
+run/main_scene="res://scenes/dungeon/test_dungeon.tscn"
+config/features=PackedStringArray("4.7", "Forward Plus")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+
+[rendering]
+
+renderer/rendering_method="forward_plus"
+renderer/rendering_method.mobile="mobile"
