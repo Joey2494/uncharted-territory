@@ -5,12 +5,14 @@
 ## 运行方式
 
 1. 用 Godot 4.x 打开本目录（仓库根目录即 `res://` 根）
-2. 按 F5 运行
+2. 按 F5 运行主场景；**测自己的场景请打开该 `.tscn` 后按 F6（运行当前场景）**
 
-> **当前入口**：`scenes/dungeon/test_dungeon.tscn`（张宏伟地牢模块独立测试场景）
+> **当前主场景（临时）**：`scenes/dungeon/test_dungeon.tscn`（张宏伟地牢模块开发专用测试场景）
 > - T：模拟击杀当前房间一只敌人（验证清敌开门）
-> - WASD：移动测试玩家（验证走进门触发传送）
-> - 俞吉依整合完成后，入口切换为 `scenes/main.tscn`
+> - WASD：移动测试玩家（玩家自然行走，不传送）
+> - 俞吉依整合完成后，主场景切换为 `scenes/main.tscn`
+>
+> 分支与协作流程见 [docs/git_workflow.md](docs/git_workflow.md)。
 
 ## 目录结构（各目录放本人文件，Git 冲突概率最低）
 
@@ -30,6 +32,7 @@ res://
 ├── data/                    ← 字远
 └── docs/
     ├── naming_convention.md ← 全组命名规范（张宏伟维护）
+    ├── git_workflow.md     ← 全组 Git 分支 / PR 流程（张宏伟维护）
     ├── zhanghongwei/        ← 张宏伟（个人规划/开发/测试/接口）
     ├── yujiyi/              ← 俞吉依
     ├── ziyuan/              ← 字远
@@ -61,7 +64,8 @@ res://
 | 提供 | `Room.get_enemy_spawn_points() → Array[Marker3D]` | 字远（EnemySpawner） |
 | 提供 | `Room.get_player_spawn_point() → Marker3D` | 俞吉依（main） |
 | 提供 | `Room.get_weapon_spawn_point() → Marker3D` | 俞吉依（main） |
-| 提供 | `signal door_entered(next_room_index: int)` | 俞吉依（main 传送） |
+| 提供 | `signal player_entered_room(room_index)` | 俞吉依（确定当前房间） |
+| 提供 | `signal door_entered(target_room_index)` | 俞吉依 / 汤志豪（仅穿过门通知，不传送） |
 | 提供 | `signal room_cleared` | 俞吉依（main 进度）/ 汤志豪（HUD） |
 | 消费 | `signal enemy_died(enemy: Node3D)`（字远） | 张宏伟（计数开门） |
 

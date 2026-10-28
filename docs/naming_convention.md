@@ -72,4 +72,5 @@
 - 每人只改自己目录下的文件
 - commit message 用 `type: 简述`（如 `feat: 房间模板`、`chore: 建目录`、`docs: 命名规范`）
 - 每完成一个可验证的小功能就提交一次，方便回滚与审查
-- 分支：开发用 `feature/<模块名>`，稳定后合并到 `main`
+- 分支：开发用 `feature/<模块名>`，稳定后通过 PR 合并到 `main`
+- **完整分支模型、PR 流程、测试场景不影响他人的规则见 [git_workflow.md](git_workflow.md)**
