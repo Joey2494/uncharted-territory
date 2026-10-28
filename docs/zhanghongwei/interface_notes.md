@@ -46,14 +46,21 @@ player.global_position = spawn.global_position
 - 玩家进入有敌人的房间 → 前后门自动全关；清敌 → 自动全开，**已探索房间可自由往返**；
 - 第一个房间的 `BackDoor` 已永久封死（地牢入口）。
 
-**`door_entered` 只用于"知道玩家进了哪个房间"，不要拿来传送**：
+**`player_entered_room` 用来确定"当前房间"（最可靠）**：
+
+```gdscript
+func _on_player_entered_room(room_index: int) -> void:
+    current_room_index = room_index   # 玩家身体进入房间时触发，不要用 door_entered 来算当前房间
+```
+
+**`door_entered` 只表示"穿过了一扇门"**：
 
 ```gdscript
 func _on_door_entered(target_room_index: int) -> void:
     if target_room_index < rooms.size():
-        current_room_index = target_room_index   # 更新当前房间/相机即可，玩家继续自然行走
+        pass                           # 仅作穿过门通知（可用于相机/音效）
     else:
-        show_victory()                            # 最后房间 target 越界（=3）→ 通关
+        show_victory()                 # 最后房间 target 越界（=3）→ 通关
 ```
 
 **房间进度**：`room_cleared` 表示该房间已清空，可用于推进流程。
@@ -72,6 +79,7 @@ func _on_door_entered(target_room_index: int) -> void:
 | `Room.get_player_spawn_point()` | 方法 | 玩家出生点 | 俞吉依 |
 | `Room.get_weapon_spawn_point()` | 方法 | 武器出生点 | 俞吉依 |
 | `Room.on_enemy_died(enemy)` | 方法 | 敌人死亡回调（计数开门） | 字远 |
+| `signal player_entered_room(room_index)` | 信号 | 玩家身体进入房间，携带房间索引（确定当前房间） | 俞吉依 |
 | `signal door_entered(target_room_index)` | 信号 | 玩家穿过门，携带目标房间索引（仅通知，不传送） | 俞吉依 / 汤志豪 |
 | `signal room_cleared` | 信号 | 房间敌人已清空（门自动开） | 俞吉依 / 汤志豪 |
 

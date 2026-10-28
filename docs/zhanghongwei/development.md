@@ -112,6 +112,7 @@ func _on_body_entered(body) -> void:
 | 玩家从第一个房间后门直接跑出地图 | 后墙留了门洞，但门洞处没有门 | 每房加 `BackDoor`，首房 `BackDoor` 调 `seal()` 永久封死 |
 | 门一开始畅通无阻、门板是白色 | 门板 `Area3D` 不产生物理阻挡；材质定义了却没被 Mesh 引用，全用默认白色 | 门内加 `Blocker`（StaticBody 碰撞）；给所有 BoxMesh 补 `material` 引用（红色门板） |
 | 进下一房间后无法返回 | 只有前门，没有后门 | 每房加前后两门 + `RoomArea`，清敌前关门、清敌开门，可自由往返 |
+| 进 R2 后被关、T 清不了 R2（状态卡在 R1） | 门方向按身体位置判定，**帧卡顿一次穿越**时身体已在门另一侧，R2 后门误发 `door_entered(0)` 把当前房间拉回 R1 | 门方向改用**移动速度 velocity** 判定；新增 `player_entered_room` 信号，由 RoomArea 确定当前房间索引 |
 
 新房间结构：
 
