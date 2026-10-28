@@ -2,25 +2,91 @@ class_name Room
 extends Node3D
 
 ## 房间脚本（张宏伟 · 地牢生成 + 房间系统）
-## 职责：提供各类生成点查询 + 清敌开门逻辑
-## 消费方：俞吉依（main）、字远（EnemySpawner/ItemSpawner）
+## 机制（参考元气骑士）：
+##   玩家进入有敌人的房间 → 前后门全部关闭（困住）；
+##   清空敌人 → 全部门打开并广播 room_cleared，可前进也可回已探索房间。
 
 signal room_cleared
-signal door_entered(next_room_index: int)
+signal door_entered(target_room_index: int)
 
-## 本房间的敌人总数（由模板预设；整合后由 main 按敌人生成数校准）
+## 本房间的敌人总数（模板预设；整合后由 main 按实际生成数校准）
 @export var enemy_count: int = 2
 
-var _door: Node = null
+var _front_door: Node = null
+var _back_door: Node = null
+var _room_area: Area3D = null
+var _prev_room: Room = null
+var _next_room: Room = null
+var _index: int = 0
+var _cleared: bool = false
 
 
 func _ready() -> void:
-	_door = get_node_or_null("Door")
-	if _door and _door.has_method("set_room"):
-		_door.set_room(self)
+	_front_door = get_node_or_null("FrontDoor")
+	_back_door = get_node_or_null("BackDoor")
+	_room_area = get_node_or_null("RoomArea")
+	if _front_door:
+		_front_door.set_room(self)
+		_front_door.door_entered.connect(_on_door_relayed)
+	if _back_door:
+		_back_door.set_room(self)
+		_back_door.door_entered.connect(_on_door_relayed)
+	if _room_area:
+		_room_area.body_entered.connect(_on_room_area_body_entered)
 
 
-## 敌人生成点（供字远 EnemySpawner 逐点生成敌人）
+## 生成器在所有房间就位后调用：链接前后房间、设置门的目标、封死首房入口
+func setup(index: int, prev: Room, next: Room) -> void:
+	_index = index
+	_prev_room = prev
+	_next_room = next
+	if _front_door:
+		_front_door.set_target(index + 1)
+	if _back_door:
+		_back_door.set_target(index - 1)
+	if prev == null and _back_door:
+		_back_door.seal()
+
+
+func _on_door_relayed(target: int) -> void:
+	door_entered.emit(target)
+
+
+## 玩家进入房间内部：若敌人未清，关闭所有门（困住）
+func _on_room_area_body_entered(body: Node3D) -> void:
+	if body is CharacterBody3D and not _cleared:
+		if _back_door:
+			_back_door.close()
+		if _front_door:
+			_front_door.close()
+
+
+## 敌人死亡回调（字远 enemy_died 信号连到这里）
+func on_enemy_died(_enemy: Node3D) -> void:
+	enemy_count = maxi(enemy_count - 1, 0)
+	if enemy_count == 0 and not _cleared:
+		_cleared = true
+		_on_cleared()
+
+
+func _on_cleared() -> void:
+	if _front_door:
+		_front_door.open()
+	if _back_door:
+		_back_door.open()
+	room_cleared.emit()
+	# 联动下一房间的后门（通道打开）
+	if _next_room:
+		_next_room.on_previous_room_cleared()
+
+
+## 前一房间已清空：打开本房间后门（玩家可进入；进入后若有敌人会再关上）
+func on_previous_room_cleared() -> void:
+	if not _cleared and _back_door:
+		_back_door.open()
+
+
+## 敌人/玩家/武器生成点查询
 func get_enemy_spawn_points() -> Array[Marker3D]:
 	var points: Array[Marker3D] = []
 	for child in get_children():
@@ -29,40 +95,9 @@ func get_enemy_spawn_points() -> Array[Marker3D]:
 	return points
 
 
-## 玩家出生点（供俞吉依 main 放置玩家 / 传送）
 func get_player_spawn_point() -> Marker3D:
 	return get_node_or_null("PlayerSpawnPoint") as Marker3D
 
 
-## 武器刷新点（供俞吉依 main 放置武器拾取物）
 func get_weapon_spawn_point() -> Marker3D:
 	return get_node_or_null("WeaponSpawnPoint") as Marker3D
-
-
-## 道具生成点（兼容旧接口契约；当前返回武器刷新点）
-func get_item_spawn_points() -> Array[Marker3D]:
-	var points: Array[Marker3D] = []
-	var weapon: Marker3D = get_weapon_spawn_point()
-	if weapon:
-		points.append(weapon)
-	return points
-
-
-## 敌人死亡回调（字远 enemy_died 信号连到这里）：计数减到 0 即开门
-func on_enemy_died(_enemy: Node3D) -> void:
-	enemy_count = maxi(enemy_count - 1, 0)
-	if enemy_count == 0:
-		open_door()
-
-
-## 清敌后开门（同时广播 room_cleared）
-func open_door() -> void:
-	if _door and _door.has_method("open"):
-		_door.open()
-	room_cleared.emit()
-
-
-## 生成器设置本房间出口指向的下一房间索引
-func set_next_room_index(index: int) -> void:
-	if _door:
-		_door.next_room_index = index

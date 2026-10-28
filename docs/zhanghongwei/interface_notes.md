@@ -39,12 +39,21 @@ player.global_position = spawn.global_position
 
 **武器出生点**：`room.get_weapon_spawn_point() → Marker3D`。
 
-**房间传送**：监听门的 `door_entered`，把玩家移到下一房间的玩家出生点：
+**门是物理阻挡，玩家自然行走，不要传送**（重要变更）：
+
+- 每个房间有前后两个门：`FrontDoor`（+z，前进）、`BackDoor`（-z，后退）；
+- 门关闭时是**红色门板 + 碰撞体**，玩家撞不过去；打开后门板隐藏、碰撞关闭，玩家直接走过去；
+- 玩家进入有敌人的房间 → 前后门自动全关；清敌 → 自动全开，**已探索房间可自由往返**；
+- 第一个房间的 `BackDoor` 已永久封死（地牢入口）。
+
+**`door_entered` 只用于"知道玩家进了哪个房间"，不要拿来传送**：
 
 ```gdscript
-func _on_door_entered(next_room_index: int) -> void:
-    var next_room = rooms[next_room_index]
-    player.global_position = next_room.get_player_spawn_point().global_position
+func _on_door_entered(target_room_index: int) -> void:
+    if target_room_index < rooms.size():
+        current_room_index = target_room_index   # 更新当前房间/相机即可，玩家继续自然行走
+    else:
+        show_victory()                            # 最后房间 target 越界（=3）→ 通关
 ```
 
 **房间进度**：`room_cleared` 表示该房间已清空，可用于推进流程。
@@ -63,7 +72,7 @@ func _on_door_entered(next_room_index: int) -> void:
 | `Room.get_player_spawn_point()` | 方法 | 玩家出生点 | 俞吉依 |
 | `Room.get_weapon_spawn_point()` | 方法 | 武器出生点 | 俞吉依 |
 | `Room.on_enemy_died(enemy)` | 方法 | 敌人死亡回调（计数开门） | 字远 |
-| `signal door_entered(next_room_index)` | 信号 | 玩家进门，携带下一房间索引 | 俞吉依 |
-| `signal room_cleared` | 信号 | 房间敌人已清空 | 俞吉依 / 汤志豪 |
+| `signal door_entered(target_room_index)` | 信号 | 玩家穿过门，携带目标房间索引（仅通知，不传送） | 俞吉依 / 汤志豪 |
+| `signal room_cleared` | 信号 | 房间敌人已清空（门自动开） | 俞吉依 / 汤志豪 |
 
 > 接口命名为全组锁定项，改动需开会确认，见 `docs/naming_convention.md`。

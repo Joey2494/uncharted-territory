@@ -1,10 +1,11 @@
 extends Node3D
 
-## 张宏伟独立测试场景：验证「3 房间拼接 + 门逻辑」
-## 操作提示：
-##   T     = 模拟击杀当前房间 1 只敌人（验证清敌开门）
-##   WASD  = 移动测试玩家
-##   （门打开后）走进门 = 触发 door_entered 传送，打印日志
+## 张宏伟独立测试场景：验证「3 房间拼接 + 元气骑士式门机制」
+## 操作：
+##   T     = 模拟击杀当前房间 1 只敌人
+##   WASD  = 移动
+##   清敌前：前后门关闭（红门 + 碰撞），无法通过
+##   清敌后：门打开，可前进、也可回已探索房间
 
 var _rooms: Array[Node3D] = []
 var _player: CharacterBody3D = null
@@ -15,7 +16,6 @@ var _current_room_index: int = 0
 
 
 func _ready() -> void:
-	# 俯视全景：3 个房间沿 Z 轴排列，视野覆盖 -6..30
 	_camera.position = Vector3(0, 28, 20)
 	_camera.look_at(Vector3(0, 0, 14), Vector3.UP)
 	_light.rotation_degrees = Vector3(-58, -35, 0)
@@ -25,11 +25,9 @@ func _ready() -> void:
 	_rooms = generator.generate(3)
 
 	for i in _rooms.size():
-		var room = _rooms[i]
+		var room: Room = _rooms[i]
 		room.room_cleared.connect(_on_room_cleared.bind(i))
-		var door: Node = room.get_node_or_null("Door")
-		if door and door.has_signal("door_entered"):
-			door.door_entered.connect(_on_door_entered)
+		room.door_entered.connect(_on_door_entered)
 		var weapon: Marker3D = room.get_weapon_spawn_point()
 		var player_spawn: Marker3D = room.get_player_spawn_point()
 		print("[TestDungeon] Room%d pos=%s 敌人点=%d 武器点=%s 玩家点=%s" % [
@@ -45,9 +43,8 @@ func _ready() -> void:
 	add_child(_player)
 	_place_player(0)
 
-	print("[TestDungeon] 提示：T=模拟击杀 1 只敌人；WASD=移动；清敌后门消失，走入门测试传送")
+	print("[TestDungeon] 提示：T=模拟击杀；WASD=移动；清敌前门关闭，清敌后可前进/后退")
 
-	# 命令行自检：godot --headless --path . -- --selftest
 	if OS.get_cmdline_user_args().has("--selftest"):
 		call_deferred("_selftest")
 
@@ -59,7 +56,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _simulate_kill() -> void:
-	var room = _rooms[_current_room_index]
+	var room: Room = _rooms[_current_room_index]
 	if room.enemy_count > 0:
 		room.on_enemy_died(null)
 		print("[TestDungeon] 模拟击杀：房间%d 剩余敌人 %d" % [_current_room_index + 1, room.enemy_count])
@@ -71,74 +68,105 @@ func _on_room_cleared(room_index: int) -> void:
 	print("[TestDungeon] 房间%d 已清空 → 门打开" % (room_index + 1))
 
 
-func _on_door_entered(next_room_index: int) -> void:
-	print("[TestDungeon] door_entered → 下一房间 %d" % next_room_index)
-	if next_room_index < _rooms.size():
-		_place_player(next_room_index)
+func _on_door_entered(target: int) -> void:
+	if target < _rooms.size():
+		_current_room_index = target
+		print("[TestDungeon] door_entered → 房间 %d" % target)
 	else:
-		print("[TestDungeon] 已超过最后一间房（You Win 由俞吉依 main 场景处理）")
+		print("[TestDungeon] 已通关（You Win 由俞吉依 main 场景处理）")
 
 
 func _place_player(index: int) -> void:
 	_current_room_index = index
-	var room = _rooms[index]
+	var room: Room = _rooms[index]
 	var spawn: Marker3D = room.get_player_spawn_point()
 	if spawn and _player:
 		_player.global_position = spawn.global_position
 
 
-## 自动验证（headless 用）：拼接 → 生成点 → 清敌开门 → door_entered 信号
+## 自动验证（headless）：初始封闭 → 清 R1 开门 → 进入 R2 关门 → 清 R2 → 门方向信号
 func _selftest() -> void:
 	print("[SelfTest] === 自动验证开始 ===")
+	var r1: Room = _rooms[0]
+	var r2: Room = _rooms[1]
+	var r3: Room = _rooms[2]
 
 	# 1) 拼接与生成点
 	if _rooms.size() != 3:
-		printerr("[SelfTest] FAIL: 房间数=%d 期望 3" % _rooms.size())
-		get_tree().quit(1)
+		_fail("房间数=%d 期望 3" % _rooms.size())
 		return
 	for i in _rooms.size():
-		var room = _rooms[i]
+		var room: Room = _rooms[i]
 		if room.get_enemy_spawn_points().size() < 2:
-			printerr("[SelfTest] FAIL: Room%d 敌人点不足" % (i + 1))
-			get_tree().quit(1)
-			return
+			_fail("Room%d 敌人点不足" % (i + 1)); return
 		if room.get_player_spawn_point() == null or room.get_weapon_spawn_point() == null:
-			printerr("[SelfTest] FAIL: Room%d 缺少玩家/武器出生点" % (i + 1))
-			get_tree().quit(1)
-			return
-		# 房间沿 Z 轴等距排列（间距 12）
+			_fail("Room%d 缺玩家/武器点" % (i + 1)); return
 		if abs(room.position.z - i * 12.0) > 0.001:
-			printerr("[SelfTest] FAIL: Room%d 位置 %s 未按间距 12 排列" % [i + 1, str(room.position)])
-			get_tree().quit(1)
-			return
+			_fail("Room%d 位置未按间距 12" % (i + 1)); return
 	print("[SelfTest] OK: 3 房间排列与生成点齐全")
 
-	# 2) 清敌开门 + room_cleared
-	# 注：GDScript lambda 按值捕获局部变量，共享状态需用数组（引用类型）
-	var room0 = _rooms[0]
-	var door0: Node = room0.get_node_or_null("Door")
-	var flags := [false]
-	room0.room_cleared.connect(func() -> void: flags[0] = true)
-	while room0.enemy_count > 0:
-		room0.on_enemy_died(null)
-	if door0 == null or not door0._is_open or not flags[0]:
-		printerr("[SelfTest] FAIL: 清敌后 door_open=%s room_cleared=%s" % [str(door0._is_open if door0 else "<无门>"), str(flags[0])])
-		get_tree().quit(1)
-		return
-	print("[SelfTest] OK: 清敌后门打开，room_cleared 已发出")
+	# 2) 初始：所有门关闭，R1 后门封死
+	if r1._front_door._is_open or r1._back_door._is_open:
+		_fail("初始门应关闭"); return
+	if not r1._back_door._sealed:
+		_fail("R1 后门应封死"); return
+	if r2._back_door._sealed:
+		_fail("R2 后门不应封死"); return
+	print("[SelfTest] OK: 初始门关闭，R1 入口封死")
 
-	# 3) door_entered 信号（模拟玩家走入）
-	var door_flags := [false, -1]
-	door0.door_entered.connect(func(v: int) -> void:
-		door_flags[0] = true
-		door_flags[1] = v
-	)
-	door0._on_body_entered(_player)
-	if not door_flags[0] or door_flags[1] != 1:
-		printerr("[SelfTest] FAIL: door_entered fired=%s next=%d 期望 1" % [str(door_flags[0]), door_flags[1]])
-		get_tree().quit(1)
-		return
-	print("[SelfTest] OK: door_entered(1) 信号正常")
+	# 3) 清 R1：前门开 + R2 后门开 + room_cleared
+	var flags := [false]
+	r1.room_cleared.connect(func() -> void: flags[0] = true)
+	while r1.enemy_count > 0:
+		r1.on_enemy_died(null)
+	if not r1._front_door._is_open or not flags[0] or not r2._back_door._is_open:
+		_fail("清 R1 后通道应打开"); return
+	print("[SelfTest] OK: 清 R1 后前门开、R2 后门开")
+
+	# 4) 玩家进入 R2（有敌人）→ 两门关闭
+	r2._on_room_area_body_entered(_player)
+	if r2._back_door._is_open or r2._front_door._is_open:
+		_fail("进入有敌人的房间应关门"); return
+	print("[SelfTest] OK: 进入 R2 后两门关闭（困住）")
+
+	# 5) 清 R2：两门开 + R3 后门开
+	while r2.enemy_count > 0:
+		r2.on_enemy_died(null)
+	if not r2._front_door._is_open or not r2._back_door._is_open or not r3._back_door._is_open:
+		_fail("清 R2 后两门应开"); return
+	print("[SelfTest] OK: 清 R2 后两门开、R3 后门开")
+
+	# 6) 清 R3：前门开，target=3（越界 = 胜利）
+	while r3.enemy_count > 0:
+		r3.on_enemy_died(null)
+	if not r3._front_door._is_open or r3._front_door.target_room_index != 3:
+		_fail("清 R3 后前门应开且 target=3"); return
+	print("[SelfTest] OK: 清 R3 后前门开（出口）")
+
+	# 7) 门的方向判定：前门只在前进时触发，后门只在后退时触发
+	var fwd_count := [0]
+	r1._front_door.door_entered.connect(func(_v: int) -> void: fwd_count[0] += 1)
+	_player.global_position = r1._front_door.global_position + Vector3(0, 0, -0.5)
+	r1._front_door._on_body_entered(_player)
+	_player.global_position = r1._front_door.global_position + Vector3(0, 0, 0.5)
+	r1._front_door._on_body_entered(_player)
+	if fwd_count[0] != 1:
+		_fail("前门应只在前进时触发一次"); return
+
+	var bwd_count := [0]
+	r2._back_door.door_entered.connect(func(_v: int) -> void: bwd_count[0] += 1)
+	_player.global_position = r2._back_door.global_position + Vector3(0, 0, 0.5)
+	r2._back_door._on_body_entered(_player)
+	_player.global_position = r2._back_door.global_position + Vector3(0, 0, -0.5)
+	r2._back_door._on_body_entered(_player)
+	if bwd_count[0] != 1:
+		_fail("后门应只在后退时触发一次"); return
+	print("[SelfTest] OK: 门按行进方向触发（前进/后退各一次）")
 
 	print("[SelfTest] === 全部通过 ===")
 	get_tree().quit(0)
+
+
+func _fail(msg: String) -> void:
+	printerr("[SelfTest] FAIL: " + msg)
+	get_tree().quit(1)

@@ -102,3 +102,36 @@ func _on_body_entered(body) -> void:
 
 - 修复 next_room_index 绑定时机（见 [testing.md](testing.md) Bug 2）；
 - 提交 Godot 4.4+ 生成的脚本 `.uid` 文件。
+
+## Step 7：元气骑士式门机制（本轮修复）
+
+我在 Godot 里实跑发现 3 个问题，对照元气骑士重写了门与房间：
+
+| 问题 | 根因 | 修复 |
+|---|---|---|
+| 玩家从第一个房间后门直接跑出地图 | 后墙留了门洞，但门洞处没有门 | 每房加 `BackDoor`，首房 `BackDoor` 调 `seal()` 永久封死 |
+| 门一开始畅通无阻、门板是白色 | 门板 `Area3D` 不产生物理阻挡；材质定义了却没被 Mesh 引用，全用默认白色 | 门内加 `Blocker`（StaticBody 碰撞）；给所有 BoxMesh 补 `material` 引用（红色门板） |
+| 进下一房间后无法返回 | 只有前门，没有后门 | 每房加前后两门 + `RoomArea`，清敌前关门、清敌开门，可自由往返 |
+
+新房间结构：
+
+```
+Room (Node3D, room.gd)
+├── Floor / WallE / WallW / WallZFrontL,R / WallZBackL,R
+├── FrontDoor (Area3D, door.gd, direction=1)
+│   ├── Mesh（红色门板）  AreaCollision（薄检测）
+│   └── Blocker (StaticBody3D) → BlockerCollision（关闭时阻挡）
+├── BackDoor (Area3D, door.gd, direction=-1)  同上
+├── RoomArea (Area3D)  检测玩家进入房间（9×3×9）
+└── PlayerSpawnPoint / EnemySpawnPoint1-3 / WeaponSpawnPoint
+```
+
+状态机（room.gd）：
+
+- 玩家进入未清房间（`RoomArea.body_entered`）→ 前后门全关（困住）；
+- 敌人死亡回调 `on_enemy_died` 计数到 0 → 前后门全开 + 发 `room_cleared`，并联动下一房间打开其后门；
+- 门按**玩家进入侧**判定方向（不依赖速度）：前门只在前进时触发，后门只在后退时触发。
+
+生成器（dungeon_generator.gd）：所有房间就位后再 `setup()` 链接，相邻房间之间补 `Corridor` 走廊地板（地板 10 深、间距 12，留 2 的缝）。
+
+接口变更已同步到 [interface_notes.md](interface_notes.md)：`next_room_index` 改名 `target_room_index`，玩家**自然行走不再传送**。
