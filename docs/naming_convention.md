@@ -15,7 +15,12 @@
 | `scenes/ui/` | 汤志豪 | HUD、开始/结算/胜利界面 |
 | `assets/audio|particles|shaders/` | 汤志豪 | 视觉与音效素材 |
 | `data/` | 字远 | 数值表（敌人属性、掉落概率等） |
-| `docs/` | 全组 | 文档（提案、契约、命名规范、导出指南等） |
+| `docs/naming_convention.md` | 张宏伟 | 全组命名规范（统一维护） |
+| `docs/<成员拼音>/` | 各成员 | 个人文档目录，每人只维护自己的（建议 planning/development/testing 分开） |
+| `docs/zhanghongwei/` | 张宏伟 | 我的规划/开发/测试/接口文档 |
+| `docs/yujiyi/` | 俞吉依 | 个人文档目录 |
+| `docs/ziyuan/` | 字远 | 个人文档目录 |
+| `docs/tangzhihao/` | 汤志豪 | 个人文档目录 |
 
 ## 二、命名规则
 

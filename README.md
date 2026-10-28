@@ -28,8 +28,30 @@ res://
 │   ├── particles/           ← 汤志豪
 │   └── shaders/             ← 汤志豪
 ├── data/                    ← 字远
-└── docs/                    ← 文档（命名规范、提案、接口契约等）
+└── docs/
+    ├── naming_convention.md ← 全组命名规范（张宏伟维护）
+    ├── zhanghongwei/        ← 张宏伟（个人规划/开发/测试/接口）
+    ├── yujiyi/              ← 俞吉依
+    ├── ziyuan/              ← 字远
+    └── tangzhihao/          ← 汤志豪
 ```
+
+## 文档导航（每人的文档在自己目录下）
+
+| 成员 | 文档目录 |
+|---|---|
+| 张宏伟 | [docs/zhanghongwei/](docs/zhanghongwei/README.md)（含规划/开发/测试/接口） |
+| 俞吉依 | [docs/yujiyi/](docs/yujiyi/README.md) |
+| 字远 | [docs/ziyuan/](docs/ziyuan/README.md) |
+| 汤志豪 | [docs/tangzhihao/](docs/tangzhihao/README.md) |
+
+## 张宏伟当前开发进度
+
+- R1–R8（房间模板 / room.gd / 生成器 / 门）：✅ 完成，headless 自检通过
+- R10 命名规范：✅ 完成
+- R9 审查他人 PR / R11 导出配置：⏳ 待整合
+
+详见 [docs/zhanghongwei/](docs/zhanghongwei/README.md)。
 
 ## 接口契约（张宏伟提供 / 消费部分）
 
@@ -40,7 +62,8 @@ res://
 | 提供 | `Room.get_player_spawn_point() → Marker3D` | 俞吉依（main） |
 | 提供 | `Room.get_weapon_spawn_point() → Marker3D` | 俞吉依（main） |
 | 提供 | `signal door_entered(next_room_index: int)` | 俞吉依（main 传送） |
-| 提供 | `signal room_cleared` | 俞吉依（main 进度） |
+| 提供 | `signal room_cleared` | 俞吉依（main 进度）/ 汤志豪（HUD） |
 | 消费 | `signal enemy_died(enemy: Node3D)`（字远） | 张宏伟（计数开门） |
 
-完整契约见飞书项目文档与 `docs/naming_convention.md`。
+**接入方式与调用示例**见 [docs/zhanghongwei/interface_notes.md](docs/zhanghongwei/interface_notes.md)；
+命名锁定见 [docs/naming_convention.md](docs/naming_convention.md)。
