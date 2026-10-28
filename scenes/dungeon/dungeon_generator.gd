@@ -23,9 +23,10 @@ func generate(room_count: int) -> Array[Node3D]:
 		var template_path: String = ROOM_TEMPLATES.pick_random()
 		var room: Node3D = (load(template_path) as PackedScene).instantiate()
 		room.position = Vector3(0, 0, i * ROOM_SPACING)
-		if room.has_method("set_next_room_index"):
-			room.set_next_room_index(i + 1)
 		room.name = "Room%d" % (i + 1)
 		add_child(room)
+		# 注意：必须先 add_child 触发 _ready（_door 在 _ready 中绑定），再设置下一房间索引
+		if room.has_method("set_next_room_index"):
+			room.set_next_room_index(i + 1)
 		rooms.append(room)
 	return rooms
