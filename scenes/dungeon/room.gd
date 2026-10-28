@@ -2,9 +2,10 @@ class_name Room
 extends Node3D
 
 ## 房间脚本（张宏伟 · 地牢生成 + 房间系统）
-## 机制（参考元气骑士）：
-##   玩家进入有敌人的房间 → 前后门全部关闭（困住）；
-##   清空敌人 → 全部门打开并广播 room_cleared，可前进也可回已探索房间。
+## 门机制（软门，参考元气骑士并简化）：
+##   前门（前进）：初始关闭，清敌才打开 —— 清敌前无法前往下一房间；
+##   后门（后退）：前一房间清空后打开并一直保持 —— 已探索房间随时可回去；
+##   进入房间不再关门（不困住）；首房入口永久封死。
 
 signal room_cleared
 signal door_entered(target_room_index: int)
@@ -54,15 +55,10 @@ func _on_door_relayed(target: int) -> void:
 	door_entered.emit(target)
 
 
-## 玩家进入房间内部：标记为当前房间；若敌人未清，关闭所有门（困住）
+## 玩家进入房间内部：标记为当前房间（不关门——前进由前门挡，后退随时可走）
 func _on_room_area_body_entered(body: Node3D) -> void:
 	if body is CharacterBody3D:
 		player_entered_room.emit(_index)
-		if not _cleared:
-			if _back_door:
-				_back_door.close()
-			if _front_door:
-				_front_door.close()
 
 
 ## 敌人死亡回调（字远 enemy_died 信号连到这里）
@@ -84,9 +80,9 @@ func _on_cleared() -> void:
 		_next_room.on_previous_room_cleared()
 
 
-## 前一房间已清空：打开本房间后门（玩家可进入；进入后若有敌人会再关上）
+## 前一房间已清空：打开本房间后门并保持（玩家可随时进入、退回）
 func on_previous_room_cleared() -> void:
-	if not _cleared and _back_door:
+	if _back_door:
 		_back_door.open()
 
 

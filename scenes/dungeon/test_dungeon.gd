@@ -130,18 +130,20 @@ func _selftest() -> void:
 		_fail("清 R1 后通道应打开"); return
 	print("[SelfTest] OK: 清 R1 后前门开、R2 后门开")
 
-	# 4) 玩家进入 R2（有敌人）→ 两门关闭
+	# 4) 玩家进入 R2（有敌人）：后门保持开（可退回），前门仍关（清敌才能前进）
 	r2._on_room_area_body_entered(_player)
-	if r2._back_door._is_open or r2._front_door._is_open:
-		_fail("进入有敌人的房间应关门"); return
-	print("[SelfTest] OK: 进入 R2 后两门关闭（困住）")
+	if not r2._back_door._is_open:
+		_fail("进入 R2 后门应保持开（可退回）"); return
+	if r2._front_door._is_open:
+		_fail("R2 前门应仍关（清敌才能前进）"); return
+	print("[SelfTest] OK: 进入 R2 后后门开（可退）、前门关（不可前进）")
 
-	# 5) 清 R2：两门开 + R3 后门开
+	# 5) 清 R2：前门开 + R3 后门开
 	while r2.enemy_count > 0:
 		r2.on_enemy_died(null)
-	if not r2._front_door._is_open or not r2._back_door._is_open or not r3._back_door._is_open:
-		_fail("清 R2 后两门应开"); return
-	print("[SelfTest] OK: 清 R2 后两门开、R3 后门开")
+	if not r2._front_door._is_open or not r3._back_door._is_open:
+		_fail("清 R2 后前门应开、R3 后门应开"); return
+	print("[SelfTest] OK: 清 R2 后前门开、R3 后门开")
 
 	# 6) 清 R3：前门开，target=3（越界 = 胜利）
 	while r3.enemy_count > 0:
