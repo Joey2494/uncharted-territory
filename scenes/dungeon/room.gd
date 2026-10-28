@@ -8,6 +8,8 @@ extends Node3D
 
 signal room_cleared
 signal door_entered(target_room_index: int)
+## 玩家身体进入房间区域（RoomArea）时发出，携带本房间索引——消费方据此确定"当前房间"
+signal player_entered_room(room_index: int)
 
 ## 本房间的敌人总数（模板预设；整合后由 main 按实际生成数校准）
 @export var enemy_count: int = 2
@@ -52,13 +54,15 @@ func _on_door_relayed(target: int) -> void:
 	door_entered.emit(target)
 
 
-## 玩家进入房间内部：若敌人未清，关闭所有门（困住）
+## 玩家进入房间内部：标记为当前房间；若敌人未清，关闭所有门（困住）
 func _on_room_area_body_entered(body: Node3D) -> void:
-	if body is CharacterBody3D and not _cleared:
-		if _back_door:
-			_back_door.close()
-		if _front_door:
-			_front_door.close()
+	if body is CharacterBody3D:
+		player_entered_room.emit(_index)
+		if not _cleared:
+			if _back_door:
+				_back_door.close()
+			if _front_door:
+				_front_door.close()
 
 
 ## 敌人死亡回调（字远 enemy_died 信号连到这里）

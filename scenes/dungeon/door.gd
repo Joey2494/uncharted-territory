@@ -4,7 +4,7 @@ extends Area3D
 ## 门脚本（张宏伟 · 地牢生成 + 房间系统）
 ## 机制（参考元气骑士）：
 ##   关闭时红色门板 + 碰撞阻挡，玩家无法通过；
-##   开门后门板隐藏、碰撞关闭；玩家穿过时按行进方向发 door_entered。
+##   开门后门板隐藏、碰撞关闭；玩家穿过时按「移动方向」发 door_entered。
 ## direction: 1=前门（玩家向前 +z 时触发），-1=后门（玩家向后 -z 时触发）
 
 signal door_entered(target_room_index: int)
@@ -77,9 +77,9 @@ func _on_body_entered(body: Node3D) -> void:
 		return
 	if not (body is CharacterBody3D):
 		return
-	# 按玩家进入侧判定行进方向（不依赖速度，停在门上也能判）
-	var from_near_side: bool = body.global_position.z < global_position.z
-	if direction == 1 and from_near_side:
+	# 用玩家「移动方向」判定（不依赖身体位置，帧卡顿/一次穿越也能正确判定）
+	var vz: float = body.velocity.z
+	if direction == 1 and vz > 0.01:
 		door_entered.emit(target_room_index)
-	elif direction == -1 and not from_near_side:
+	elif direction == -1 and vz < -0.01:
 		door_entered.emit(target_room_index)

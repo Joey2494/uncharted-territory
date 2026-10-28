@@ -28,6 +28,7 @@ func _ready() -> void:
 		var room: Room = _rooms[i]
 		room.room_cleared.connect(_on_room_cleared.bind(i))
 		room.door_entered.connect(_on_door_entered)
+		room.player_entered_room.connect(_on_player_entered_room)
 		var weapon: Marker3D = room.get_weapon_spawn_point()
 		var player_spawn: Marker3D = room.get_player_spawn_point()
 		print("[TestDungeon] Room%d pos=%s 敌人点=%d 武器点=%s 玩家点=%s" % [
@@ -68,9 +69,15 @@ func _on_room_cleared(room_index: int) -> void:
 	print("[TestDungeon] 房间%d 已清空 → 门打开" % (room_index + 1))
 
 
+## 玩家身体进入房间（RoomArea）：以此确定当前房间（最可靠，不依赖门信号）
+func _on_player_entered_room(room_index: int) -> void:
+	_current_room_index = room_index
+	print("[TestDungeon] 进入房间 %d" % (room_index + 1))
+
+
+## 门信号只作"穿过门"通知：显示去向；越界（最后房间）= 通关
 func _on_door_entered(target: int) -> void:
 	if target < _rooms.size():
-		_current_room_index = target
 		print("[TestDungeon] door_entered → 房间 %d" % target)
 	else:
 		print("[TestDungeon] 已通关（You Win 由俞吉依 main 场景处理）")
@@ -143,25 +150,35 @@ func _selftest() -> void:
 		_fail("清 R3 后前门应开且 target=3"); return
 	print("[SelfTest] OK: 清 R3 后前门开（出口）")
 
-	# 7) 门的方向判定：前门只在前进时触发，后门只在后退时触发
+	# 7) 门按「移动方向 velocity」触发
+	# 前门：前进触发，后退不触发
 	var fwd_count := [0]
 	r1._front_door.door_entered.connect(func(_v: int) -> void: fwd_count[0] += 1)
-	_player.global_position = r1._front_door.global_position + Vector3(0, 0, -0.5)
+	_player.velocity = Vector3(0, 0, 6)
 	r1._front_door._on_body_entered(_player)
-	_player.global_position = r1._front_door.global_position + Vector3(0, 0, 0.5)
+	_player.velocity = Vector3(0, 0, -6)
 	r1._front_door._on_body_entered(_player)
 	if fwd_count[0] != 1:
-		_fail("前门应只在前进时触发一次"); return
+		_fail("前门应只在前进时触发"); return
 
+	# 后门：后退触发，前进不触发（即使身体已在门的另一侧——模拟帧卡顿的情况）
 	var bwd_count := [0]
 	r2._back_door.door_entered.connect(func(_v: int) -> void: bwd_count[0] += 1)
+	_player.velocity = Vector3(0, 0, 6)
 	_player.global_position = r2._back_door.global_position + Vector3(0, 0, 0.5)
 	r2._back_door._on_body_entered(_player)
-	_player.global_position = r2._back_door.global_position + Vector3(0, 0, -0.5)
+	_player.velocity = Vector3(0, 0, -6)
 	r2._back_door._on_body_entered(_player)
 	if bwd_count[0] != 1:
-		_fail("后门应只在后退时触发一次"); return
-	print("[SelfTest] OK: 门按行进方向触发（前进/后退各一次）")
+		_fail("后门应只在后退时触发"); return
+	print("[SelfTest] OK: 门按移动方向触发（帧卡顿也不误判）")
+
+	# 8) 房间区域（RoomArea）确定当前房间索引
+	_player.velocity = Vector3.ZERO
+	r2._on_room_area_body_entered(_player)
+	if _current_room_index != 1:
+		_fail("进入 R2 后当前房间索引应为 1"); return
+	print("[SelfTest] OK: 进入房间后当前房间索引正确")
 
 	print("[SelfTest] === 全部通过 ===")
 	get_tree().quit(0)
