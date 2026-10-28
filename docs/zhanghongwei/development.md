@@ -1,6 +1,6 @@
 # 开发文档（张宏伟）
 
-> 以"我 → AI 协作 → 提交"的步骤，记录我在 `feature/dungeon-mvp` 上的开发过程。
+> 以"我 → AI 协作 → 提交"的步骤，记录我在 `feature/dungeon-mvp`、`feature/dungeon-door-fix` 分支上的开发过程。
 
 ## Step 1：工程初始化（commit `1fd610e`）
 
@@ -127,12 +127,30 @@ Room (Node3D, room.gd)
 └── PlayerSpawnPoint / EnemySpawnPoint1-3 / WeaponSpawnPoint
 ```
 
-状态机（room.gd）：
+状态机（room.gd，初版"困住"）：
 
 - 玩家进入未清房间（`RoomArea.body_entered`）→ 前后门全关（困住）；
 - 敌人死亡回调 `on_enemy_died` 计数到 0 → 前后门全开 + 发 `room_cleared`，并联动下一房间打开其后门；
-- 门按**玩家进入侧**判定方向（不依赖速度）：前门只在前进时触发，后门只在后退时触发。
+- 门按**玩家移动速度 velocity** 判定方向：前门只在前进时触发，后门只在后退时触发。
 
 生成器（dungeon_generator.gd）：所有房间就位后再 `setup()` 链接，相邻房间之间补 `Corridor` 走廊地板（地板 10 深、间距 12，留 2 的缝）。
 
 接口变更已同步到 [interface_notes.md](interface_notes.md)：`next_room_index` 改名 `target_room_index`，玩家**自然行走不再传送**。
+
+## Step 8：软门机制（按反馈调整，commit `9e7f50a`）
+
+实跑反馈：进入第二、三房间后，中间的门"经过就关、要全部通关才开"，体验不好。我和组长确认改为**软门**（不困住，只挡前进）：
+
+| 门 | 行为 |
+|---|---|
+| **前门 FrontDoor（前进）** | 初始关闭，**清敌才打开**——清敌前无法前往下一房间 |
+| **后门 BackDoor（后退）** | 前一房间清空后打开并**一直保持**——已探索房间随时可退回 |
+| 首房 BackDoor | 永久封死（地牢入口） |
+
+实现改动（room.gd）：
+
+- `RoomArea.body_entered` 只发 `player_entered_room`（确定当前房间），**不再关门**；
+- `on_previous_room_cleared()` 打开后门并保持（去掉"未清才开"的条件，避免被任何逻辑重新关上）；
+- 清敌 `_on_cleared()` 打开前门（后门此时已开）。
+
+> 说明：元气骑士原版是"进房间全关、清敌全开"（硬门困住）。我们按课程难度和反馈改成软门，核心规则"清敌前不能前进、之后可自由往返"不变。
