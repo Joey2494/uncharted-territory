@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/enemy_health_label_3d.gd" id="1_script"]
+[ext_resource type="Font" path="res://scenes/ui/dungeon_font.tres" id="2_font"]
+
+[node name="EnemyHealthLabel3D" type="Label3D"]
+position = Vector3(0, 1.9, 0)
+billboard = 1
+font = ExtResource("2_font")
+font_size = 48
+pixel_size = 0.0065
+modulate = Color(0.867, 0.82, 0.714, 1)
+outline_modulate = Color(0.025, 0.025, 0.02, 1)
+outline_size = 5
+no_depth_test = false
+text = "HP 3/3"
+script = ExtResource("1_script")

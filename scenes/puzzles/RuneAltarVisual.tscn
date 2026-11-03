@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/puzzles/rune_altar_visual.gd" id="1_visuals"]
+
+[node name="AlmsyONEModel" type="Node3D"]
+scale = Vector3(0.6875, 0.5263158, 0.6666667)
+script = ExtResource("1_visuals")

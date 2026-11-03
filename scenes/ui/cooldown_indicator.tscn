@@ -1,0 +1,103 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/cooldown_indicator.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/ui/weapon_equipped.svg" id="2_icon"]
+[ext_resource type="Material" path="res://scenes/ui/stone_material.tres" id="3_stone"]
+
+[sub_resource type="StyleBoxFlat" id="Style_panel"]
+bg_color = Color(0.07, 0.075, 0.06, 0.96)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.33, 0.30, 0.23, 1)
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 3
+
+[sub_resource type="StyleBoxFlat" id="Style_background"]
+bg_color = Color(0.125, 0.133, 0.11, 1)
+
+[sub_resource type="StyleBoxFlat" id="Style_fill"]
+bg_color = Color(0.459, 0.392, 0.259, 1)
+
+[node name="CooldownIndicator" type="PanelContainer"]
+custom_minimum_size = Vector2(0, 82)
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Style_panel")
+script = ExtResource("1_script")
+
+[node name="StoneSurface" type="ColorRect" parent="."]
+material = ExtResource("3_stone")
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Padding" type="MarginContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 7
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 7
+
+[node name="Content" type="VBoxContainer" parent="Padding"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="Header" type="HBoxContainer" parent="Padding/Content"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="AbilityIcon" type="TextureRect" parent="Padding/Content/Header"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("2_icon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Titles" type="VBoxContainer" parent="Padding/Content/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="AbilityName" type="Label" parent="Padding/Content/Header/Titles"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.85, 0.78, 0.62, 1)
+theme_override_font_sizes/font_size = 14
+text = "普攻"
+
+[node name="InputHint" type="Label" parent="Padding/Content/Header/Titles"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.60, 0.57, 0.50, 1)
+theme_override_font_sizes/font_size = 10
+text = "鼠标左键"
+
+[node name="StateLabel" type="Label" parent="Padding/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.64, 0.60, 0.53, 1)
+theme_override_font_sizes/font_size = 14
+text = "未就绪"
+horizontal_alignment = 1
+
+[node name="CooldownProgress" type="ProgressBar" parent="Padding/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/background = SubResource("Style_background")
+theme_override_styles/fill = SubResource("Style_fill")
+max_value = 1.0
+step = 0.0
+value = 1.0
+show_percentage = false

@@ -1,0 +1,67 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scenes/skills/energy_bolt.gd" id="1_bolt"]
+
+[sub_resource type="SphereShape3D" id="Shape_bolt"]
+radius = 0.24
+
+[sub_resource type="StandardMaterial3D" id="Material_core"]
+shading_mode = 0
+albedo_color = Color(0.55, 0.95, 1, 1)
+emission_enabled = true
+emission = Color(0.2, 0.8, 1, 1)
+
+[sub_resource type="StandardMaterial3D" id="Material_glow"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.12, 0.65, 1, 0.45)
+
+[sub_resource type="SphereMesh" id="Mesh_core"]
+material = SubResource("Material_core")
+radius = 0.18
+height = 0.36
+
+[sub_resource type="CapsuleMesh" id="Mesh_tail"]
+material = SubResource("Material_glow")
+radius = 0.12
+height = 0.7
+
+[sub_resource type="TorusMesh" id="Mesh_ring"]
+material = SubResource("Material_glow")
+inner_radius = 0.18
+outer_radius = 0.24
+
+[sub_resource type="SphereMesh" id="Mesh_impact"]
+material = SubResource("Material_glow")
+radius = 0.3
+height = 0.6
+
+[node name="EnergyBolt" type="CharacterBody3D" groups=["player_projectiles"]]
+collision_layer = 0
+collision_mask = 5
+script = ExtResource("1_bolt")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("Shape_bolt")
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="Core" type="MeshInstance3D" parent="Visuals"]
+cast_shadow = 0
+mesh = SubResource("Mesh_core")
+
+[node name="Tail" type="MeshInstance3D" parent="Visuals"]
+position = Vector3(0, 0, 0.3)
+rotation = Vector3(1.570796, 0, 0)
+cast_shadow = 0
+mesh = SubResource("Mesh_tail")
+
+[node name="Ring" type="MeshInstance3D" parent="Visuals"]
+rotation = Vector3(1.570796, 0, 0)
+cast_shadow = 0
+mesh = SubResource("Mesh_ring")
+
+[node name="ImpactBurst" type="MeshInstance3D" parent="."]
+visible = false
+cast_shadow = 0
+mesh = SubResource("Mesh_impact")

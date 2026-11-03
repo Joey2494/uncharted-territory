@@ -1,0 +1,110 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/death_screen.gd" id="1_script"]
+[ext_resource type="Theme" path="res://scenes/ui/menu_theme.tres" id="2_theme"]
+[ext_resource type="Material" path="res://scenes/ui/stone_material.tres" id="3_stone"]
+[ext_resource type="PackedScene" path="res://scenes/ui/dungeon_frame.tscn" id="4_frame"]
+
+[node name="DeathScreen" type="Control"]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_script")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.018, 0.02, 0.016, 0.90)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Card" type="PanelContainer" parent="Center"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(520, 0)
+layout_mode = 2
+
+[node name="StoneSurface" type="ColorRect" parent="Center/Card"]
+material = ExtResource("3_stone")
+layout_mode = 2
+mouse_filter = 2
+
+[node name="DungeonFrame" parent="Center/Card" instance=ExtResource("4_frame")]
+
+[node name="Padding" type="MarginContainer" parent="Center/Card"]
+layout_mode = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 32
+
+[node name="Content" type="VBoxContainer" parent="Center/Card/Padding"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Eyebrow" type="Label" parent="Center/Card/Padding/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.69, 0.40, 0.34, 1)
+theme_override_font_sizes/font_size = 13
+text = "本次探索结束"
+horizontal_alignment = 1
+
+[node name="TitleLabel" type="Label" parent="Center/Card/Padding/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+theme_override_colors/font_color = Color(0.87, 0.78, 0.65, 1)
+text = "Game Over"
+horizontal_alignment = 1
+
+[node name="DepthCaption" type="Label" parent="Center/Card/Padding/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.64, 0.60, 0.51, 1)
+text = "本次探索深度"
+horizontal_alignment = 1
+
+[node name="DepthLabel" type="Label" parent="Center/Card/Padding/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.73, 0.47, 0.41, 1)
+theme_override_font_sizes/font_size = 52
+text = "01"
+horizontal_alignment = 1
+
+[node name="RoomReachedLabel" type="Label" parent="Center/Card/Padding/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "探索到房间 1"
+horizontal_alignment = 1
+
+[node name="Divider" type="HSeparator" parent="Center/Card/Padding/Content"]
+layout_mode = 2
+
+[node name="Description" type="Label" parent="Center/Card/Padding/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.64, 0.60, 0.51, 1)
+text = "未知仍在前方，再试一次。"
+horizontal_alignment = 1
+
+[node name="RestartButton" type="Button" parent="Center/Card/Padding/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+text = "重新开始"

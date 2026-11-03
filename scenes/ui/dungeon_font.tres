@@ -1,0 +1,10 @@
+[gd_resource type="FontVariation" load_steps=2 format=3]
+
+[sub_resource type="SystemFont" id="SerifBase"]
+font_names = PackedStringArray("SimSun", "Songti SC", "Noto Serif CJK SC", "Georgia")
+font_weight = 400
+allow_system_fallback = true
+
+[resource]
+base_font = SubResource("SerifBase")
+variation_embolden = 0.4

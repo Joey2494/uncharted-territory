@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/dungeon/DungeonDoorway.tscn" id="1_doorway"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/ExitFrame.tscn" id="2_frame"]
+
+[node name="ExitDoorway" instance=ExtResource("1_doorway")]
+
+[node name="LeftPillar" parent="." index="0"]
+visible = false
+
+[node name="RightPillar" parent="." index="1"]
+visible = false
+
+[node name="Lintel" parent="." index="2"]
+visible = false
+
+[node name="FrameModel" parent="." instance=ExtResource("2_frame")]
