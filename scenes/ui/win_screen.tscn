@@ -83,6 +83,41 @@ horizontal_alignment = 1
 [node name="Divider" type="HSeparator" parent="Center/Card/Padding/Content"]
 layout_mode = 2
 
+[node name="ResultDetails" type="VBoxContainer" parent="Center/Card/Padding/Content"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TimeLabel" type="Label" parent="Center/Card/Padding/Content/ResultDetails"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "通关用时：00:00"
+horizontal_alignment = 1
+
+[node name="ExplorationLabel" type="Label" parent="Center/Card/Padding/Content/ResultDetails"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "探索区域：0/5"
+horizontal_alignment = 1
+
+[node name="HealthLabel" type="Label" parent="Center/Card/Padding/Content/ResultDetails"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "剩余生命：0/5"
+horizontal_alignment = 1
+
+[node name="PuzzleLabel" type="Label" parent="Center/Card/Padding/Content/ResultDetails"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "符文机关：未解开"
+horizontal_alignment = 1
+
+[node name="RewardLabel" type="Label" parent="Center/Card/Padding/Content/ResultDetails"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "密室奖励：未领取"
+horizontal_alignment = 1
+
 [node name="Description" type="Label" parent="Center/Card/Padding/Content"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.64, 0.60, 0.51, 1)

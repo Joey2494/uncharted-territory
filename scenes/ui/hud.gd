@@ -10,6 +10,8 @@ const CURRENT_ROOM_COLOR: Color = Color("b99a5c")
 const VISITED_ROOM_COLOR: Color = Color("756442")
 
 signal restart_requested
+signal use_potion_requested
+signal use_rune_requested
 
 @export_range(1, 99, 1) var total_rooms: int = 3
 
@@ -24,12 +26,24 @@ signal restart_requested
 @onready var room_badge: PanelContainer = %RoomBadge
 @onready var room_icon: TextureRect = %RoomIcon
 @onready var room_segments: HBoxContainer = %RoomSegments
+@onready var potion_button: Button = %PotionButton
+@onready var rune_button: Button = %RuneButton
+@onready var buff_label: Label = %BuffLabel
+@onready var pickup_prompt: Label = %PickupPrompt
+@onready var item_message: Label = %ItemMessage
+@onready var melee_cooldown: PanelContainer = %MeleeCooldown
+@onready var dodge_cooldown: PanelContainer = %DodgeCooldown
+@onready var skill_cooldown: PanelContainer = %SkillCooldown
 
 var _hp_fill: StyleBoxFlat
 var _weapon_badge_style: StyleBoxFlat
 var _result_layer: CanvasLayer
 var _result_screen: Control
 var _room_segment_fills: Array[StyleBoxFlat] = []
+var _message_remaining: float = 0.0
+var _combat_player: CharacterBody3D
+var _combat_attack: Node3D
+var _combat_skill: Node3D
 
 
 func _ready() -> void:
@@ -39,6 +53,85 @@ func _ready() -> void:
 	_weapon_badge_style = weapon_badge.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
 	weapon_badge.add_theme_stylebox_override("panel", _weapon_badge_style)
 	update_room_label(0)
+	potion_button.pressed.connect(func() -> void: use_potion_requested.emit())
+	rune_button.pressed.connect(func() -> void: use_rune_requested.emit())
+	update_inventory(0, 0)
+	update_attack_buff(1.0, 0.0)
+	update_pickup_prompt("")
+
+
+func _process(delta: float) -> void:
+	_update_combat_cooldowns()
+	if _message_remaining > 0.0:
+		_message_remaining = maxf(0.0, _message_remaining - delta)
+		if _message_remaining == 0.0:
+			item_message.text = ""
+
+
+func bind_combat_actions(player: CharacterBody3D) -> void:
+	_combat_player = player
+	_combat_attack = player.get_node_or_null("MeleeAttack") if is_instance_valid(player) else null
+	_combat_skill = player.get_node_or_null("EnergyShock") if is_instance_valid(player) else null
+	_update_combat_cooldowns()
+
+
+func _update_combat_cooldowns() -> void:
+	if not is_instance_valid(_combat_player) or not is_instance_valid(_combat_attack) or not is_instance_valid(_combat_skill):
+		for indicator in [melee_cooldown, dodge_cooldown, skill_cooldown]:
+			indicator.update_cooldown(0.0, 1.0, "未就绪")
+		return
+	# Read the same timers and guards used by the actions, including freeze/death.
+	# This HUD owns no cooldown clock and never changes an action's state.
+	var blocked := ""
+	if _combat_player.is_dead():
+		blocked = "已死亡"
+	elif not _combat_player.can_process():
+		blocked = "暂不可用"
+	var attack_block := blocked
+	if attack_block.is_empty():
+		if not _combat_attack.can_process() or not _combat_attack.attack_enabled:
+			attack_block = "闪避中" if _combat_player.is_dodging() else "暂不可用"
+		elif _combat_attack.is_attacking():
+			attack_block = "攻击中"
+	var attack_duration := maxf(_combat_attack.attack_cooldown,
+		_combat_attack.windup_duration + _combat_attack.active_duration + _combat_attack.recovery_duration)
+	melee_cooldown.update_cooldown(_combat_attack.get_cooldown_remaining(), attack_duration, attack_block)
+	var dodge_block := blocked
+	if dodge_block.is_empty():
+		if _combat_player.is_dodging():
+			dodge_block = "闪避中"
+		elif not _combat_player.is_on_floor():
+			dodge_block = "空中"
+	var dodge_duration := maxf(_combat_player.dodge_cooldown, _combat_player.dodge_duration)
+	dodge_cooldown.update_cooldown(_combat_player.get_dodge_cooldown_remaining(), dodge_duration, dodge_block)
+	var skill_block := blocked
+	if skill_block.is_empty():
+		if not _combat_skill.can_process() or _combat_skill.projectile_scene == null:
+			skill_block = "暂不可用"
+		elif _combat_player.is_dodging():
+			skill_block = "闪避中"
+	skill_cooldown.update_cooldown(_combat_skill.get_cooldown_remaining(), _combat_skill.cooldown, skill_block)
+
+
+func update_inventory(potions: int, runes: int) -> void:
+	potion_button.text = "R 生命药剂 ×%d" % potions
+	rune_button.text = "F 强化符文 ×%d" % runes
+	potion_button.disabled = potions <= 0
+	rune_button.disabled = runes <= 0
+
+
+func update_attack_buff(multiplier: float, remaining: float) -> void:
+	buff_label.text = "攻击 ×%s · 剩余 %d 秒" % [str(multiplier).trim_suffix(".0"), int(ceil(remaining))] if remaining > 0.0 else "攻击强化：未激活"
+	buff_label.add_theme_color_override("font_color", Color("d2ae6a") if remaining > 0.0 else Color("9a968b"))
+
+
+func update_pickup_prompt(message: String) -> void:
+	pickup_prompt.text = message if not message.is_empty() else "靠近道具按 E 拾取"
+
+
+func show_item_message(message: String) -> void:
+	item_message.text = message
+	_message_remaining = 3.0
 
 
 func update_hp_bar(current: int, maximum: int) -> void:
@@ -131,9 +224,10 @@ func show_death_screen(room_index: int) -> void:
 	_show_result_screen(screen)
 
 
-func show_win_screen() -> void:
+func show_win_screen(result: Dictionary = {}) -> void:
 	var screen = WIN_SCREEN.instantiate()
 	screen.completed_rooms = total_rooms
+	screen.set_run_result(result)
 	_show_result_screen(screen)
 
 

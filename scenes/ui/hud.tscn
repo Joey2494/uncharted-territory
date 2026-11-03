@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/hud.gd" id="1_hud"]
 [ext_resource type="Texture2D" path="res://assets/ui/weapon_empty.svg" id="2_empty"]
@@ -6,6 +6,9 @@
 [ext_resource type="Material" path="res://scenes/ui/stone_material.tres" id="4_stone"]
 [ext_resource type="Texture2D" path="res://assets/ui/heart.svg" id="5_heart"]
 [ext_resource type="Texture2D" path="res://assets/ui/room.svg" id="6_room"]
+[ext_resource type="PackedScene" path="res://scenes/ui/cooldown_indicator.tscn" id="7_cooldown"]
+[ext_resource type="Texture2D" path="res://assets/ui/dodge.svg" id="8_dodge"]
+[ext_resource type="Texture2D" path="res://assets/ui/energy_shock.svg" id="9_skill"]
 
 [sub_resource type="StyleBoxFlat" id="Style_icon_frame"]
 bg_color = Color(0.06, 0.065, 0.055, 0.96)
@@ -81,8 +84,8 @@ mouse_filter = 2
 
 [node name="HealthGroup" type="HBoxContainer" parent="Panel"]
 unique_name_in_owner = true
-layout_mode = 0
-offset_right = 336.0
+layout_mode = 1
+anchor_right = 1.0
 offset_bottom = 36.0
 mouse_filter = 2
 theme_override_constants/separation = 10
@@ -160,9 +163,9 @@ value = 5.0
 show_percentage = false
 
 [node name="LowerRow" type="HBoxContainer" parent="Panel"]
-layout_mode = 0
+layout_mode = 1
+anchor_right = 1.0
 offset_top = 44.0
-offset_right = 336.0
 offset_bottom = 108.0
 mouse_filter = 2
 theme_override_constants/separation = 8
@@ -307,3 +310,114 @@ visible = false
 layout_mode = 0
 mouse_filter = 2
 text = "拾取武器后才能攻击"
+
+[node name="CooldownBar" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 24.0
+offset_top = 148.0
+offset_right = 360.0
+offset_bottom = 230.0
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="MeleeCooldown" parent="CooldownBar" instance=ExtResource("7_cooldown")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+ability_name = "普攻"
+input_hint = "鼠标左键"
+
+[node name="DodgeCooldown" parent="CooldownBar" instance=ExtResource("7_cooldown")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+ability_name = "闪避"
+input_hint = "Space"
+ability_icon = ExtResource("8_dodge")
+
+[node name="SkillCooldown" parent="CooldownBar" instance=ExtResource("7_cooldown")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+ability_name = "能量冲击"
+input_hint = "Q"
+ability_icon = ExtResource("9_skill")
+
+[node name="ItemsPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -186.0
+offset_right = 360.0
+offset_bottom = -24.0
+grow_vertical = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Style_room")
+
+[node name="Padding" type="MarginContainer" parent="ItemsPanel"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="Content" type="VBoxContainer" parent="ItemsPanel/Padding"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="Slots" type="HBoxContainer" parent="ItemsPanel/Padding/Content"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="PotionButton" type="Button" parent="ItemsPanel/Padding/Content/Slots"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+tooltip_text = "生命药剂：恢复生命，满血时不消耗。按 R 或点击使用。"
+theme_override_colors/font_color = Color(0.65, 0.9, 0.65, 1)
+theme_override_styles/normal = SubResource("Style_weapon")
+theme_override_styles/hover = SubResource("Style_room")
+text = "R 生命药剂 ×0"
+disabled = true
+
+[node name="RuneButton" type="Button" parent="ItemsPanel/Padding/Content/Slots"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+tooltip_text = "攻击强化符文：临时提升普攻和 Q 技能伤害。按 F 或点击使用。"
+theme_override_colors/font_color = Color(0.9, 0.75, 0.45, 1)
+theme_override_styles/normal = SubResource("Style_weapon")
+theme_override_styles/hover = SubResource("Style_room")
+text = "F 强化符文 ×0"
+disabled = true
+
+[node name="BuffLabel" type="Label" parent="ItemsPanel/Padding/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+text = "攻击强化：未激活"
+
+[node name="PickupPrompt" type="Label" parent="ItemsPanel/Padding/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.82, 0.76, 0.6, 1)
+text = "靠近道具按 E 拾取"
+
+[node name="ItemMessage" type="Label" parent="ItemsPanel/Padding/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.65, 0.85, 0.68, 1)
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 2

@@ -1,0 +1,46 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Font" path="res://scenes/ui/dungeon_font.tres" id="1_font"]
+
+[sub_resource type="StandardMaterial3D" id="Material_stone"]
+albedo_color = Color(0.39, 0.37, 0.29, 1)
+roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="Material_beacon"]
+albedo_color = Color(0.8, 0.62, 0.28, 1)
+emission_enabled = true
+emission = Color(0.7, 0.42, 0.12, 1)
+emission_energy_multiplier = 0.7
+
+[sub_resource type="BoxMesh" id="Mesh_pillar"]
+material = SubResource("Material_stone")
+size = Vector3(0.4, 3.0, 0.7)
+
+[sub_resource type="BoxMesh" id="Mesh_lintel"]
+material = SubResource("Material_beacon")
+size = Vector3(5.8, 0.3, 0.7)
+
+[node name="DungeonDoorway" type="Node3D"]
+
+[node name="LeftPillar" type="MeshInstance3D" parent="."]
+position = Vector3(-2.7, 1.5, 0)
+mesh = SubResource("Mesh_pillar")
+
+[node name="RightPillar" type="MeshInstance3D" parent="."]
+position = Vector3(2.7, 1.5, 0)
+mesh = SubResource("Mesh_pillar")
+
+[node name="Lintel" type="MeshInstance3D" parent="."]
+position = Vector3(0, 3.15, 0)
+mesh = SubResource("Mesh_lintel")
+
+[node name="Banner" type="Label3D" parent="."]
+position = Vector3(0, 3.8, 0)
+billboard = 1
+font = ExtResource("1_font")
+font_size = 48
+pixel_size = 0.009
+modulate = Color(0.94, 0.82, 0.55, 1)
+outline_modulate = Color(0.02, 0.025, 0.02, 1)
+outline_size = 7
+text = "主路"

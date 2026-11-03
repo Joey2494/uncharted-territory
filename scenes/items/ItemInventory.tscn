@@ -1,0 +1,50 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scenes/items/item_inventory.gd" id="1_inventory"]
+
+[sub_resource type="SphereShape3D" id="Shape_sensor"]
+radius = 1.5
+
+[sub_resource type="StandardMaterial3D" id="Material_heal"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.3, 1, 0.45, 0.7)
+
+[sub_resource type="StandardMaterial3D" id="Material_buff"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(1, 0.65, 0.15, 0.55)
+
+[sub_resource type="TorusMesh" id="Mesh_heal"]
+material = SubResource("Material_heal")
+inner_radius = 0.42
+outer_radius = 0.55
+
+[sub_resource type="TorusMesh" id="Mesh_buff"]
+material = SubResource("Material_buff")
+inner_radius = 0.5
+outer_radius = 0.63
+
+[node name="ItemInventory" type="Node3D"]
+script = ExtResource("1_inventory")
+
+[node name="PickupSensor" type="Area3D" parent="."]
+position = Vector3(0, 0.8, 0)
+collision_layer = 0
+collision_mask = 8
+monitorable = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PickupSensor"]
+shape = SubResource("Shape_sensor")
+
+[node name="HealPulse" type="MeshInstance3D" parent="."]
+visible = false
+position = Vector3(0, 0.06, 0)
+cast_shadow = 0
+mesh = SubResource("Mesh_heal")
+
+[node name="BuffAura" type="MeshInstance3D" parent="."]
+visible = false
+position = Vector3(0, 0.07, 0)
+cast_shadow = 0
+mesh = SubResource("Mesh_buff")

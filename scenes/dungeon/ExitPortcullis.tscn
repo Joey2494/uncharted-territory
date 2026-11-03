@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/dungeon/exit_portcullis.gd" id="1_visuals"]
+
+[node name="Portcullis" type="Node3D"]
+position = Vector3(0, -1.5, 0)
+scale = Vector3(3.5714286, 1.1494253, 1)
+script = ExtResource("1_visuals")
