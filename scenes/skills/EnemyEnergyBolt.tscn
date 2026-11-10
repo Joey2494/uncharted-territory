@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/skills/EnergyBolt.tscn" id="1"]
+[ext_resource type="Script" path="res://scenes/skills/enemy_energy_bolt.gd" id="2"]
+
+[node name="EnemyEnergyBolt" instance=ExtResource("1")]
+collision_mask = 3
+script = ExtResource("2")
