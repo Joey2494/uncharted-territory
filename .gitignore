@@ -26,6 +26,12 @@ mono_crash.*.json
 
 # 导出目录
 export/
+# 固定版本构建脚本不是导出产物。
+!tools/export/
+!tools/export/*.py
+!tools/export/*.gd
+!tools/export/*.gd.uid
+!tools/export/*.cfg
 # 导出预设（每台电脑不同）
 export_presets.cfg
 # 操作系统垃圾文件
