@@ -1,102 +1,152 @@
 extends StaticBody3D
-## 顺序门只负责实体阻挡和表现；开门资格由房间进度控制器判定。
+## 同一门体支持长期进度锁和临时战斗锁；只有两者均解除后才开放。
 
 signal opening_started(gate_id: StringName)
 signal opened(gate_id: StringName)
 
-enum State { LOCKED, OPENING, OPEN }
+enum State { CLOSED, CLOSING, OPENING, OPEN }
+
+const LIFT_HEIGHT := 3.6
 
 @export var gate_id: StringName
 @export var locked_message: String = "清除守卫后开启"
 ## 已有门框文字的场景可关闭内置标签，避免两份提示叠在一起。
 @export var show_lock_label: bool = true
+@export var initially_open: bool = false
 @export_range(0.01, 10.0) var opening_duration: float = 0.9
 
-var state: State = State.LOCKED
-var _opening_tween: Tween
+var state: State = State.CLOSED
+var _progression_locked := true
+var _combat_locked := false
+var _frozen := false
+var _motion: Tween
 var _generation := 0
-var _initial_visual_position := Vector3.ZERO
+var _closed_position := Vector3.ZERO
 
 @onready var _visuals: Node3D = $Visuals
 @onready var _collider: CollisionShape3D = $CollisionShape3D
 @onready var _label: Label3D = $Visuals/LockedLabel
 
 func _ready() -> void:
-	_initial_visual_position = _visuals.position
+	_closed_position = _visuals.position
 	_label.text = locked_message
 	_label.visible = show_lock_label
 	add_to_group("camera_occluders")
+	if initially_open:
+		_progression_locked = false
+		state = State.OPEN
+		_visuals.position.y += LIFT_HEIGHT
+		_visuals.hide()
+		_collider.disabled = true
 
-## 接受一次已获授权的请求；离树、暂停或状态不适用时返回 false。
+## 接受一次进度授权。若战斗仍未结束，授权记录先保留，门继续关闭。
 func open_gate() -> bool:
-	if not is_inside_tree() or not is_node_ready() or not can_process():
+	if not is_inside_tree() or not is_node_ready() or not can_process() or _frozen or not _progression_locked:
 		return false
-	if state != State.LOCKED or not is_visible_in_tree() or not _visuals.visible:
+	if not is_visible_in_tree() or not _visuals.visible:
 		return false
-	state = State.OPENING
-	_label.text = "封印解除中"
-	_generation += 1
-	var generation := _generation
-	# 节点绑定 Tween 会继承祖先暂停状态，不让菜单/死亡界面背后继续计时。
-	_opening_tween = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
-	_opening_tween.tween_property(_visuals, "position:y", _initial_visual_position.y - 3.6, opening_duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-	_opening_tween.tween_callback(_finish_animation.bind(generation))
-	opening_started.emit(gate_id)
+	_progression_locked = false
+	_sync_locks()
 	return true
+
+## 仅修改战斗锁；开合反向时从当前高度续接。
+func set_combat_locked(locked: bool) -> bool:
+	if not is_inside_tree() or not is_node_ready() or _frozen or _combat_locked == locked:
+		return false
+	_combat_locked = locked
+	_sync_locks()
+	return true
+
+## 战斗房激活前确认这扇门仍能施加战斗锁。
+func can_combat_lock() -> bool:
+	return (is_inside_tree() and is_node_ready() and can_process() and is_visible_in_tree()
+		and not is_queued_for_deletion() and not _frozen and not _combat_locked
+		and is_instance_valid(_collider) and _collider.is_inside_tree() and _collider.shape != null)
 
 ## 只有物理服务器已更新通道后，才对外确认真正打开。
 func is_open() -> bool:
 	return state == State.OPEN
 
-## 死亡终局取消：废弃异步回调并恢复锁定外观，下一局重新实例化。
-func cancel_opening() -> void:
-	if state != State.OPENING:
+## 终局保留动画停下的位置，废弃未完成的开门确认并维持封锁。
+func freeze_gate() -> void:
+	if _frozen or not is_node_ready():
 		return
-	_generation += 1
-	if _opening_tween != null and _opening_tween.is_valid():
-		_opening_tween.kill()
-	_opening_tween = null
-	state = State.LOCKED
-	_visuals.position = _initial_visual_position
+	_frozen = true
+	_cancel_motion()
+	if state != State.OPEN:
+		_collider.set_deferred("disabled", false)
+
+## 保留顺序门显式取消接口，回到锁定姿态；终局调用 freeze_gate。
+func cancel_opening() -> void:
+	if state != State.OPENING or _frozen:
+		return
+	_cancel_motion()
+	if initially_open:
+		_combat_locked = true
+	else:
+		_progression_locked = true
+	state = State.CLOSED
+	_visuals.position = _closed_position
 	_visuals.show()
 	_label.text = locked_message
 	_collider.set_deferred("disabled", false)
 
-## 动画完成后，完整隐藏所有装饰；不能用隐藏 StaticBody 代替关闭碰撞。
-func _finish_animation(generation: int) -> void:
-	if not _is_current_opening(generation):
+func _sync_locks() -> void:
+	if _progression_locked or _combat_locked:
+		if state == State.OPEN or state == State.OPENING:
+			_move_gate(State.CLOSING, _closed_position.y)
+	elif state == State.CLOSED or state == State.CLOSING:
+		_move_gate(State.OPENING, _closed_position.y + LIFT_HEIGHT)
+
+func _move_gate(direction: State, target_height: float) -> void:
+	_cancel_motion()
+	state = direction
+	_visuals.show()
+	_label.text = "封印解除中" if direction == State.OPENING else locked_message
+	# 激活时玩家已在安全内侧；下降开始即提交完整碰撞，不等视觉落地。
+	_collider.set_deferred("disabled", false)
+	var generation := _generation
+	_motion = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
+	_motion.tween_property(_visuals, "position:y", target_height, opening_duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	_motion.tween_callback(_finish_motion.bind(generation))
+	if direction == State.OPENING:
+		opening_started.emit(gate_id)
+
+func _finish_motion(generation: int) -> void:
+	if not _is_current(generation):
+		return
+	if state == State.CLOSING:
+		state = State.CLOSED
 		return
 	_visuals.hide()
-	_disable_collision.call_deferred(generation)
+	_confirm_open.call_deferred(generation)
 
-## 延迟写碰撞避免物理查询刷新期改形状；代际校验阻止取消后的旧调用。
-func _disable_collision(generation: int) -> void:
-	if not _is_current_opening(generation):
-		return
-	while not can_process():
+## 在物理查询刷新期之外关闭碰撞，再等一整物理步才发送 opened。
+func _confirm_open(generation: int) -> void:
+	while _is_current(generation) and not can_process():
 		await get_tree().physics_frame
-		if not _is_current_opening(generation):
-			return
+	if not _is_current(generation):
+		return
 	_collider.disabled = true
-	# physics_frame 在物理步开始前发出：等两次确保至少一整步已应用形状变化。
-	await get_tree().physics_frame
-	if not _is_current_opening(generation):
-		return
-	await get_tree().physics_frame
-	if not _is_current_opening(generation):
-		return
-	while not can_process():
+	for frame in 2:
 		await get_tree().physics_frame
-		if not _is_current_opening(generation):
+		if not _is_current(generation):
 			return
+	while _is_current(generation) and not can_process():
+		await get_tree().physics_frame
+	if not _is_current(generation):
+		return
 	state = State.OPEN
 	opened.emit(gate_id)
 
-## generation 同时保护动画回调和跨物理帧等待，取消后不得重新宣布开放。
-func _is_current_opening(generation: int) -> bool:
-	return is_inside_tree() and generation == _generation and state == State.OPENING
+func _is_current(generation: int) -> bool:
+	return is_inside_tree() and generation == _generation
+
+func _cancel_motion() -> void:
+	_generation += 1
+	if _motion != null and _motion.is_valid():
+		_motion.kill()
+	_motion = null
 
 func _exit_tree() -> void:
-	_generation += 1
-	if _opening_tween != null and _opening_tween.is_valid():
-		_opening_tween.kill()
+	_cancel_motion()

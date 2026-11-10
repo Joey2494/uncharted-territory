@@ -60,7 +60,7 @@ func run() -> void:
 	var actor := make_actor(world)
 	await wait_physics()
 	check(gate is StaticBody3D, "门是实体 StaticBody3D")
-	check(gate.state == gate.State.LOCKED and not gate.is_open(), "初态锁定")
+	check(gate.state == gate.State.CLOSED and not gate.is_open(), "初态锁定")
 	check(gate.is_in_group("camera_occluders"), "门支持相机遮挡淡化")
 	check(gate.get_node("Visuals/LockedLabel").text == "清除测试守卫", "锁定提示使用配置文本")
 	check(blocked(world), "锁定门阻挡近战与弹体所用墙体射线")
@@ -71,6 +71,7 @@ func run() -> void:
 	check(started_ids == [&"test_gate"], "开门开始事件只发一次且携带稳定 ID")
 	check(blocked(world), "动画开始仍保留完整碰撞")
 	await create_timer(0.2).timeout
+	check(gate.get_node("Visuals").position.y > 0.0, "顺序门向上升起")
 	world.process_mode = Node.PROCESS_MODE_DISABLED
 	var paused_height: float = gate.get_node("Visuals").position.y
 	await create_timer(1.0).timeout
@@ -92,7 +93,7 @@ func run() -> void:
 	gate = scene.instantiate()
 	world.add_child(gate)
 	await wait_physics()
-	check(gate.state == gate.State.LOCKED and blocked(world), "重新实例化恢复锁定和碰撞")
+	check(gate.state == gate.State.CLOSED and blocked(world), "重新实例化恢复锁定和碰撞")
 	check(gate.get_node("Visuals").visible, "重新实例化恢复完整视觉")
 	gate.opened.connect(func(id: StringName): opened_ids.append(id))
 	world.process_mode = Node.PROCESS_MODE_DISABLED
@@ -103,11 +104,11 @@ func run() -> void:
 	gate.cancel_opening()
 	await create_timer(1.0).timeout
 	await wait_physics()
-	check(gate.state == gate.State.LOCKED and blocked(world), "死亡取消恢复锁定与实体碰撞")
+	check(gate.state == gate.State.CLOSED and blocked(world), "取消恢复锁定与实体碰撞")
 	check(gate.get_node("Visuals").visible and is_zero_approx(gate.get_node("Visuals").position.y), "取消恢复初始视觉")
 	check(opened_ids.size() == 1, "取消后旧 Tween 不发出 opened")
 	gate.cancel_opening()
-	check(gate.state == gate.State.LOCKED, "重复取消保持锁定")
+	check(gate.state == gate.State.CLOSED, "重复取消保持锁定")
 	gate.hide()
 	check(not gate.open_gate(), "隐藏的异常门状态拒绝开门")
 	gate.show()
@@ -120,7 +121,7 @@ func run() -> void:
 	gate.cancel_opening()
 	await wait_physics()
 	await wait_physics()
-	check(gate.state == gate.State.LOCKED and blocked(world), "物理确认前取消也恢复碰撞")
+	check(gate.state == gate.State.CLOSED and blocked(world), "物理确认前取消也恢复碰撞")
 	check(opened_ids.size() == 1, "物理确认前取消不遗留 opened 回调")
 	gate.opening_duration = 0.2
 	check(gate.open_gate(), "取消后仍可接受新的有效请求")
@@ -134,6 +135,28 @@ func run() -> void:
 	await create_timer(0.3).timeout
 	await wait_physics()
 	check(gate.is_open() and opened_ids.size() == 2, "SceneTree 恢复后可完成新一轮开门")
+	# G02 一类复合门先被授权进度，再临时战斗闭锁；反向动画从当前高度续接。
+	check(gate.set_combat_locked(true), "开放后可施加战斗锁")
+	await create_timer(0.07).timeout
+	check(gate.state == gate.State.CLOSING and blocked(world), "门下降时已阻挡射线")
+	var reversal_height: float = gate.get_node("Visuals").position.y
+	check(gate.set_combat_locked(false), "战斗结束释放战斗锁")
+	check(is_equal_approx(gate.get_node("Visuals").position.y, reversal_height), "反向动画不跳变")
+	await create_timer(0.25).timeout
+	await wait_physics()
+	check(gate.is_open() and opened_ids.size() == 3, "反向开门废弃旧下降回调")
+	gate.queue_free()
+	await process_frame
+	gate = scene.instantiate()
+	gate.opening_duration = 0.08
+	world.add_child(gate)
+	check(gate.set_combat_locked(true) and gate.open_gate(), "闭锁中接受进度开门授权")
+	await create_timer(0.15).timeout
+	check(not gate.is_open() and blocked(world), "战斗锁仍阻止门开启")
+	check(gate.set_combat_locked(false), "可单独释放战斗锁")
+	await create_timer(0.2).timeout
+	await wait_physics()
+	check(gate.is_open() and not blocked(world), "两个锁均解除才开放")
 	world.queue_free()
 	await process_frame
 	finish()

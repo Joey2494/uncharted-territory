@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3]
+[gd_scene load_steps=34 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://scenes/dungeon/follow_camera.gd" id="2_camera"]
@@ -22,6 +22,7 @@
 
 [ext_resource type="PackedScene" path="res://scenes/dungeon/components/ProgressionGate.tscn" id="20_progress_gate"]
 [ext_resource type="Script" path="res://scenes/dungeon/components/room_progress_controller.gd" id="21_progress"]
+[ext_resource type="Script" path="res://scenes/dungeon/components/progression_gate.gd" id="22_gate_script"]
 
 [sub_resource type="Environment" id="Environment_dungeon"]
 background_mode = 1
@@ -94,6 +95,32 @@ rotation = Vector3(0, 1.5707963, 0)
 gate_id = &"G02"
 locked_message = "清除中庭守卫后开启"
 show_lock_label = false
+
+[node name="CourtyardSouthSeal" parent="Gates" instance=ExtResource("20_progress_gate")]
+position = Vector3(0, 0, -16)
+gate_id = &"L1_COURTYARD_SOUTH"
+show_lock_label = false
+initially_open = true
+
+[node name="CourtyardWestSeal" parent="Gates" instance=ExtResource("20_progress_gate")]
+position = Vector3(-9, 0, -23)
+rotation = Vector3(0, 1.5707963, 0)
+gate_id = &"L1_COURTYARD_WEST"
+show_lock_label = false
+initially_open = true
+
+[node name="BossWestSeal" parent="Gates" instance=ExtResource("20_progress_gate")]
+position = Vector3(19, 0, -23)
+rotation = Vector3(0, 1.5707963, 0)
+gate_id = &"L1_BOSS_WEST"
+show_lock_label = false
+initially_open = true
+
+[node name="BossNorthSeal" parent="Gates" instance=ExtResource("20_progress_gate")]
+position = Vector3(30, 0, -33)
+gate_id = &"L1_BOSS_NORTH"
+show_lock_label = false
+initially_open = true
 
 [node name="Regions" type="Node3D" parent="."]
 
@@ -275,20 +302,26 @@ position = Vector3(30, 0, -40.7)
 
 [node name="ExitGate" type="StaticBody3D" parent="." groups=["camera_occluders"]]
 position = Vector3(30, 1.5, -40.7)
+disable_mode = 2
 collision_layer = 1
 collision_mask = 0
+script = ExtResource("22_gate_script")
+gate_id = &"L1_EXIT"
+locked_message = "出口封印\n击败遗迹守门者后开启"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="ExitGate"]
+[node name="Visuals" type="Node3D" parent="ExitGate"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="ExitGate/Visuals"]
 layers = 0
 cast_shadow = 0
 mesh = SubResource("Mesh_exit_gate")
 
-[node name="Model" parent="ExitGate/MeshInstance3D" instance=ExtResource("19_portcullis")]
+[node name="Model" parent="ExitGate/Visuals/MeshInstance3D" instance=ExtResource("19_portcullis")]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="ExitGate"]
 shape = SubResource("Shape_exit_gate")
 
-[node name="SealLabel" type="Label3D" parent="ExitGate"]
+[node name="LockedLabel" type="Label3D" parent="ExitGate/Visuals"]
 position = Vector3(0, 0.5, 0.36)
 billboard = 1
 font = ExtResource("11_font")

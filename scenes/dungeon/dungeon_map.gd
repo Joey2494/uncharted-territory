@@ -10,12 +10,12 @@ signal progression_feedback(message: String)
 
 enum ExitState { LOCKED, OPENING, OPEN }
 
-const REGION_IDS := {&"EntranceHall": &"l1_entrance", &"Crossroads": &"l1_crossroads", &"BossArena": &"l1_boss"}
+const CombatRoomEncounter = preload("res://scenes/dungeon/components/combat_room_encounter.gd")
 @onready var _player: CharacterBody3D = $Player
 @onready var _progress: Node = $RoomProgress
 var _run_started := false
 var _run_stopped := false
-var _exit_tween: Tween
+var _encounters: Array[CombatRoomEncounter] = []
 
 var _current_region: Node3D
 var _visited: Dictionary = {}
@@ -28,15 +28,25 @@ func _ready() -> void:
 	_progress.define_room(&"l1_entrance", [], &"arrival")
 	_progress.define_room(&"l1_crossroads", [&"l1_entrance"], &"enemies", 1)
 	_progress.define_room(&"l1_boss", [&"l1_crossroads"], &"enemies", 1)
-	_progress.register_enemy(&"l1_crossroads", $MeleeEnemy)
-	_progress.seal_enemy_roster(&"l1_crossroads")
-	_progress.register_enemy(&"l1_boss", $RuinGatekeeper)
-	_progress.seal_enemy_roster(&"l1_boss")
+	_add_encounter($Regions/Crossroads, &"l1_crossroads", [$MeleeEnemy],
+		[$Gates/CourtyardSouthSeal, $Gates/CourtyardWestSeal, $Gates/CourtyardGate])
+	_add_encounter($Regions/BossArena, &"l1_boss", [$RuinGatekeeper],
+		[$Gates/BossWestSeal, $Gates/BossNorthSeal, $ExitGate])
 	_progress.room_completed.connect(_on_room_completed)
 	_player.died.connect(stop_run)
 	$Gates/CourtyardGate.opened.connect(_on_courtyard_gate_opened)
+	$ExitGate.opened.connect(_finish_exit_unlock)
 	_update_region()
 	_start_standalone.call_deferred()
+
+
+## 绑定各房间的实物门与出生名单，进度登记由战斗房组件负责。
+func _add_encounter(region: Node3D, room_id: StringName, enemies: Array, gates: Array) -> void:
+	var encounter := CombatRoomEncounter.new()
+	add_child(encounter)
+	_encounters.append(encounter)
+	if not encounter.configure(_player, region, _progress, room_id, enemies, gates):
+		push_error("战斗房配置失败：%s" % room_id)
 
 
 ## F6独立地图也能游玩；主场景必须等开始按钮，不能在菜单期间推进。
@@ -54,14 +64,13 @@ func begin_run() -> bool:
 	return true
 
 
-## 终局取消开门Tween；死亡动画仍可播放，但旧开门回调不再修改世界。
+## 终局冻结门体并停止战斗；玩家死亡动画继续由玩家本身播放。
 func stop_run() -> void:
 	_run_stopped = true
 	_progress.stop_run()
-	for gate in $Gates.get_children():
-		gate.cancel_opening()
-	if _exit_tween != null and _exit_tween.is_valid():
-		_exit_tween.kill()
+	for encounter in _encounters:
+		encounter.stop()
+	$Gates/EntranceGate.freeze_gate()
 
 
 func _on_configuration_error(message: String) -> void:
@@ -95,25 +104,19 @@ func _physics_process(_delta: float) -> void:
 func unlock_exit() -> bool:
 	if _exit_state != ExitState.LOCKED or not _run_started or _run_stopped or not can_process() or _player.is_dead():
 		return false
-	# 以正式死亡事件留下的房间完成记录为准。Boss可能在门外被击败，
-	# 死亡动画结束释放实例后，玩家才走入大厅；不能因此永远无法开出口。
-	# 仅删除活Boss不会产生该记录，仍然不能解锁。
+	# 只有登记的 Boss 真实死亡并完成战斗房才能解除出口进度锁。
 	if not _progress.is_complete(&"l1_boss"):
 		return false
+	if not $ExitGate.open_gate():
+		return false
 	_exit_state = ExitState.OPENING
-	$ExitGate/SealLabel.text = "出口封印解除中"
-	_exit_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-	_exit_tween.tween_property($ExitGate/MeshInstance3D, "position:y", -3.6, 0.9)
-	_exit_tween.finished.connect(_finish_exit_unlock)
 	exit_opening_started.emit()
 	return true
 
 
-func _finish_exit_unlock() -> void:
+func _finish_exit_unlock(_gate_id: StringName) -> void:
 	if _run_stopped or _player.is_dead() or not can_process():
 		return
-	$ExitGate/CollisionShape3D.set_deferred("disabled", true)
-	$ExitGate.hide()
 	$ExitTrigger/PortalGlow.show()
 	$Doorways/BossExit/Banner.text = "出口已开启 ↑ 前往通关"
 	$Doorways/MapExit/Banner.text = "地牢出口 · 进入通关"
@@ -169,9 +172,12 @@ func is_camera_target_relevant(actor: Node3D, player: Node3D) -> bool:
 
 func _update_region() -> void:
 	var region := get_region_at(_player.global_position)
-	# 每个物理帧重试激活，避免前置刚完成而玩家仍停在同一区域时漏掉状态。
-	if _run_started and not _run_stopped and region != null and REGION_IDS.has(region.name):
-		_progress.activate_room(REGION_IDS[region.name])
+	if _run_started and not _run_stopped:
+		if region == $Regions/EntranceHall:
+			_progress.activate_room(&"l1_entrance")
+		# 战斗房要求玩家完整进入，不能用探索边界直接触发。
+		for encounter in _encounters:
+			encounter.try_activate()
 	if region == null or not region.visible or not region.exploration_room or region == _current_region:
 		return
 	_current_region = region
