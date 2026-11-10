@@ -139,8 +139,10 @@ func is_dead() -> bool:
 	return _dead
 
 
-func heal(amount: int) -> int:
-	if not is_node_ready() or not can_process() or _dead or amount <= 0:
+func heal(amount: int, menu: Node = null) -> int:
+	var menu_healing: bool = is_instance_valid(menu) and menu.is_in_group("commerce_controllers") \
+		and menu.has_method("allows_inventory_action") and menu.allows_inventory_action(_items, false)
+	if not is_node_ready() or (not can_process() and not menu_healing) or _dead or amount <= 0:
 		return 0
 	var restored := mini(amount, max_hp - hp)
 	if restored > 0:
@@ -156,6 +158,11 @@ func get_attack_damage(base_damage: int) -> int:
 func take_damage(amount: int) -> bool:
 	if not is_node_ready() or not can_process() or _dead or amount <= 0 or is_invulnerable():
 		return false
+	if _items.guard_active:
+		# Reserve the contact window before guard/UI signals can cause reentry.
+		_invulnerability_remaining = maxf(hit_invulnerability, 0.05)
+		if _items.consume_guard():
+			return true
 	var applied := mini(amount, hp)
 	hp -= applied
 	_dead = hp == 0
