@@ -1,0 +1,85 @@
+[gd_scene load_steps=21 format=3]
+
+[ext_resource type="Script" path="res://scenes/player/Player.gd" id="1_player"]
+[ext_resource type="PackedScene" path="res://scenes/player/MeleeAttack.tscn" id="2_attack"]
+[ext_resource type="Script" path="res://scenes/ui/hit_flash_3d.gd" id="3_flash"]
+[ext_resource type="PackedScene" path="res://scenes/skills/EnergyShock.tscn" id="4_skill"]
+[ext_resource type="PackedScene" path="res://scenes/items/ItemInventory.tscn" id="5_items"]
+[ext_resource type="PackedScene" path="res://assets/characters/kaykit/Knight.glb" id="6_model"]
+[ext_resource type="AnimationLibrary" path="res://assets/characters/kaykit/animations/locomotion.tres" id="7_locomotion"]
+[ext_resource type="Script" path="res://scenes/player/player_locomotion.gd" id="8_locomotion"]
+[ext_resource type="AnimationLibrary" path="res://assets/characters/kaykit/animations/melee.tres" id="9_melee"]
+[ext_resource type="Script" path="res://scenes/player/player_attack_animation.gd" id="10_attack_animation"]
+[ext_resource type="AnimationLibrary" path="res://assets/characters/kaykit/animations/dodge.tres" id="11_dodge"]
+[ext_resource type="Script" path="res://scenes/player/player_dodge_animation.gd" id="12_dodge_animation"]
+[ext_resource type="AnimationLibrary" path="res://assets/characters/kaykit/animations/hit.tres" id="13_hit"]
+[ext_resource type="Script" path="res://scenes/player/player_hit_animation.gd" id="14_hit_animation"]
+[ext_resource type="AnimationLibrary" path="res://assets/characters/kaykit/animations/magic.tres" id="15_magic"]
+[ext_resource type="Script" path="res://scenes/player/player_cast_animation.gd" id="16_cast_animation"]
+[ext_resource type="AnimationLibrary" path="res://assets/characters/kaykit/animations/death.tres" id="17_death"]
+[ext_resource type="Script" path="res://scenes/player/player_death_animation.gd" id="18_death_animation"]
+[ext_resource type="Script" path="res://scenes/items/firearm_attack.gd" id="19_firearm"]
+
+[sub_resource type="CapsuleShape3D" id="Shape_player"]
+radius = 0.4
+height = 1.8
+
+[node name="Player" type="CharacterBody3D" groups=["camera_targets"]]
+collision_layer = 2
+collision_mask = 5
+script = ExtResource("1_player")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.9, 0)
+shape = SubResource("Shape_player")
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="Model" type="Node3D" parent="Visuals"]
+rotation = Vector3(0, 3.14159265, 0)
+scale = Vector3(0.71, 0.71, 0.71)
+
+[node name="Knight" parent="Visuals/Model" instance=ExtResource("6_model")]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Visuals/Model"]
+root_node = NodePath("../Knight")
+callback_mode_process = 0
+libraries = {
+&"death": ExtResource("17_death"),
+&"dodge": ExtResource("11_dodge"),
+&"hit": ExtResource("13_hit"),
+&"locomotion": ExtResource("7_locomotion"),
+&"magic": ExtResource("15_magic"),
+&"melee": ExtResource("9_melee")
+}
+
+[node name="LocomotionAnimation" type="Node" parent="."]
+script = ExtResource("8_locomotion")
+
+[node name="MeleeAttack" parent="." instance=ExtResource("2_attack")]
+
+[node name="AttackAnimation" type="Node" parent="."]
+script = ExtResource("10_attack_animation")
+
+[node name="DodgeAnimation" type="Node" parent="."]
+script = ExtResource("12_dodge_animation")
+
+[node name="HitAnimation" type="Node" parent="."]
+script = ExtResource("14_hit_animation")
+
+[node name="HitFlash" type="Node" parent="."]
+script = ExtResource("3_flash")
+visual_root = NodePath("../Visuals")
+
+[node name="EnergyShock" parent="." instance=ExtResource("4_skill")]
+
+[node name="CastAnimation" type="Node" parent="."]
+script = ExtResource("16_cast_animation")
+
+[node name="ItemInventory" parent="." instance=ExtResource("5_items")]
+
+[node name="DeathAnimation" type="Node" parent="."]
+script = ExtResource("18_death_animation")
+
+[node name="Firearm" type="Node3D" parent="."]
+script = ExtResource("19_firearm")
