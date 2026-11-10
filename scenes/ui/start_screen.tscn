@@ -69,7 +69,7 @@ horizontal_alignment = 1
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 44
-text = "未知之境"
+text = "未至之境"
 horizontal_alignment = 1
 
 [node name="Tagline" type="Label" parent="Center/Card/Padding/Content"]
@@ -85,7 +85,7 @@ layout_mode = 2
 [node name="Description" type="Label" parent="Center/Card/Padding/Content"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.64, 0.60, 0.51, 1)
-text = "从入口教学出发，穿过中庭，击败守门者。\n踏入出口通关后，可前往第二关。"
+text = "探索 · 战斗 · 收集\n清完三个房间，抵达这一局的终点。"
 horizontal_alignment = 1
 
 [node name="StartButton" type="Button" parent="Center/Card/Padding/Content"]
@@ -103,3 +103,21 @@ theme_override_colors/font_color = Color(0.76, 0.65, 0.42, 1)
 theme_override_font_sizes/font_size = 13
 horizontal_alignment = 1
 autowrap_mode = 2
+
+[node name="CommerceActions" type="HBoxContainer" parent="Center/Card/Padding/Content"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ShopButton" type="Button" parent="Center/Card/Padding/Content/CommerceActions"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_default_cursor_shape = 2
+text = "商城"
+
+[node name="BackpackButton" type="Button" parent="Center/Card/Padding/Content/CommerceActions"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_default_cursor_shape = 2
+text = "背包"

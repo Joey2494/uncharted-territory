@@ -10,7 +10,6 @@ const CURRENT_ROOM_COLOR: Color = Color("b99a5c")
 const VISITED_ROOM_COLOR: Color = Color("756442")
 
 signal restart_requested
-signal next_level_requested
 signal use_potion_requested
 signal use_rune_requested
 
@@ -96,7 +95,14 @@ func _update_combat_cooldowns() -> void:
 			attack_block = "攻击中"
 	var attack_duration := maxf(_combat_attack.attack_cooldown,
 		_combat_attack.windup_duration + _combat_attack.active_duration + _combat_attack.recovery_duration)
-	melee_cooldown.update_cooldown(_combat_attack.get_cooldown_remaining(), attack_duration, attack_block)
+	var inventory := _combat_player.get_node_or_null("ItemInventory")
+	if inventory != null and inventory.equipped_weapon == inventory.FIREARM:
+		var firearm := _combat_player.get_node("Firearm")
+		if attack_block.is_empty() and inventory.ammo <= 0:
+			attack_block = "无弹药"
+		melee_cooldown.update_cooldown(firearm.get_cooldown_remaining(), firearm.cooldown, attack_block)
+	else:
+		melee_cooldown.update_cooldown(_combat_attack.get_cooldown_remaining(), attack_duration, attack_block)
 	var dodge_block := blocked
 	if dodge_block.is_empty():
 		if _combat_player.is_dodging():
@@ -225,12 +231,10 @@ func show_death_screen(room_index: int) -> void:
 	_show_result_screen(screen)
 
 
-func show_win_screen(result: Dictionary = {}, offer_next_level: bool = false) -> void:
+func show_win_screen(result: Dictionary = {}) -> void:
 	var screen = WIN_SCREEN.instantiate()
 	screen.completed_rooms = total_rooms
 	screen.set_run_result(result)
-	screen.offer_next_level = offer_next_level
-	screen.next_level_requested.connect(func() -> void: next_level_requested.emit())
 	_show_result_screen(screen)
 
 
@@ -250,9 +254,3 @@ func _show_result_screen(screen: Control) -> void:
 	_result_screen = screen
 	screen.connect("restart_requested", func() -> void: restart_requested.emit())
 	_result_layer.add_child(screen)
-
-
-## 将载入失败显示在当前结算卡片内，保留所有可用操作。
-func show_result_error(message: String) -> void:
-	if is_instance_valid(_result_screen):
-		_result_screen.get_node("Center/Card/Padding/Content/Description").text = message

@@ -30,7 +30,7 @@ func update_state(message: String) -> void:
 func show_defeated() -> void:
 	_defeated = true
 	_hide_remaining = 2.0
-	state_label.text = "遗迹守门者已击败"
+	state_label.text = "%s已击败" % title_label.text
 	show()
 
 
