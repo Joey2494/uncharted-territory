@@ -1,4 +1,4 @@
-[gd_scene load_steps=31 format=3]
+[gd_scene load_steps=33 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://scenes/dungeon/follow_camera.gd" id="2_camera"]
@@ -19,6 +19,9 @@
 [ext_resource type="PackedScene" path="res://scenes/dungeon/ExitFrame.tscn" id="17_exit_frame"]
 [ext_resource type="PackedScene" path="res://scenes/dungeon/ExitDoorway.tscn" id="18_exit_doorway"]
 [ext_resource type="PackedScene" path="res://scenes/dungeon/ExitPortcullis.tscn" id="19_portcullis"]
+
+[ext_resource type="PackedScene" path="res://scenes/dungeon/components/ProgressionGate.tscn" id="20_progress_gate"]
+[ext_resource type="Script" path="res://scenes/dungeon/components/room_progress_controller.gd" id="21_progress"]
 
 [sub_resource type="Environment" id="Environment_dungeon"]
 background_mode = 1
@@ -73,6 +76,24 @@ outer_radius = 1.3
 
 [node name="DungeonTest" type="Node3D"]
 script = ExtResource("8_map")
+
+[node name="RoomProgress" type="Node" parent="."]
+script = ExtResource("21_progress")
+
+[node name="Gates" type="Node3D" parent="."]
+
+[node name="EntranceGate" parent="Gates" instance=ExtResource("20_progress_gate")]
+position = Vector3(0, 0, -8)
+gate_id = &"G01"
+locked_message = "开始探索后开启"
+show_lock_label = false
+
+[node name="CourtyardGate" parent="Gates" instance=ExtResource("20_progress_gate")]
+position = Vector3(9, 0, -23)
+rotation = Vector3(0, 1.5707963, 0)
+gate_id = &"G02"
+locked_message = "清除中庭守卫后开启"
+show_lock_label = false
 
 [node name="Regions" type="Node3D" parent="."]
 
@@ -217,7 +238,7 @@ position = Vector3(9, 0, -23)
 rotation = Vector3(0, 1.570796, 0)
 
 [node name="Banner" parent="Doorways/MainRoute" index="3"]
-text = "主路 → 守门者大厅"
+text = "清除中庭守卫 → 开启主路"
 
 [node name="OptionalBranch" parent="Doorways" instance=ExtResource("9_doorway")]
 position = Vector3(-9, 0, -23)

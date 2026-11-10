@@ -25,8 +25,10 @@ func _ready() -> void:
 	_hud.total_rooms = _dungeon.get_room_count()
 	_hud.update_room_label(_dungeon.get_visited_count() - 1)
 	_dungeon.room_changed.connect(_on_room_changed)
+	_dungeon.progression_feedback.connect(_hud.show_item_message)
 	_dungeon.exit_reached.connect(_on_exit_reached)
 	_dungeon.exit_unlocked.connect(_on_exit_unlocked)
+	_dungeon.exit_opening_started.connect(_on_exit_opening_started)
 	_start_screen.start_requested.connect(_on_run_started)
 	_rune_puzzle.feedback.connect(_hud.show_item_message)
 	_rune_puzzle.solved.connect(_on_rune_puzzle_solved)
@@ -66,6 +68,7 @@ func _on_run_started() -> void:
 	_start_screen.hide()
 	_dungeon.process_mode = Node.PROCESS_MODE_INHERIT
 	_hud.show()
+	_dungeon.begin_run()
 
 
 func _on_room_changed(room_name: String, visited_count: int) -> void:
@@ -89,7 +92,14 @@ func _on_boss_died() -> void:
 	_boss_defeated = true
 	_boss_bar.show_defeated()
 	_dungeon.unlock_exit()
-	_hud.show_item_message("已击败遗迹守门者 · 出口封印正在解除")
+	if not _dungeon.is_exit_opening() and not _dungeon.is_exit_open():
+		_hud.show_item_message("已击败遗迹守门者 · 进入守门者大厅解除出口封印")
+
+
+## 以世界真正开始开门的事件提示，不能把提前击败Boss误报为出口已解锁。
+func _on_exit_opening_started() -> void:
+	if _run_state == RunState.PLAYING:
+		_hud.show_item_message("已击败遗迹守门者 · 出口封印正在解除")
 
 
 func _on_exit_unlocked() -> void:
@@ -116,6 +126,7 @@ func _on_exit_reached() -> void:
 		"reward_claimed": _rune_puzzle.is_reward_claimed(),
 	}
 	_player.velocity = Vector3.ZERO
+	_dungeon.stop_run()
 	_dungeon.process_mode = Node.PROCESS_MODE_DISABLED
 	_boss_bar.hide()
 	_hud.show_win_screen(_run_result)
