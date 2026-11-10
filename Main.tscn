@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/ui/start_screen.tscn" id="1_start_screen"]
 [ext_resource type="PackedScene" path="res://scenes/dungeon/DungeonTest.tscn" id="2_dungeon"]
@@ -6,6 +6,8 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="4_hud"]
 [ext_resource type="PackedScene" path="res://scenes/ui/BossHealthBar.tscn" id="5_boss_bar"]
 [ext_resource type="Script" path="res://scenes/ui/responsive_layout.gd" id="6_layout"]
+
+[ext_resource type="PackedScene" path="res://scenes/dungeon/tutorial/TutorialOverlay.tscn" id="7_tutorial"]
 
 [node name="Main" type="Node3D"]
 script = ExtResource("3_main")
@@ -23,6 +25,8 @@ total_rooms = 5
 [node name="StartScreen" parent="UILayer" instance=ExtResource("1_start_screen")]
 
 [node name="BossHealthBar" parent="UILayer" instance=ExtResource("5_boss_bar")]
+
+[node name="TutorialOverlay" parent="UILayer" instance=ExtResource("7_tutorial")]
 
 [node name="ResponsiveLayout" type="Node" parent="UILayer"]
 process_mode = 3

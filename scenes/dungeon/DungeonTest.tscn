@@ -1,4 +1,4 @@
-[gd_scene load_steps=34 format=3]
+[gd_scene load_steps=35 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://scenes/dungeon/follow_camera.gd" id="2_camera"]
@@ -23,6 +23,8 @@
 [ext_resource type="PackedScene" path="res://scenes/dungeon/components/ProgressionGate.tscn" id="20_progress_gate"]
 [ext_resource type="Script" path="res://scenes/dungeon/components/room_progress_controller.gd" id="21_progress"]
 [ext_resource type="Script" path="res://scenes/dungeon/components/progression_gate.gd" id="22_gate_script"]
+
+[ext_resource type="PackedScene" path="res://scenes/dungeon/tutorial/TutorialLayout.tscn" id="23_tutorial"]
 
 [sub_resource type="Environment" id="Environment_dungeon"]
 background_mode = 1
@@ -86,7 +88,7 @@ script = ExtResource("21_progress")
 [node name="EntranceGate" parent="Gates" instance=ExtResource("20_progress_gate")]
 position = Vector3(0, 0, -8)
 gate_id = &"G01"
-locked_message = "开始探索后开启"
+locked_message = "完成或跳过入口教学后开启"
 show_lock_label = false
 
 [node name="CourtyardGate" parent="Gates" instance=ExtResource("20_progress_gate")]
@@ -133,6 +135,8 @@ optional_branch = false
 floor_color = Color(0.32, 0.30, 0.25, 1)
 open_north = true
 open_south = true
+
+[node name="TutorialLayout" parent="Regions/EntranceHall" instance=ExtResource("23_tutorial")]
 
 [node name="ArrivalLanding" parent="Regions" instance=ExtResource("7_region")]
 position = Vector3(0, 0, 10)
@@ -258,7 +262,7 @@ position = Vector3(0, 0, -8)
 rotation = Vector3(0, 0, 0)
 
 [node name="Banner" parent="Doorways/CourtyardEntrance" index="3"]
-text = "主路 ↑ 回廊中庭"
+text = "北门封闭"
 
 [node name="MainRoute" parent="Doorways" instance=ExtResource("9_doorway")]
 position = Vector3(9, 0, -23)
@@ -503,9 +507,6 @@ position = Vector3(0, 0.05, 4)
 
 [node name="MeleeEnemy" parent="." instance=ExtResource("3_enemy")]
 position = Vector3(3, 0.05, -23)
-
-[node name="HealthPotion" parent="." instance=ExtResource("4_potion")]
-position = Vector3(-2.5, 0.05, 1.5)
 
 [node name="AttackRune" parent="." instance=ExtResource("5_rune")]
 position = Vector3(-27, 0.05, -23)

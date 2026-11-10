@@ -21,6 +21,7 @@ var _death_room_index: int = 0
 
 
 func _ready() -> void:
+	$UILayer/TutorialOverlay.bind(_dungeon.get_tutorial())
 	_hud.update_hp_bar(_player.hp, _player.max_hp)
 	_hud.total_rooms = _dungeon.get_room_count()
 	_hud.update_room_label(_dungeon.get_visited_count() - 1)
