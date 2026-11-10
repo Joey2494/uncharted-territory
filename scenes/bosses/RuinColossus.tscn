@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/bosses/ruin_colossus.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/creatures/DreadScorpionModel.tscn" id="2"]
+[sub_resource type="CapsuleShape3D" id="Body"]
+radius = 1.05
+height = 3.4
+
+[node name="RuinColossus" type="CharacterBody3D" groups=["bosses", "camera_targets"]]
+collision_layer = 4
+collision_mask = 7
+script = ExtResource("1")
+metadata/camera_radius = 4.7
+metadata/camera_height = 4.8
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 1.7, 0)
+shape = SubResource("Body")
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="Model" parent="Visuals" instance=ExtResource("2")]
