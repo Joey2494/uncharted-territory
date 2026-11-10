@@ -143,7 +143,9 @@ func run() -> void:
 	check(entry.is_open() and not blocks(entry), "动画完成后北门实际可通行")
 	check(not tutor.request_skip() and completions == [false], "完成后无法重复发送跳过")
 	check(tutor.get_node("MeleeTargetPoint/Target").collision_layer == 0 and tutor.get_node("SpellTargetPoint/Target").collision_layer == 0, "完成后训练靶无碰撞")
-	main._on_restart_requested()
+	# 重开由暂停或结算界面发起，教学结束后先打开暂停。
+	main.get_node("UILayer/RunOverlay/Corner/PauseButton").pressed.emit()
+	main.get_node("UILayer/RunOverlay/Modal/Center/Card/Content/RestartButton").pressed.emit()
 	await process_frame
 	await process_frame
 	main = current_scene
