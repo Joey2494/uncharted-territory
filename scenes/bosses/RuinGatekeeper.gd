@@ -21,6 +21,7 @@ enum State { DORMANT, CHASE, SWING, CHARGE_WINDUP, CHARGE, RECOVER, DEAD }
 @export_range(1.0, 12.0, 0.5) var charge_distance: float = 7.0
 @export_range(1, 10, 1) var charge_damage: int = 2
 @export_range(0.2, 3.0, 0.05) var recovery_duration: float = 1.0
+@export_range(0, 1000, 1) var gold_reward: int = 50
 
 @onready var _visuals: Node3D = $Visuals
 @onready var _melee: Node3D = $MeleeAttack
@@ -229,6 +230,7 @@ func take_damage(amount: int) -> bool:
 		set_deferred("collision_layer", 0)
 		set_deferred("collision_mask", 0)
 		$CollisionShape3D.set_deferred("disabled", true)
+		preload("res://scenes/items/coin_pickup.gd").spawn(get_parent(), global_position, gold_reward, "boss:" + str(get_path()))
 		died.emit()
 	return true
 
