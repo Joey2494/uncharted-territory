@@ -529,3 +529,11 @@ fov = 50.0
 near = 0.1
 far = 120.0
 script = ExtResource("2_camera")
+
+[editable path="Doorways/Entrance"]
+[editable path="Doorways/CourtyardEntrance"]
+[editable path="Doorways/MainRoute"]
+[editable path="Doorways/OptionalBranch"]
+[editable path="Doorways/BossEntrance"]
+[editable path="Doorways/BossExit"]
+[editable path="Doorways/MapExit"]

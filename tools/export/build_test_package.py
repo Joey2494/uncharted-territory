@@ -54,6 +54,13 @@ def main() -> None:
     content = re.sub(r'^config/version=.*\n?', '', content, flags=re.M)
     content = content.replace("[application]\n", f'[application]\nconfig/version="{version}"\n', 1)
     content = content.replace('run/main_scene="res://Main.tscn"', 'run/main_scene="res://tools/export/PackageEntry.tscn"')
+    # 编辑器自带 ICU 断行数据，release 默认不携带；中文按词换行必须显式导出。
+    if "[internationalization]" not in content:
+        content += "\n[internationalization]\nlocale/include_text_server_data=true\n"
+    elif re.search(r"^locale/include_text_server_data=", content, re.M):
+        content = re.sub(r"^locale/include_text_server_data=.*$", "locale/include_text_server_data=true", content, flags=re.M)
+    else:
+        content = content.replace("[internationalization]\n", "[internationalization]\nlocale/include_text_server_data=true\n", 1)
     project.write_text(content, encoding="utf-8")
     shutil.copyfile(stage / "tools/export/windows-test.cfg", stage / "export_presets.cfg")
     engine_version = run([str(engine), "--version"], stage)
