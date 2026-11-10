@@ -1,0 +1,425 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://tests/scenes/level02_preview.gd" id="preview"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/level02/Level02.tscn" id="map"]
+[ext_resource type="Font" path="res://scenes/ui/dungeon_font.tres" id="font"]
+
+[sub_resource type="StyleBoxFlat" id="HUD"]
+bg_color = Color(0.045, 0.075, 0.09, 0.93)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.38, 0.43, 0.38, 0.8)
+content_margin_left = 12.0
+content_margin_top = 12.0
+content_margin_right = 12.0
+content_margin_bottom = 12.0
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="StyleBoxFlat" id="Modal"]
+bg_color = Color(0.052, 0.084, 0.098, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.55, 0.49, 0.34, 1)
+content_margin_left = 27.0
+content_margin_top = 27.0
+content_margin_right = 27.0
+content_margin_bottom = 27.0
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="StyleBoxFlat" id="Button"]
+bg_color = Color(0.14, 0.205, 0.23, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.55, 0.47, 0.33, 1)
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="StyleBoxFlat" id="Hover"]
+bg_color = Color(0.23, 0.29, 0.29, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.79, 0.65, 0.4, 1)
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="StyleBoxFlat" id="Pressed"]
+bg_color = Color(0.10, 0.16, 0.18, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.61, 0.53, 0.37, 1)
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="StyleBoxFlat" id="BarBack"]
+bg_color = Color(0.18, 0.24, 0.25, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="StyleBoxFlat" id="BarHealth"]
+bg_color = Color(0.4, 0.74, 0.66, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="StyleBoxFlat" id="BarBoss"]
+bg_color = Color(0.79, 0.46, 0.32, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="Theme" id="Theme"]
+default_font = ExtResource("font")
+default_font_size = 18
+Label/colors/font_color = Color(0.9, 0.92, 0.88, 1)
+Button/colors/font_color = Color(0.9, 0.92, 0.88, 1)
+Button/colors/font_hover_color = Color(1, 0.95, 0.77, 1)
+Button/styles/normal = SubResource("Button")
+Button/styles/hover = SubResource("Hover")
+Button/styles/pressed = SubResource("Pressed")
+PanelContainer/styles/panel = SubResource("HUD")
+ProgressBar/styles/background = SubResource("BarBack")
+ProgressBar/styles/fill = SubResource("BarHealth")
+
+[node name="Level02Preview" type="Node3D"]
+process_mode = 3
+script = ExtResource("preview")
+
+[node name="Level02" parent="." instance=ExtResource("map")]
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="HUD" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = SubResource("Theme")
+
+[node name="VitalsPanel" type="PanelContainer" parent="UI/HUD"]
+offset_left = 20.0
+offset_top = 18.0
+offset_right = 388.0
+mouse_filter = 2
+
+[node name="Details" type="VBoxContainer" parent="UI/HUD/VitalsPanel"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 5
+
+[node name="Room" type="Label" parent="UI/HUD/VitalsPanel/Details"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.85, 0.69, 0.42, 1)
+text = "A · 到达平台     ·     1/8"
+
+[node name="Objective" type="Label" parent="UI/HUD/VitalsPanel/Details"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "拾取药剂 · 向北抵达中庭"
+autowrap_mode = 2
+
+[node name="Vitals" type="Label" parent="UI/HUD/VitalsPanel/Details"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.53, 0.88, 0.83, 1)
+text = "生命   8 / 8"
+
+[node name="Health" type="ProgressBar" parent="UI/HUD/VitalsPanel/Details"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 7)
+layout_mode = 2
+mouse_filter = 2
+show_percentage = false
+
+[node name="Buttons" type="HBoxContainer" parent="UI/HUD"]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -222.0
+offset_right = -20.0
+offset_top = 18.0
+mouse_filter = 2
+theme_override_constants/separation = 12
+
+[node name="GuideButton" type="Button" parent="UI/HUD/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(94, 42)
+layout_mode = 2
+focus_mode = 0
+text = "区域指引"
+
+[node name="PauseButton" type="Button" parent="UI/HUD/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(94, 42)
+layout_mode = 2
+focus_mode = 0
+text = "暂停  ESC"
+
+[node name="BossPanel" type="PanelContainer" parent="UI/HUD"]
+unique_name_in_owner = true
+visible = false
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -166.0
+offset_right = 166.0
+offset_top = 18.0
+mouse_filter = 2
+
+[node name="BossInfo" type="VBoxContainer" parent="UI/HUD/BossPanel"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 7
+
+[node name="BossTitle" type="Label" parent="UI/HUD/BossPanel/BossInfo"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 19
+theme_override_colors/font_color = Color(0.85, 0.69, 0.42, 1)
+text = "遗迹守门者 · 第二关占位"
+horizontal_alignment = 1
+
+[node name="BossHealth" type="ProgressBar" parent="UI/HUD/BossPanel/BossInfo"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 7)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/fill = SubResource("BarBoss")
+show_percentage = false
+
+[node name="PromptPanel" type="PanelContainer" parent="UI/HUD"]
+unique_name_in_owner = true
+visible = false
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = -236.0
+offset_right = 236.0
+offset_top = -113.0
+offset_bottom = -63.0
+mouse_filter = 2
+
+[node name="Prompt" type="Label" parent="UI/HUD/PromptPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.53, 0.88, 0.83, 1)
+text = ""
+horizontal_alignment = 1
+
+[node name="Bottom" type="PanelContainer" parent="UI/HUD"]
+anchor_right = 1.0
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_right = -20.0
+offset_top = -58.0
+offset_bottom = -16.0
+mouse_filter = 2
+
+[node name="Row" type="HBoxContainer" parent="UI/HUD/Bottom"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 16
+
+[node name="Controls" type="Label" parent="UI/HUD/Bottom/Row"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "WASD 移动   Shift 冲刺   左键 攻击   空格 闪避   Q 技能   E 交互"
+size_flags_horizontal = 3
+
+[node name="Items" type="Label" parent="UI/HUD/Bottom/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+theme_override_colors/font_color = Color(0.53, 0.88, 0.83, 1)
+text = "R 药剂 0     F 符文 0"
+
+[node name="Overlay" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = SubResource("Theme")
+
+[node name="Shade" type="ColorRect" parent="UI/Overlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.018, 0.032, 0.042, 0.75)
+
+[node name="Center" type="CenterContainer" parent="UI/Overlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Modal" type="PanelContainer" parent="UI/Overlay/Center"]
+custom_minimum_size = Vector2(646, 0)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Modal")
+
+[node name="Content" type="VBoxContainer" parent="UI/Overlay/Center/Modal"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 16
+
+[node name="Kicker" type="Label" parent="UI/Overlay/Center/Modal/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.85, 0.69, 0.42, 1)
+text = "未知之境   /   LEVEL 02   /   白盒预览"
+
+[node name="OverlayTitle" type="Label" parent="UI/Overlay/Center/Modal/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 42
+theme_override_colors/font_color = Color(0.9, 0.92, 0.88, 1)
+text = "第二关 · 失落导能遗迹"
+
+[node name="OverlayBody" type="Label" parent="UI/Overlay/Center/Modal/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = ""
+custom_minimum_size = Vector2(590, 0)
+autowrap_mode = 2
+
+[node name="GuideDetails" type="VBoxContainer" parent="UI/Overlay/Center/Modal/Content"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 9
+
+[node name="MainPath" type="Label" parent="UI/Overlay/Center/Modal/Content/GuideDetails"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 23
+theme_override_colors/font_color = Color(0.85, 0.69, 0.42, 1)
+text = "主线  A ↑ B → C ↑ D ↑ E ↑ F"
+
+[node name="MainTask" type="Label" parent="UI/Overlay/Center/Modal/Content/GuideDetails"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "清除 B 中庭守卫；清除 C 回廊守卫后，用 E 启动导能核心。\n清除 D 前厅守卫，击败 E 大厅守门者，再踏入 F 出口。"
+autowrap_mode = 2
+
+[node name="OptionalPath" type="Label" parent="UI/Overlay/Center/Modal/Content/GuideDetails"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 23
+theme_override_colors/font_color = Color(0.53, 0.88, 0.83, 1)
+text = "支线  B ← G ↑ H"
+
+[node name="OptionalTask" type="Label" parent="UI/Overlay/Center/Modal/Content/GuideDetails"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "从 B 向西进档案室，依碑文校准，再按目标档位分流。"
+
+[node name="ShortcutPath" type="Label" parent="UI/Overlay/Center/Modal/Content/GuideDetails"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 23
+theme_override_colors/font_color = Color(0.64, 0.8, 0.67, 1)
+text = "回环  D ← 转角 ↓ B"
+
+[node name="ShortcutTask" type="Label" parent="UI/Overlay/Center/Modal/Content/GuideDetails"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "清除 D 守卫后，在 D 的西侧用 E 拉动控制柄。"
+
+[node name="SealRule" type="Label" parent="UI/Overlay/Center/Modal/Content/GuideDetails"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "完整入场后封门，清敌后解除封场。重开会重置本局进度。"
+autowrap_mode = 2
+
+[node name="Actions" type="HBoxContainer" parent="UI/Overlay/Center/Modal/Content"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 14
+
+[node name="Primary" type="Button" parent="UI/Overlay/Center/Modal/Content/Actions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 42)
+layout_mode = 2
+focus_mode = 2
+text = "开始探索"
+
+[node name="Restart" type="Button" parent="UI/Overlay/Center/Modal/Content/Actions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 42)
+layout_mode = 2
+focus_mode = 2
+text = "重新开始"
+
+[node name="ReturnToFirst" type="Button" parent="UI/Overlay/Center/Modal/Content/Actions"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(146, 42)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+text = "返回第一关"
+
+[node name="VersionFooter" type="Label" parent="UI"]
+unique_name_in_owner = true
+layout_mode = 1
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -280.0
+offset_top = -33.0
+offset_right = -24.0
+offset_bottom = -10.0
+mouse_filter = 2
+theme = SubResource("Theme")
+theme_override_colors/font_color = Color(0.68, 0.72, 0.68, 1)
+theme_override_font_sizes/font_size = 13
+horizontal_alignment = 2

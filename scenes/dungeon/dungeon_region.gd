@@ -68,8 +68,11 @@ func _rebuild_geometry() -> void:
 	var floor_material := StandardMaterial3D.new()
 	floor_material.albedo_color = floor_color
 	floor_material.roughness = 0.95
-	# Floors overlap beneath wall edges and at thresholds; their top is always 0.
-	_box(geometry, "Floor", Vector3(0, -0.25, 0), Vector3(dimensions.x + 1.2, 0.5, dimensions.y + 1.2), floor_material)
+	# 物理地板保留接缝余量，避免角色在房间边界掉落；可见网格仅覆盖本区域。
+	# 两个门洞相接时，外扩的可见地板会在同一高度争夺深度，暗门开启后出现条纹闪烁。
+	var floor_body := _box(geometry, "Floor", Vector3(0, -0.25, 0), Vector3(dimensions.x + 1.2, 0.5, dimensions.y + 1.2), floor_material)
+	var floor_mesh := floor_body.get_node("MeshInstance3D").mesh as BoxMesh
+	floor_mesh.size = Vector3(dimensions.x, 0.5, dimensions.y)
 	var walls := Node3D.new()
 	walls.name = "Walls"
 	geometry.add_child(walls)

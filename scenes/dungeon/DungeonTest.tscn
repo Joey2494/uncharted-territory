@@ -1,4 +1,4 @@
-[gd_scene load_steps=31 format=3]
+[gd_scene load_steps=35 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://scenes/dungeon/follow_camera.gd" id="2_camera"]
@@ -19,6 +19,12 @@
 [ext_resource type="PackedScene" path="res://scenes/dungeon/ExitFrame.tscn" id="17_exit_frame"]
 [ext_resource type="PackedScene" path="res://scenes/dungeon/ExitDoorway.tscn" id="18_exit_doorway"]
 [ext_resource type="PackedScene" path="res://scenes/dungeon/ExitPortcullis.tscn" id="19_portcullis"]
+
+[ext_resource type="PackedScene" path="res://scenes/dungeon/components/ProgressionGate.tscn" id="20_progress_gate"]
+[ext_resource type="Script" path="res://scenes/dungeon/components/room_progress_controller.gd" id="21_progress"]
+[ext_resource type="Script" path="res://scenes/dungeon/components/progression_gate.gd" id="22_gate_script"]
+
+[ext_resource type="PackedScene" path="res://scenes/dungeon/tutorial/TutorialLayout.tscn" id="23_tutorial"]
 
 [sub_resource type="Environment" id="Environment_dungeon"]
 background_mode = 1
@@ -74,6 +80,50 @@ outer_radius = 1.3
 [node name="DungeonTest" type="Node3D"]
 script = ExtResource("8_map")
 
+[node name="RoomProgress" type="Node" parent="."]
+script = ExtResource("21_progress")
+
+[node name="Gates" type="Node3D" parent="."]
+
+[node name="EntranceGate" parent="Gates" instance=ExtResource("20_progress_gate")]
+position = Vector3(0, 0, -8)
+gate_id = &"G01"
+locked_message = "完成或跳过入口教学后开启"
+show_lock_label = false
+
+[node name="CourtyardGate" parent="Gates" instance=ExtResource("20_progress_gate")]
+position = Vector3(9, 0, -23)
+rotation = Vector3(0, 1.5707963, 0)
+gate_id = &"G02"
+locked_message = "清除中庭守卫后开启"
+show_lock_label = false
+
+[node name="CourtyardSouthSeal" parent="Gates" instance=ExtResource("20_progress_gate")]
+position = Vector3(0, 0, -16)
+gate_id = &"L1_COURTYARD_SOUTH"
+show_lock_label = false
+initially_open = true
+
+[node name="CourtyardWestSeal" parent="Gates" instance=ExtResource("20_progress_gate")]
+position = Vector3(-9, 0, -23)
+rotation = Vector3(0, 1.5707963, 0)
+gate_id = &"L1_COURTYARD_WEST"
+show_lock_label = false
+initially_open = true
+
+[node name="BossWestSeal" parent="Gates" instance=ExtResource("20_progress_gate")]
+position = Vector3(19, 0, -23)
+rotation = Vector3(0, 1.5707963, 0)
+gate_id = &"L1_BOSS_WEST"
+show_lock_label = false
+initially_open = true
+
+[node name="BossNorthSeal" parent="Gates" instance=ExtResource("20_progress_gate")]
+position = Vector3(30, 0, -33)
+gate_id = &"L1_BOSS_NORTH"
+show_lock_label = false
+initially_open = true
+
 [node name="Regions" type="Node3D" parent="."]
 
 [node name="EntranceHall" parent="Regions" instance=ExtResource("12_entrance")]
@@ -85,6 +135,8 @@ optional_branch = false
 floor_color = Color(0.32, 0.30, 0.25, 1)
 open_north = true
 open_south = true
+
+[node name="TutorialLayout" parent="Regions/EntranceHall" instance=ExtResource("23_tutorial")]
 
 [node name="ArrivalLanding" parent="Regions" instance=ExtResource("7_region")]
 position = Vector3(0, 0, 10)
@@ -210,14 +262,14 @@ position = Vector3(0, 0, -8)
 rotation = Vector3(0, 0, 0)
 
 [node name="Banner" parent="Doorways/CourtyardEntrance" index="3"]
-text = "主路 ↑ 回廊中庭"
+text = "北门封闭"
 
 [node name="MainRoute" parent="Doorways" instance=ExtResource("9_doorway")]
 position = Vector3(9, 0, -23)
 rotation = Vector3(0, 1.570796, 0)
 
 [node name="Banner" parent="Doorways/MainRoute" index="3"]
-text = "主路 → 守门者大厅"
+text = "清除中庭守卫 → 开启主路"
 
 [node name="OptionalBranch" parent="Doorways" instance=ExtResource("9_doorway")]
 position = Vector3(-9, 0, -23)
@@ -254,20 +306,26 @@ position = Vector3(30, 0, -40.7)
 
 [node name="ExitGate" type="StaticBody3D" parent="." groups=["camera_occluders"]]
 position = Vector3(30, 1.5, -40.7)
+disable_mode = 2
 collision_layer = 1
 collision_mask = 0
+script = ExtResource("22_gate_script")
+gate_id = &"L1_EXIT"
+locked_message = "出口封印\n击败遗迹守门者后开启"
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="ExitGate"]
+[node name="Visuals" type="Node3D" parent="ExitGate"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="ExitGate/Visuals"]
 layers = 0
 cast_shadow = 0
 mesh = SubResource("Mesh_exit_gate")
 
-[node name="Model" parent="ExitGate/MeshInstance3D" instance=ExtResource("19_portcullis")]
+[node name="Model" parent="ExitGate/Visuals/MeshInstance3D" instance=ExtResource("19_portcullis")]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="ExitGate"]
 shape = SubResource("Shape_exit_gate")
 
-[node name="SealLabel" type="Label3D" parent="ExitGate"]
+[node name="LockedLabel" type="Label3D" parent="ExitGate/Visuals"]
 position = Vector3(0, 0.5, 0.36)
 billboard = 1
 font = ExtResource("11_font")
@@ -450,9 +508,6 @@ position = Vector3(0, 0.05, 4)
 [node name="MeleeEnemy" parent="." instance=ExtResource("3_enemy")]
 position = Vector3(3, 0.05, -23)
 
-[node name="HealthPotion" parent="." instance=ExtResource("4_potion")]
-position = Vector3(-2.5, 0.05, 1.5)
-
 [node name="AttackRune" parent="." instance=ExtResource("5_rune")]
 position = Vector3(-27, 0.05, -23)
 
@@ -474,3 +529,11 @@ fov = 50.0
 near = 0.1
 far = 120.0
 script = ExtResource("2_camera")
+
+[editable path="Doorways/Entrance"]
+[editable path="Doorways/CourtyardEntrance"]
+[editable path="Doorways/MainRoute"]
+[editable path="Doorways/OptionalBranch"]
+[editable path="Doorways/BossEntrance"]
+[editable path="Doorways/BossExit"]
+[editable path="Doorways/MapExit"]

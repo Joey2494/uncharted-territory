@@ -1,0 +1,92 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scenes/dungeon/components/progression_gate.gd" id="1_gate"]
+
+[ext_resource type="Font" path="res://scenes/ui/dungeon_font.tres" id="2_font"]
+
+[sub_resource type="BoxShape3D" id="Shape_gate"]
+size = Vector3(5, 3.2, 0.6)
+
+[sub_resource type="StandardMaterial3D" id="Material_stone"]
+albedo_color = Color(0.13, 0.18, 0.22, 1)
+roughness = 0.88
+
+[sub_resource type="StandardMaterial3D" id="Material_metal"]
+albedo_color = Color(0.47, 0.36, 0.19, 1)
+metallic = 0.65
+roughness = 0.5
+
+[sub_resource type="StandardMaterial3D" id="Material_rune"]
+albedo_color = Color(0.3, 0.8, 0.8, 1)
+emission_enabled = true
+emission = Color(0.15, 0.6, 0.65, 1)
+emission_energy_multiplier = 1.4
+
+[sub_resource type="BoxMesh" id="Mesh_gate"]
+material = SubResource("Material_stone")
+size = Vector3(5, 3.2, 0.6)
+
+[sub_resource type="BoxMesh" id="Mesh_band"]
+material = SubResource("Material_metal")
+size = Vector3(5.04, 0.16, 0.66)
+
+[sub_resource type="BoxMesh" id="Mesh_spine"]
+material = SubResource("Material_metal")
+size = Vector3(0.12, 3.2, 0.66)
+
+[sub_resource type="BoxMesh" id="Mesh_rune"]
+material = SubResource("Material_rune")
+size = Vector3(0.36, 0.36, 0.7)
+
+[node name="ProgressionGate" type="StaticBody3D" groups=["camera_occluders"]]
+disable_mode = 2
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1_gate")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 1.6, 0)
+shape = SubResource("Shape_gate")
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="Slab" type="MeshInstance3D" parent="Visuals"]
+position = Vector3(0, 1.6, 0)
+mesh = SubResource("Mesh_gate")
+
+[node name="UpperBand" type="MeshInstance3D" parent="Visuals"]
+position = Vector3(0, 2.9, 0)
+mesh = SubResource("Mesh_band")
+
+[node name="LowerBand" type="MeshInstance3D" parent="Visuals"]
+position = Vector3(0, 0.3, 0)
+mesh = SubResource("Mesh_band")
+
+[node name="CenterSpine" type="MeshInstance3D" parent="Visuals"]
+position = Vector3(0, 1.6, 0)
+mesh = SubResource("Mesh_spine")
+
+[node name="LeftSpine" type="MeshInstance3D" parent="Visuals"]
+position = Vector3(-1.65, 1.6, 0)
+mesh = SubResource("Mesh_spine")
+
+[node name="RightSpine" type="MeshInstance3D" parent="Visuals"]
+position = Vector3(1.65, 1.6, 0)
+mesh = SubResource("Mesh_spine")
+
+[node name="LockRune" type="MeshInstance3D" parent="Visuals"]
+position = Vector3(0, 1.7, 0)
+rotation = Vector3(0, 0, 0.785398)
+mesh = SubResource("Mesh_rune")
+
+[node name="LockedLabel" type="Label3D" parent="Visuals"]
+position = Vector3(0, 3.65, 0)
+billboard = 1
+modulate = Color(0.94, 0.85, 0.62, 1)
+outline_modulate = Color(0.04, 0.06, 0.08, 1)
+text = "清除守卫后开启"
+font = ExtResource("2_font")
+font_size = 40
+pixel_size = 0.007
+outline_size = 8
+no_depth_test = false

@@ -124,6 +124,14 @@ theme_override_colors/font_color = Color(0.64, 0.60, 0.51, 1)
 text = "这一局抵达终点，下一局仍有未知。"
 horizontal_alignment = 1
 
+[node name="NextLevelButton" type="Button" parent="Center/Card/Padding/Content"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+text = "前往第二关"
+
 [node name="RestartButton" type="Button" parent="Center/Card/Padding/Content"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 54)

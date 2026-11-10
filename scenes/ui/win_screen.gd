@@ -1,9 +1,13 @@
 extends Control
 
 signal restart_requested
+signal next_level_requested
 
 @export_range(1, 99, 1) var completed_rooms: int = 3
 
+var offer_next_level := false
+
+@onready var next_level_button: Button = %NextLevelButton
 @onready var restart_button: Button = %RestartButton
 @onready var summary_label: Label = %SummaryLabel
 
@@ -11,6 +15,10 @@ var _run_result: Dictionary = {}
 
 
 func _ready() -> void:
+	next_level_button.visible = offer_next_level
+	if offer_next_level:
+		$Center/Card/Padding/Content/Description.text = "进入新关卡会重新整备生命和道具。"
+	next_level_button.pressed.connect(func() -> void: next_level_requested.emit())
 	restart_button.pressed.connect(func() -> void: restart_requested.emit())
 	visibility_changed.connect(_focus_action)
 	_refresh_result()
@@ -39,4 +47,5 @@ func _refresh_result() -> void:
 
 func _focus_action() -> void:
 	if is_node_ready() and is_visible_in_tree():
-		restart_button.grab_focus.call_deferred()
+		var action := next_level_button if offer_next_level else restart_button
+		action.grab_focus.call_deferred()
