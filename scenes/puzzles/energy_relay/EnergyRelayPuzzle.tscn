@@ -1,0 +1,106 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/puzzles/energy_relay/energy_relay_puzzle.gd" id="puzzle"]
+[ext_resource type="PackedScene" path="res://scenes/puzzles/energy_relay/RelayControl.tscn" id="control"]
+[ext_resource type="Font" path="res://scenes/ui/dungeon_font.tres" id="font"]
+
+[sub_resource type="BoxMesh" id="FlowMesh"]
+size = Vector3(2.15, 0.035, 0.11)
+
+[node name="EnergyRelayPuzzle" type="Node3D"]
+script = ExtResource("puzzle")
+
+[node name="Reset" type="Timer" parent="."]
+wait_time = 0.7
+one_shot = true
+
+[node name="Inscription" type="Label3D" parent="."]
+position = Vector3(0, 2.45, 0.2)
+billboard = 1
+modulate = Color(0.96, 0.87, 0.65, 1)
+text = "日沉、月升、星明"
+font = ExtResource("font")
+font_size = 48
+pixel_size = 0.009
+outline_size = 10
+
+[node name="Status" type="Label3D" parent="."]
+position = Vector3(0, 2.0, -5.7)
+billboard = 1
+modulate = Color(0.58, 0.88, 0.85, 1)
+font = ExtResource("font")
+font_size = 40
+pixel_size = 0.007
+outline_size = 10
+
+[node name="RuneSun" parent="." instance=ExtResource("control")]
+position = Vector3(-4, 0, 3)
+receiver_path = NodePath("..")
+control_id = &"sun"
+caption = "日"
+
+[node name="RuneMoon" parent="." instance=ExtResource("control")]
+position = Vector3(0, 0, 3)
+receiver_path = NodePath("..")
+control_id = &"moon"
+caption = "月"
+
+[node name="RuneStar" parent="." instance=ExtResource("control")]
+position = Vector3(4, 0, 3)
+receiver_path = NodePath("..")
+control_id = &"star"
+caption = "星"
+
+[node name="SwitchA" parent="." instance=ExtResource("control")]
+position = Vector3(-4, 0, -3)
+receiver_path = NodePath("..")
+control_id = &"a"
+caption = "切换分流 A"
+
+[node name="SwitchB" parent="." instance=ExtResource("control")]
+position = Vector3(4, 0, -3)
+receiver_path = NodePath("..")
+control_id = &"b"
+caption = "切换分流 B"
+
+[node name="Confirm" parent="." instance=ExtResource("control")]
+position = Vector3(0, 0, -4)
+receiver_path = NodePath("..")
+control_id = &"confirm"
+caption = "确认流向"
+
+[node name="Reward" parent="." instance=ExtResource("control")]
+position = Vector3(0, 0, 0)
+receiver_path = NodePath("..")
+control_id = &"reward"
+caption = "领取攻击强化符文"
+
+[node name="FlowA" type="Node3D" parent="."]
+position = Vector3(-2.1, 0.022, -3)
+
+[node name="Route0" type="MeshInstance3D" parent="FlowA"]
+position = Vector3(0, 0, -0.44)
+mesh = SubResource("FlowMesh")
+
+[node name="Route1" type="MeshInstance3D" parent="FlowA"]
+position = Vector3(0, 0, 0)
+mesh = SubResource("FlowMesh")
+
+[node name="Route2" type="MeshInstance3D" parent="FlowA"]
+position = Vector3(0, 0, 0.44)
+mesh = SubResource("FlowMesh")
+
+[node name="FlowB" type="Node3D" parent="."]
+position = Vector3(2.1, 0.022, -3)
+
+[node name="Route0" type="MeshInstance3D" parent="FlowB"]
+position = Vector3(0, 0, -0.44)
+mesh = SubResource("FlowMesh")
+
+[node name="Route1" type="MeshInstance3D" parent="FlowB"]
+position = Vector3(0, 0, 0)
+mesh = SubResource("FlowMesh")
+
+[node name="Route2" type="MeshInstance3D" parent="FlowB"]
+position = Vector3(0, 0, 0.44)
+mesh = SubResource("FlowMesh")

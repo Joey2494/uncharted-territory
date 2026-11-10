@@ -1,0 +1,49 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/puzzles/energy_relay/relay_control.gd" id="control"]
+[ext_resource type="Font" path="res://scenes/ui/dungeon_font.tres" id="font"]
+
+[sub_resource type="StandardMaterial3D" id="BaseMaterial"]
+albedo_color = Color(0.15, 0.23, 0.26, 1)
+roughness = 0.82
+
+[sub_resource type="CylinderMesh" id="BaseMesh"]
+material = SubResource("BaseMaterial")
+top_radius = 0.52
+bottom_radius = 0.64
+height = 0.84
+radial_segments = 8
+
+[sub_resource type="CylinderShape3D" id="BaseShape"]
+height = 0.84
+radius = 0.54
+
+[sub_resource type="BoxMesh" id="SignalMesh"]
+size = Vector3(0.48, 0.24, 0.48)
+
+[node name="RelayControl" type="Node3D"]
+script = ExtResource("control")
+
+[node name="Base" type="StaticBody3D" parent="."]
+collision_mask = 0
+position = Vector3(0, 0.42, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="Base"]
+mesh = SubResource("BaseMesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Base"]
+shape = SubResource("BaseShape")
+
+[node name="Signal" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.95, 0)
+rotation_degrees = Vector3(0, 45, 0)
+mesh = SubResource("SignalMesh")
+
+[node name="Caption" type="Label3D" parent="."]
+position = Vector3(0, 1.54, 0)
+billboard = 1
+modulate = Color(0.78, 0.92, 0.88, 1)
+font = ExtResource("font")
+font_size = 40
+pixel_size = 0.008
+outline_size = 10
