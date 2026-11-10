@@ -12,9 +12,18 @@ var _current_region: Node3D
 var _visited: Dictionary = {}
 var _exit_announced: bool = false
 var _exit_state: ExitState = ExitState.LOCKED
+@export var room_gold_rewards: Dictionary = {"EntranceHall": 20, "Crossroads": 15, "SupplyChamber": 15}
+@export var enable_debug_shop_stands: bool = false
 
 
 func _ready() -> void:
+	if enable_debug_shop_stands:
+		for item_id in preload("res://data/item_catalog.gd").ITEMS:
+			var stand := preload("res://scenes/items/shop_stand.gd").new()
+			stand.name = "Shop%d" % item_id
+			stand.product_id = item_id
+			stand.position = Vector3(-6.0 + item_id * 3.0, 0.0, -3.0)
+			add_child(stand)
 	_update_region()
 
 
@@ -100,5 +109,9 @@ func _update_region() -> void:
 	if region == null or not region.visible or not region.exploration_room or region == _current_region:
 		return
 	_current_region = region
+	if not _visited.has(region.name) and room_gold_rewards.has(str(region.name)):
+		preload("res://scenes/items/coin_pickup.gd").spawn(
+			self, region.global_position + Vector3(1.2, 0.05, 1.2),
+			int(room_gold_rewards[str(region.name)]), "room:" + str(region.name))
 	_visited[region.name] = true
 	room_changed.emit(region.display_name, _visited.size())
