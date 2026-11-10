@@ -1,6 +1,9 @@
 extends Area3D
 
-@export_enum("生命药剂", "攻击强化符文") var item_type: int = 0
+const Catalog = preload("res://data/item_catalog.gd")
+
+@export_enum("生命药剂", "攻击强化符文", "守护符文", "遗迹手炮", "弹药") var item_type: int = 0
+@export_range(1, 99, 1) var quantity: int = 1
 @export_range(0.5, 3.0, 0.1) var interaction_distance: float = 1.5
 
 @onready var _visuals: Node3D = $Visuals
@@ -22,16 +25,16 @@ func _process(delta: float) -> void:
 
 
 func get_display_name() -> String:
-	return "生命药剂" if item_type == 0 else "攻击强化符文"
+	return str(Catalog.get_item(item_type).get("name", "未知道具"))
 
 
 func can_collect(player: CharacterBody3D) -> bool:
-	if _collected or not can_process() or not is_instance_valid(player):
+	if _collected or not can_process() or not is_visible_in_tree() or not is_instance_valid(player):
 		return false
-	if player.is_dead() or player.get_node_or_null("ItemInventory") == null:
+	if player.is_dead() or not player.can_process() or player.get_node_or_null("ItemInventory") == null:
 		return false
 	var offset := player.global_position - global_position
-	if Vector2(offset.x, offset.z).length() > interaction_distance:
+	if absf(offset.y) > 2.0 or Vector2(offset.x, offset.z).length() > interaction_distance:
 		return false
 	var start := player.global_position + Vector3.UP * 0.8
 	var finish := Vector3(global_position.x, start.y, global_position.z)
@@ -44,7 +47,7 @@ func try_collect(player: CharacterBody3D) -> bool:
 		return false
 	# Reserve before emitting inventory signals, so repeat requests cannot dupe it.
 	_collected = true
-	if not player.get_node("ItemInventory").add_item(item_type):
+	if not player.get_node("ItemInventory").add_item(item_type, quantity):
 		_collected = false
 		return false
 	hide()
