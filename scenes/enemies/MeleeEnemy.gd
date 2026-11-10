@@ -14,6 +14,7 @@ enum State { IDLE, CHASE, ATTACK, HURT, DEAD }
 @export_range(1.0, 30.0, 0.5) var lose_range: float = 10.0
 @export_range(0.5, 4.0, 0.05) var attack_distance: float = 1.5
 @export_range(0.0, 1.0, 0.01) var hurt_duration: float = 0.18
+@export_range(0, 1000, 1) var gold_reward: int = 12
 
 @onready var _visuals: Node3D = $Visuals
 @onready var _attack: Node3D = $MeleeAttack
@@ -127,4 +128,5 @@ func _die() -> void:
 	set_deferred("collision_layer", 0)
 	set_deferred("collision_mask", 0)
 	$CollisionShape3D.set_deferred("disabled", true)
+	preload("res://scenes/items/coin_pickup.gd").spawn(get_parent(), global_position, gold_reward, "enemy:" + str(get_path()))
 	died.emit()
