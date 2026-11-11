@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scenes/bosses/ruin_colossus.gd" id="1"]
-[ext_resource type="PackedScene" path="res://scenes/creatures/DreadScorpionModel.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/bosses/DreadScorpionModel.tscn" id="2"]
 [sub_resource type="CapsuleShape3D" id="Body"]
 radius = 1.05
 height = 3.4
