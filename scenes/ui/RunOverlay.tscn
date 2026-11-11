@@ -119,6 +119,18 @@ layout_mode = 2
 mouse_default_cursor_shape = 2
 text = "重新开始"
 
+[node name="ShopButton" type="Button" parent="Modal/Center/Card/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_default_cursor_shape = 2
+text = "商城"
+
+[node name="BackpackButton" type="Button" parent="Modal/Center/Card/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_default_cursor_shape = 2
+text = "背包"
+
 [node name="VersionFooter" type="Label" parent="."]
 layout_mode = 1
 anchor_left = 1.0

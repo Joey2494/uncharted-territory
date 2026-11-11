@@ -8,6 +8,8 @@ const Presenter = preload("res://scenes/items/commerce_presenter.gd")
 const Catalog = preload("res://data/item_catalog.gd")
 enum View { NONE, PAUSE, SHOP, BACKPACK }
 enum ReturnTo { MENU, GAME, PAUSE }
+@export var external_pause := false
+var external_pause_state: Callable
 
 @onready var shop: Control = $ShopScreen
 @onready var backpack: Control = $BackpackScreen
@@ -53,6 +55,7 @@ func _ready() -> void:
 	backpack.set_demo_mode(false)
 	_hide_views()
 	shortcut.hide()
+	get_viewport().size_changed.connect(_update_shortcut)
 
 
 func bind_inventory(inventory: Node3D, available: Callable, elapsed: Callable = Callable()) -> void:
@@ -103,9 +106,10 @@ func _begin_commerce() -> bool:
 		return false
 	if view == View.NONE:
 		# Don't take ownership of another subsystem's pause.
-		if get_tree().paused:
+		if get_tree().paused and (not external_pause or not external_pause_state.is_valid()
+			or not external_pause_state.call()):
 			return false
-		_return_to = ReturnTo.GAME if _playing else ReturnTo.MENU
+		_return_to = ReturnTo.PAUSE if get_tree().paused else (ReturnTo.GAME if _playing else ReturnTo.MENU)
 		_capture_pause()
 	elif view == View.PAUSE:
 		_return_to = ReturnTo.PAUSE
@@ -151,7 +155,10 @@ func _show_pause() -> void:
 
 func close_panel() -> void:
 	if view in [View.SHOP, View.BACKPACK] and _return_to == ReturnTo.PAUSE:
-		_show_pause()
+		if external_pause:
+			close_all()
+		else:
+			_show_pause()
 	else:
 		close_all()
 
@@ -205,7 +212,8 @@ func _input(event: InputEvent) -> void:
 	var cancel := event.is_action_pressed("pause") or event.is_action_pressed("ui_cancel")
 	if not shop_key and not cancel:
 		return
-	if view == View.NONE and (not _playing or not _can_open() or get_tree().paused):
+	if view == View.NONE and (not _playing or not _can_open()
+		or (get_tree().paused and not external_pause) or (cancel and external_pause)):
 		return
 	get_viewport().set_input_as_handled()
 	if event.is_echo():
@@ -271,6 +279,10 @@ func _refresh() -> void:
 
 
 func _update_shortcut() -> void:
+	if external_pause:
+		var top := 140.0 if get_viewport().get_visible_rect().size.x >= 960.0 else 24.0
+		shortcut.offset_top = top
+		shortcut.offset_bottom = top + 76.0
 	shortcut.visible = _playing and _enabled and view == View.NONE
 	shop_button.disabled = not _can_open()
 

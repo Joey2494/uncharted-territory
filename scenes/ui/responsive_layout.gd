@@ -4,6 +4,8 @@ extends Node
 const MARGIN: float = 24.0
 const COLUMN_WIDTH: float = 336.0
 const COMPACT_WIDTH: float = 960.0
+const TUTORIAL_WIDTH: float = 424.0
+const TUTORIAL_HEIGHT: float = 100.0
 @export var camera_path: NodePath = NodePath("../../DungeonTest/Camera3D")
 @export var compact_combat_layout := false
 
@@ -11,6 +13,8 @@ const COMPACT_WIDTH: float = 960.0
 @onready var _items: PanelContainer = $"../HUD/ItemsPanel"
 @onready var _cooldowns: HBoxContainer = $"../HUD/CooldownBar"
 @onready var _boss_bar: PanelContainer = $"../BossHealthBar"
+@onready var _tutorial_overlay: Control = get_node_or_null("../TutorialOverlay")
+@onready var _tutorial_card: PanelContainer = get_node_or_null("../TutorialOverlay/Card")
 @onready var _camera: Camera3D = get_node(camera_path)
 
 var _layout_pending: bool = false
@@ -21,6 +25,9 @@ func _ready() -> void:
 	_items.minimum_size_changed.connect(_queue_layout)
 	_cooldowns.minimum_size_changed.connect(_queue_layout)
 	_boss_bar.minimum_size_changed.connect(_queue_layout)
+	if is_instance_valid(_tutorial_card):
+		_tutorial_card.minimum_size_changed.connect(_queue_layout)
+		_tutorial_overlay.visibility_changed.connect(_queue_layout)
 	_apply_layout()
 
 
@@ -33,6 +40,7 @@ func _queue_layout() -> void:
 
 func _apply_layout() -> void:
 	_layout_pending = false
+	# 切关会先移出旧场景，已排队的布局回调可能仍然到达。
 	if not is_inside_tree() or is_queued_for_deletion():
 		return
 	var viewport_size := get_viewport().get_visible_rect().size
@@ -51,12 +59,22 @@ func _apply_layout() -> void:
 	var boss_width := column_width if compact else 520.0
 	var boss_height := maxf(88.0, _boss_bar.get_combined_minimum_size().y)
 	var boss_position := Vector2(maxf((viewport_size.x - boss_width) * 0.5, _stats.get_rect().end.x + MARGIN), MARGIN)
-	if not compact:
-		boss_width = minf(boss_width, viewport_size.x - boss_position.x - MARGIN - 164.0)
 	if compact:
 		boss_position = Vector2(MARGIN, _stats.get_rect().end.y + 16.0)
+	else:
+		boss_width = minf(boss_width, viewport_size.x - boss_position.x - MARGIN - 164.0)
 	_place(_boss_bar, boss_position, Vector2(boss_width, boss_height))
-	var cooldown_y := _boss_bar.get_rect().end.y + 12.0 if compact else _stats.get_rect().end.y + 16.0
+	var combat_row_end := _boss_bar.get_rect().end.y
+	if is_instance_valid(_tutorial_card):
+		var tutorial_height := maxf(TUTORIAL_HEIGHT, _tutorial_card.get_combined_minimum_size().y)
+		if compact:
+			# 教学和 Boss 战互斥，窄窗口可共用同一行而不盖住生命栏。
+			_place(_tutorial_card, boss_position, Vector2(column_width, tutorial_height))
+			if _tutorial_overlay.visible:
+				combat_row_end = maxf(combat_row_end, _tutorial_card.get_rect().end.y)
+		else:
+			_place(_tutorial_card, Vector2(viewport_size.x - MARGIN - TUTORIAL_WIDTH, MARGIN), Vector2(TUTORIAL_WIDTH, tutorial_height))
+	var cooldown_y := combat_row_end + 12.0 if compact else _stats.get_rect().end.y + 16.0
 	var cooldown_height := maxf(82.0, _cooldowns.get_combined_minimum_size().y)
 	_place(_cooldowns, Vector2(MARGIN, cooldown_y), Vector2(minf(COLUMN_WIDTH, column_width), cooldown_height))
 
@@ -73,7 +91,6 @@ func _apply_layout() -> void:
 
 
 func _apply_compact_combat(viewport_size: Vector2) -> void:
-	# Opt-in sandbox layout: leave space for the large Boss silhouette.
 	var margin := 16.0
 	_stats.scale = Vector2.ONE * 0.7
 	_items.scale = Vector2.ONE * 0.7

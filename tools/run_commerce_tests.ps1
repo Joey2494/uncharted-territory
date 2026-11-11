@@ -12,7 +12,7 @@ foreach ($suite in @(
     @('week9_tests', 'WEEK9_RESULT'),
     @('creature_tests', 'CREATURE_RESULT')
 )) {
-    $output = & $GodotPath --headless --path $project --script "res://tests/$($suite[0]).gd" --quit-after 2400 2>&1
+    $output = & $GodotPath --headless --path $project --script "res://tests/scenes/$($suite[0]).gd" --quit-after 2400 2>&1
     $exit = $LASTEXITCODE
     $log = Join-Path $evidence "$($suite[0]).log"
     $output | Set-Content -LiteralPath $log -Encoding utf8
@@ -38,7 +38,7 @@ if ($Capture) {
         $suffix = if ($shot.Bottom) { "$size-bottom" } else { $size }
         $arguments = @('--path', $project, '--audio-driver', 'Dummy', '--rendering-method',
             'gl_compatibility', '--rendering-driver', $RenderingDriver,
-            '--script', 'res://tests/capture_commerce.gd', '--', $kind)
+            '--script', 'res://tests/scenes/capture_commerce.gd', '--', $kind)
         if ($size -eq 'small') { $arguments += 'small' }
         if ($shot.Bottom) { $arguments += 'bottom' }
         $output = & $GodotPath @arguments 2>&1

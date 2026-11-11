@@ -10,6 +10,7 @@ const CURRENT_ROOM_COLOR: Color = Color("b99a5c")
 const VISITED_ROOM_COLOR: Color = Color("756442")
 
 signal restart_requested
+signal next_level_requested
 signal use_potion_requested
 signal use_rune_requested
 
@@ -231,10 +232,12 @@ func show_death_screen(room_index: int) -> void:
 	_show_result_screen(screen)
 
 
-func show_win_screen(result: Dictionary = {}) -> void:
+func show_win_screen(result: Dictionary = {}, offer_next_level: bool = false) -> void:
 	var screen = WIN_SCREEN.instantiate()
 	screen.completed_rooms = total_rooms
 	screen.set_run_result(result)
+	screen.offer_next_level = offer_next_level
+	screen.next_level_requested.connect(func() -> void: next_level_requested.emit())
 	_show_result_screen(screen)
 
 
@@ -254,3 +257,9 @@ func _show_result_screen(screen: Control) -> void:
 	_result_screen = screen
 	screen.connect("restart_requested", func() -> void: restart_requested.emit())
 	_result_layer.add_child(screen)
+
+
+## 将载入失败显示在当前结算卡片内，保留所有可用操作。
+func show_result_error(message: String) -> void:
+	if is_instance_valid(_result_screen):
+		_result_screen.get_node("Center/Card/Padding/Content/Description").text = message
