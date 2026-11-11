@@ -1,6 +1,7 @@
 extends Control
 ## Presentation and intents only. Supply data from a mock or a real provider.
 signal purchase_requested(item_id: StringName)
+signal backpack_requested
 signal back_requested
 const PRODUCT_CARD = preload("res://scenes/ui/shop_product_card.gd")
 const UI_STYLE = preload("res://scenes/ui/commerce_ui_style.gd")
@@ -10,15 +11,7 @@ var _ids: Array[StringName] = []
 func _ready() -> void:
 	theme = UI_STYLE.create_theme()
 	%BackButton.pressed.connect(func() -> void: back_requested.emit())
-	get_viewport().size_changed.connect(_layout)
-	_layout()
-
-
-func _layout() -> void:
-	var viewport := get_viewport_rect().size
-	%Card.custom_minimum_size.x = minf(960.0, viewport.x - 48.0)
-	%ProductGrid.columns = 3 if viewport.x >= 1100 else 2
-	$Center/Card/Padding/Content/ProductsScroll.custom_minimum_size.y = clampf(viewport.y - 306.0, 180.0, 414.0)
+	%BackpackTab.pressed.connect(func() -> void: backpack_requested.emit())
 
 func set_shop_data(gold: int, products: Array) -> void:
 	%WalletLabel.text = "金币 %d" % maxi(gold,0)
@@ -46,7 +39,7 @@ func set_shop_data(gold: int, products: Array) -> void:
 
 func show_shop(back_label: String = "返回主菜单") -> void:
 	%BackButton.text = back_label
-	show_feedback("",true)
+	show_feedback("选择商品购买，物品将放入背包。",true)
 	show()
 	var target: Button = %BackButton
 	for id in _ids:
@@ -54,7 +47,7 @@ func show_shop(back_label: String = "返回主菜单") -> void:
 		if not buy.disabled:
 			target = buy
 			break
-	target.grab_focus.call_deferred()
+	_safe_focus.call_deferred(target)
 
 func show_feedback(message: String, success: bool) -> void:
 	%FeedbackLabel.text = message
@@ -72,3 +65,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func set_demo_mode(enabled: bool) -> void:
 	%ModeLabel.text = "演示数据 · 每次启动重置 · Esc 返回" if enabled else "Esc 返回"
+
+
+func _safe_focus(control: Control) -> void:
+	if is_instance_valid(control) and control.is_inside_tree() and control.is_visible_in_tree():
+		control.grab_focus()

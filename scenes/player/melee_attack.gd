@@ -5,6 +5,7 @@ extends Node3D
 
 signal attack_started
 signal attack_finished
+signal hit_confirmed(target: Node, amount: int)
 signal hit_detected(target: Node, amount: int)
 
 @export var player_input_enabled: bool = true
@@ -51,6 +52,11 @@ func _unhandled_input(event: InputEvent) -> void:
 func try_attack() -> bool:
 	if not is_node_ready() or not can_process() or not attack_enabled or _attacking or _cooldown_remaining > 0.0:
 		return false
+	var ability := get_parent().get_node_or_null("CharacterAbility")
+	if ability != null:
+		if ability.is_guarding() or ability.is_casting() or get_parent().get_node("EnergyShock").is_action_locked():
+			return false
+		get_parent().get_node("CastAnimation").cancel()
 	var inventory := get_parent().get_node_or_null("ItemInventory")
 	if player_input_enabled and inventory != null and inventory.equipped_weapon == inventory.FIREARM:
 		return get_parent().get_node("Firearm").try_fire()
@@ -64,6 +70,8 @@ func try_attack() -> bool:
 	_cooldown_remaining = maxf(
 		attack_cooldown, windup_duration + active_duration + recovery_duration
 	)
+	if ability != null and ability.is_focused():
+		_cooldown_remaining = maxf(_cooldown_remaining / 1.3, windup_duration + active_duration + recovery_duration)
 	_hit_targets.clear()
 	_attacking = true
 	_swing.rotation.y = -deg_to_rad(attack_arc_degrees) * 0.5
@@ -75,6 +83,9 @@ func try_attack() -> bool:
 
 func is_attacking() -> bool:
 	return _attacking
+
+func can_chain_cast() -> bool:
+	return not _attacking or _elapsed >= windup_duration + active_duration
 
 
 func get_cooldown_remaining() -> float:
@@ -145,8 +156,13 @@ func _detect_hits() -> void:
 			continue
 		_hit_targets[receiver_id] = true
 		hit_detected.emit(receiver, _current_damage)
-		if is_instance_valid(receiver) and receiver.has_method("take_damage"):
-			receiver.call("take_damage", _current_damage)
+		var accepted: bool = false
+		if is_instance_valid(receiver) and receiver.has_method("take_direct_damage"):
+			accepted = receiver.call("take_direct_damage", _current_damage, attacker.global_position) == true
+		elif is_instance_valid(receiver) and receiver.has_method("take_damage"):
+			accepted = receiver.call("take_damage", _current_damage) == true
+		if accepted:
+			hit_confirmed.emit(receiver, _current_damage)
 
 
 func _build_attack_shape() -> void:

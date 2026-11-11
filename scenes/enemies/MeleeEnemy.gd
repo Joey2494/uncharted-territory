@@ -25,6 +25,15 @@ var hp: int
 var state: State = State.IDLE
 var _target: Node3D
 var _aggro: bool = false
+var _control_remaining: float = 0.0
+var _slow_remaining: float = 0.0
+
+func apply_control(duration: float) -> void:
+	_control_remaining = maxf(_control_remaining, duration)
+	_attack.cancel_attack()
+
+func apply_slow(duration: float) -> void:
+	_slow_remaining = maxf(_slow_remaining, duration)
 var _dead: bool = false
 var _hurt_remaining: float = 0.0
 
@@ -36,6 +45,8 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	_control_remaining = maxf(0.0, _control_remaining - delta)
+	_slow_remaining = maxf(0.0, _slow_remaining - delta)
 	velocity.x = 0.0
 	velocity.z = 0.0
 	if not is_on_floor():
@@ -43,7 +54,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.y = 0.0
 	_hurt_remaining = maxf(0.0, _hurt_remaining - delta)
-	if _hurt_remaining > 0.0:
+	if _hurt_remaining > 0.0 or _control_remaining > 0.0:
 		state = State.HURT
 	elif _attack.is_attacking():
 		state = State.ATTACK
@@ -79,8 +90,9 @@ func _update_pursuit(delta: float) -> void:
 		return
 	state = State.CHASE
 	direction = direction.normalized()
-	velocity.x = direction.x * move_speed
-	velocity.z = direction.z * move_speed
+	var speed_scale := 0.7 if _slow_remaining > 0.0 else 1.0
+	velocity.x = direction.x * move_speed * speed_scale
+	velocity.z = direction.z * move_speed * speed_scale
 	_visuals.rotation.y = lerp_angle(
 		_visuals.rotation.y, atan2(-direction.x, -direction.z), 1.0 - exp(-turn_speed * delta)
 	)

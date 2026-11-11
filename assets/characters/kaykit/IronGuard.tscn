@@ -1,0 +1,7 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/characters/kaykit/barbarian/Barbarian.glb" id="body"]
+[ext_resource type="Script" path="res://assets/characters/kaykit/iron_guard_visual.gd" id="visual"]
+
+[node name="IronGuard" instance=ExtResource("body")]
+script = ExtResource("visual")

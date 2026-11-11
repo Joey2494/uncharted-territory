@@ -1,0 +1,7 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/characters/kaykit/iron_guard_rig.tscn" id="body"]
+[ext_resource type="Script" path="res://assets/characters/kaykit/bronze_gatekeeper_visual.gd" id="visual"]
+
+[node name="BronzeGatekeeper" instance=ExtResource("body")]
+script = ExtResource("visual")

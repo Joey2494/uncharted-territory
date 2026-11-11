@@ -6,7 +6,7 @@ const COOLING_COLOR := Color("a39a87")
 const BLOCKED_COLOR := Color("817b70")
 
 @export var ability_name: String = "普攻"
-@export var input_hint: String = "鼠标左键"
+@export var input_hint: String = "J"
 @export var ability_icon: Texture2D
 
 @onready var icon: TextureRect = %AbilityIcon

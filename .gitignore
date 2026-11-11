@@ -3,6 +3,7 @@
 
 # Godot 4+ specific ignores
 .godot/
+.review/
 .nomedia
 
 # Godot-specific ignores
@@ -40,3 +41,12 @@ Thumbs.db
 desktop.ini
 # 编辑器备份
 *.bak
+
+# Local integration evidence and exported archives stay off the shared baseline.
+/docs/previews/
+/docs/week09_integration.md
+/docs/character_implementation.md
+/docs/boss_guard_swap_and_controls.md
+/docs/level02_ui_optimization.md
+/docs/level02_map_art.md
+/week9-*.zip

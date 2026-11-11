@@ -22,4 +22,9 @@ func show_pause(elapsed_seconds: float) -> void:
 	var seconds := floori(maxf(elapsed_seconds, 0.0))
 	%TimeLabel.text = "本局用时  %02d:%02d" % [floori(seconds / 60.0), seconds % 60]
 	show()
-	%ResumeButton.grab_focus.call_deferred()
+	_safe_focus.call_deferred(%ResumeButton)
+
+
+func _safe_focus(control: Control) -> void:
+	if is_instance_valid(control) and control.is_inside_tree() and control.is_visible_in_tree():
+		control.grab_focus()

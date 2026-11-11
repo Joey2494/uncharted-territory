@@ -41,11 +41,19 @@ func _refresh_result() -> void:
 	%TimeLabel.text = "通关用时：%02d:%02d" % [floori(seconds / 60.0), seconds % 60]
 	%ExplorationLabel.text = "探索区域：%d/%d" % [_run_result.get("rooms_visited", 0), _run_result.get("rooms_total", completed_rooms)]
 	%HealthLabel.text = "剩余生命：%d/%d" % [_run_result.get("player_hp", 0), _run_result.get("player_max_hp", 0)]
-	%PuzzleLabel.text = "符文机关：%s" % ("已解开" if _run_result.get("puzzle_solved", false) else "未解开")
+	var second_level: bool = _run_result.get("level_id", 1) == 2
+	if second_level:
+		$Center/Card/Padding/Content/Description.text = "导能遗迹的出口已经开启，本次探索完成。"
+	%PuzzleLabel.text = "%s：%s" % ["档案机关" if second_level else "符文机关", "已解开" if _run_result.get("puzzle_solved", false) else "未解开"]
 	%RewardLabel.text = "密室奖励：%s" % ("已领取" if _run_result.get("reward_claimed", false) else "未领取")
 
 
 func _focus_action() -> void:
 	if is_node_ready() and is_visible_in_tree():
 		var action := next_level_button if offer_next_level else restart_button
-		action.grab_focus.call_deferred()
+		_safe_focus.call_deferred(action)
+
+
+func _safe_focus(button: Button) -> void:
+	if is_instance_valid(button) and button.is_inside_tree() and button.is_visible_in_tree():
+		button.grab_focus()

@@ -1,15 +1,24 @@
 extends Node3D
 ## 第一关会话状态、暂停、通关结算及跨关入口。
 
-const LEVEL02_PATH := "res://tests/scenes/Level02Preview.tscn"
+const LEVEL02_PATH := "res://scenes/dungeon/Level02Run.tscn"
+
+@export var level_id: int = 1
+
+const CHARACTERS = preload("res://scenes/player/character_catalog.gd")
+const PROFILE = preload("res://scripts/integration/player_profile.gd")
+
+func _enter_tree() -> void:
+	if not PROFILE.owns(CHARACTERS.selected_id): CHARACTERS.selected_id = "knight"
+	$DungeonTest/Player.character_id = CHARACTERS.selected_id
 
 @onready var _dungeon: Node3D = $DungeonTest
 @onready var _player: CharacterBody3D = $DungeonTest/Player
 @onready var _hud: Control = $UILayer/HUD
 @onready var _items: Node3D = $DungeonTest/Player/ItemInventory
-@onready var _boss: CharacterBody3D = $DungeonTest/RuinGatekeeper
+@onready var _boss: CharacterBody3D = $DungeonTest.get_node("Boss" if level_id == 2 else "RuinGatekeeper")
 @onready var _boss_bar: Control = $UILayer/BossHealthBar
-@onready var _rune_puzzle: Node3D = $DungeonTest/RunePuzzle
+@onready var _rune_puzzle: Node3D = $DungeonTest.get_node_or_null("RunePuzzle")
 @onready var _start_screen: Control = $UILayer/StartScreen
 @onready var _commerce: CanvasLayer = $CommerceLayer
 
@@ -27,6 +36,13 @@ var _death_room_index: int = 0
 
 
 func _ready() -> void:
+	PROFILE.ensure_loaded()
+	_items.gold = PROFILE.coins
+	if level_id == 2:
+		_start_screen.get_node("Center/Card/Padding/Content/Description").text = "第二关 · 导能遗迹\n击败灾厄巨蝎，从开启的出口离开。"
+		_start_screen.get_node("Center/Card/Padding/Content/Tagline").text = "循着金线，唤醒沉寂的遗迹。"
+		_start_screen.start_button.text = "进入第二关"
+		_hud.get_node("LevelObjective").world = _dungeon
 	_overlay.pause_requested.connect(set_paused.bind(true))
 	_overlay.guide_requested.connect(open_guide)
 	_overlay.resume_requested.connect(_resume_playing)
@@ -48,8 +64,9 @@ func _ready() -> void:
 	_commerce.external_pause_state = func() -> bool: return _run_state == RunState.PAUSED
 	_start_screen.shop_requested.connect(_commerce.open_menu_shop)
 	_start_screen.backpack_requested.connect(_commerce.open_menu_backpack)
-	_rune_puzzle.feedback.connect(_hud.show_item_message)
-	_rune_puzzle.solved.connect(_on_rune_puzzle_solved)
+	if _rune_puzzle != null:
+		_rune_puzzle.feedback.connect(_hud.show_item_message)
+		_rune_puzzle.solved.connect(_on_rune_puzzle_solved)
 	_hud.update_weapon_status(true)
 	_hud.bind_combat_actions(_player)
 	_player.hp_changed.connect(_hud.update_hp_bar)
@@ -63,10 +80,6 @@ func _ready() -> void:
 	_items.buff_changed.connect(_hud.update_attack_buff)
 	_items.pickup_prompt_changed.connect(_hud.update_pickup_prompt)
 	_items.feedback.connect(_hud.show_item_message)
-	var economy := preload("res://scenes/items/economy_hud.gd").new()
-	economy.name = "Economy"
-	_hud.get_node("ItemsPanel/Padding/Content").add_child(economy)
-	economy.bind_inventory(_items)
 	_hud.use_potion_requested.connect(_items.try_use_potion)
 	_hud.use_rune_requested.connect(_items.try_use_rune)
 	_boss_bar.update_hp(_boss.hp, _boss.max_hp)
@@ -76,6 +89,17 @@ func _ready() -> void:
 	_boss.battle_started.connect(_on_boss_battle_started)
 	_boss.died.connect(_on_boss_died)
 	_boss.tree_exiting.connect(_on_boss_exiting)
+	_player.feedback.connect(_hud.show_item_message)
+	_player.get_node("CharacterAbility").feedback.connect(_hud.show_item_message)
+	var bindings := preload("res://scripts/integration/run_bindings.gd").new()
+	bindings.name = "RunBindings"
+	add_child(bindings)
+	var navigation := preload("res://scripts/integration/menu_navigation.gd").new()
+	navigation.name = "MenuNavigation"
+	add_child(navigation)
+	if CHARACTERS.start_pending:
+		CHARACTERS.start_pending = false
+		_on_run_started.call_deferred()
 
 
 func _process(delta: float) -> void:
@@ -84,7 +108,16 @@ func _process(delta: float) -> void:
 
 
 func _on_run_started() -> void:
-	if _run_state != RunState.MENU or _commerce.view != _commerce.View.NONE:
+	if _run_state != RunState.MENU or _transition_queued or _commerce.view != _commerce.View.NONE:
+		return
+	if not PROFILE.owns(_start_screen.selected_character_id):
+		_start_screen.show_status("请先使用金币解锁该角色")
+		return
+	if _player.character_id != _start_screen.selected_character_id:
+		_transition_queued = true
+		CHARACTERS.selected_id = _start_screen.selected_character_id
+		CHARACTERS.start_pending = true
+		_change_scene.call_deferred("")
 		return
 	_run_state = RunState.PLAYING
 	_elapsed_seconds = 0.0
@@ -92,6 +125,7 @@ func _on_run_started() -> void:
 	_dungeon.process_mode = Node.PROCESS_MODE_PAUSABLE
 	_hud.show()
 	_dungeon.begin_run()
+	get_node("MenuNavigation").progress.mark_played(level_id)
 	_commerce.set_run_active(true)
 	_refresh_overlay()
 
@@ -118,13 +152,13 @@ func _on_boss_died() -> void:
 	_boss_bar.show_defeated()
 	_dungeon.unlock_exit()
 	if not _dungeon.is_exit_opening() and not _dungeon.is_exit_open():
-		_hud.show_item_message("已击败遗迹守门者 · 进入守门者大厅解除出口封印")
+		_hud.show_item_message("已击败%s · 进入大厅解除出口封印" % _boss_name)
 
 
 ## 以世界真正开始开门的事件提示，不能把提前击败Boss误报为出口已解锁。
 func _on_exit_opening_started() -> void:
 	if _run_state == RunState.PLAYING:
-		_hud.show_item_message("已击败遗迹守门者 · 出口封印正在解除")
+		_hud.show_item_message("已击败%s · 出口封印正在解除" % _boss_name)
 
 
 func _on_exit_unlocked() -> void:
@@ -148,15 +182,17 @@ func _on_exit_reached() -> void:
 		"player_max_hp": _player.max_hp,
 		"boss_name": _boss_name,
 		"boss_defeated": _boss_defeated,
-		"puzzle_solved": _rune_puzzle.is_solved(),
-		"reward_claimed": _rune_puzzle.is_reward_claimed(),
+		"puzzle_solved": _rune_puzzle.is_solved() if _rune_puzzle != null else _dungeon.puzzle.get_state() >= _dungeon.puzzle.State.OPEN,
+		"reward_claimed": _rune_puzzle.is_reward_claimed() if _rune_puzzle != null else _dungeon.puzzle.get_state() == _dungeon.puzzle.State.CLAIMED,
+		"level_id": level_id,
 	}
 	_player.velocity = Vector3.ZERO
 	_dungeon.stop_run()
 	_dungeon.process_mode = Node.PROCESS_MODE_DISABLED
 	_boss_bar.hide()
 	_refresh_overlay()
-	_hud.show_win_screen(_run_result, true)
+	get_node("MenuNavigation").progress.complete(level_id)
+	_hud.show_win_screen(_run_result, level_id == 1)
 
 
 func _on_boss_exiting() -> void:
@@ -221,7 +257,14 @@ func _set_play_mode(state: RunState) -> void:
 
 
 func _refresh_overlay() -> void:
-	_overlay.update_view(_run_state == RunState.PLAYING, _run_state == RunState.PAUSED, _run_state == RunState.GUIDE)
+	_overlay.update_view(_run_state == RunState.PLAYING, false, false)
+	if _commerce.view == _commerce.View.NONE:
+		if _run_state == RunState.PAUSED:
+			_commerce.pause_menu.show_pause(_elapsed_seconds)
+		else:
+			_commerce.pause_menu.hide()
+	if _run_state == RunState.GUIDE:
+		get_node("MenuNavigation").open_settings()
 
 
 func _resume_playing() -> void:
@@ -231,6 +274,11 @@ func _resume_playing() -> void:
 
 func _input(event: InputEvent) -> void:
 	if event.is_echo() or not event.is_action_pressed("pause"):
+		return
+	var navigation := get_node_or_null("MenuNavigation")
+	if navigation != null and navigation.settings_screen.visible:
+		navigation.settings_screen.go_back()
+		get_viewport().set_input_as_handled()
 		return
 	if _commerce.view != _commerce.View.NONE:
 		return

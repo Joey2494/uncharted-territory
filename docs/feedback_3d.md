@@ -80,7 +80,7 @@ $HitFlash.flash()
 # 示例契约，不表示团队 Enemy 已提供这些接口；在敌人 ready 后接入。
 var initial: Vector2i = Vector2i(initial_hp, maximum_hp) # 由真实生成流程提供
 var ok: bool = enemy.get_node("HealthLabel").bind_health_source(
-    enemy, initial.x, initial.y
+	enemy, initial.x, initial.y
 )
 assert(ok)
 ```

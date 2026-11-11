@@ -164,7 +164,10 @@ func _move_charge(delta: float) -> void:
 		if is_instance_valid(collider) and (collider.collision_layer & 2) != 0 and collider.has_method("take_damage"):
 			charge_contact.emit(collider, charge_damage)
 			if is_instance_valid(collider):
-				collider.call("take_damage", charge_damage)
+				if collider.has_method("take_direct_damage"):
+					collider.call("take_direct_damage", charge_damage, global_position)
+				else:
+					collider.call("take_damage", charge_damage)
 		_begin_recovery()
 		return
 	if _charge_remaining <= 0.001 or global_position.distance_to(before) < 0.00001:

@@ -6,6 +6,18 @@ signal died
 signal death_animation_finished
 signal dodge_started
 signal dodge_finished
+signal energy_changed(current: float, maximum: float)
+signal shield_changed(current: int, maximum: int)
+signal feedback(message: String)
+
+const CATALOG = preload("res://scenes/player/character_catalog.gd")
+@export_enum("knight", "lan", "iron", "astra") var character_id: String = "knight"
+@export var energy_regeneration: float = 5.0
+var energy: float = 0.0
+var max_energy: float = 40.0
+var shield: int = 0
+var max_shield: int = 0
+var _energy_recovery_delay: float = 0.0
 
 @export_range(0.1, 30.0, 0.1) var move_speed: float = 8.0
 @export_range(0.1, 30.0, 0.1) var walk_speed: float = 5.0
@@ -34,7 +46,26 @@ var _dodge_total_duration: float = 0.0
 var _attack_was_enabled: bool = true
 
 
+func _enter_tree() -> void:
+	# Keep the Knight node name as a shared animation/skeleton contract.
+	if character_id != "knight":
+		var original := get_node("Visuals/Model/Knight")
+		var holder := original.get_parent()
+		holder.remove_child(original)
+		original.free()
+		var model := CATALOG.create_model(character_id)
+		model.name = "Knight"
+		holder.add_child(model)
+
 func _ready() -> void:
+	var data := CATALOG.definition(character_id)
+	max_hp = data.hp
+	max_energy = data.energy
+	energy = max_energy
+	max_shield = data.shield
+	shield = max_shield
+	walk_speed = data.walk
+	move_speed = data.run
 	hp = max_hp
 
 
@@ -45,6 +76,11 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	var recovery_delta := maxf(0.0, delta - _energy_recovery_delay)
+	_energy_recovery_delay = maxf(0.0, _energy_recovery_delay - delta)
+	if recovery_delta > 0.0 and energy < max_energy:
+		energy = minf(max_energy, energy + energy_regeneration * recovery_delta)
+		energy_changed.emit(energy, max_energy)
 	_invulnerability_remaining = maxf(0.0, _invulnerability_remaining - delta)
 	_dodge_invulnerability_remaining = maxf(0.0, _dodge_invulnerability_remaining - delta)
 	_dodge_cooldown_remaining = maxf(0.0, _dodge_cooldown_remaining - delta)
@@ -60,6 +96,8 @@ func _physics_process(delta: float) -> void:
 		velocity.z = _dodge_direction.z * _dodge_speed * step_fraction
 	else:
 		var speed := move_speed if Input.is_action_pressed("sprint") else minf(walk_speed, move_speed)
+		if $CharacterAbility.is_guarding():
+			speed *= 0.5
 		velocity.x = move_direction.x * speed
 		velocity.z = move_direction.z * speed
 	if not is_on_floor():
@@ -73,6 +111,8 @@ func _physics_process(delta: float) -> void:
 		if _dodge_remaining < 0.000001:
 			_finish_dodge()
 	elif not move_direction.is_zero_approx():
+		if $CharacterAbility.is_guarding():
+			return
 		var target_yaw := atan2(-move_direction.x, -move_direction.z)
 		visuals.rotation.y = lerp_angle(
 			visuals.rotation.y, target_yaw, 1.0 - exp(-turn_speed * delta)
@@ -154,6 +194,24 @@ func heal(amount: int, menu: Node = null) -> int:
 func get_attack_damage(base_damage: int) -> int:
 	return _items.get_attack_damage(base_damage)
 
+func get_spell_cost() -> float:
+	return 8.0 if character_id == "astra" else 10.0
+
+func spend_energy(amount: float) -> bool:
+	if _dead or not can_process() or amount < 0.0 or energy + 0.000001 < amount:
+		return false
+	energy = maxf(0.0, energy - amount)
+	_energy_recovery_delay = 1.0
+	energy_changed.emit(energy, max_energy)
+	return true
+
+func take_direct_damage(amount: int, source_position: Vector3) -> bool:
+	if _dead or not can_process() or amount <= 0 or is_invulnerable():
+		return false
+	if $CharacterAbility.block_direct_hit(source_position):
+		return false
+	return take_damage(amount)
+
 
 func take_damage(amount: int) -> bool:
 	if not is_node_ready() or not can_process() or _dead or amount <= 0 or is_invulnerable():
@@ -162,6 +220,15 @@ func take_damage(amount: int) -> bool:
 		# Reserve the contact window before guard/UI signals can cause reentry.
 		_invulnerability_remaining = maxf(hit_invulnerability, 0.05)
 		if _items.consume_guard():
+			return true
+	var absorbed := mini(amount, shield)
+	if absorbed > 0:
+		shield -= absorbed
+		shield_changed.emit(shield, max_shield)
+		amount -= absorbed
+		if amount == 0:
+			_invulnerability_remaining = hit_invulnerability
+			_hit_flash.flash()
 			return true
 	var applied := mini(amount, hp)
 	hp -= applied

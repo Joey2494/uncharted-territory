@@ -1,6 +1,7 @@
 extends Node3D
 
 signal feedback(message: String)
+signal door_opening_started
 signal solved
 signal reward_claimed
 
@@ -104,6 +105,7 @@ func claim_reward(player: CharacterBody3D) -> bool:
 
 
 func _open_hidden_room() -> void:
+	door_opening_started.emit()
 	state = State.OPENING
 	$StatusLabel.text = "符文共鸣 · 暗门开启中"
 	_hidden_passage.show()

@@ -4,6 +4,8 @@ extends Control
 
 const EMPTY_WEAPON_ICON: Texture2D = preload("res://assets/ui/weapon_empty.svg")
 const EQUIPPED_WEAPON_ICON: Texture2D = preload("res://assets/ui/weapon_equipped.svg")
+const POTION_ICON: Texture2D = preload("res://assets/ui/potion.svg")
+const ATTACK_RUNE_ICON: Texture2D = preload("res://assets/ui/attack_rune.svg")
 const DEATH_SCREEN: PackedScene = preload("res://scenes/ui/death_screen.tscn")
 const WIN_SCREEN: PackedScene = preload("res://scenes/ui/win_screen.tscn")
 const CURRENT_ROOM_COLOR: Color = Color("b99a5c")
@@ -11,10 +13,22 @@ const VISITED_ROOM_COLOR: Color = Color("756442")
 
 signal restart_requested
 signal next_level_requested
+signal main_menu_requested
+# Legacy request ports; generic hotbar selection is a separate UI-only request.
 signal use_potion_requested
 signal use_rune_requested
+signal skip_tutorial_requested
+signal hotbar_selection_requested(index: int, item_id: StringName)
 
 @export_range(1, 99, 1) var total_rooms: int = 3
+
+@onready var energy_bar: ProgressBar = %EnergyBar
+@onready var energy_text: Label = %EnergyText
+@onready var gold_label: Label = %GoldLabel
+@onready var ammo_label: Label = %AmmoLabel
+@onready var guard_rune_label: Label = %GuardRuneLabel
+@onready var guard_rune_detail: Label = %GuardRuneDetail
+@onready var guard_rune_icon: TextureRect = %GuardRuneIcon
 
 @onready var hp_bar: ProgressBar = %HPBar
 @onready var hp_text: Label = %HPText
@@ -27,9 +41,8 @@ signal use_rune_requested
 @onready var room_badge: PanelContainer = %RoomBadge
 @onready var room_icon: TextureRect = %RoomIcon
 @onready var room_segments: HBoxContainer = %RoomSegments
-@onready var potion_button: Button = %PotionButton
-@onready var rune_button: Button = %RuneButton
-@onready var buff_label: Label = %BuffLabel
+@onready var feedback_panel: PanelContainer = %FeedbackPanel
+@onready var hotbar: PanelContainer = %Hotbar
 @onready var pickup_prompt: Label = %PickupPrompt
 @onready var item_message: Label = %ItemMessage
 @onready var melee_cooldown: PanelContainer = %MeleeCooldown
@@ -45,6 +58,11 @@ var _message_remaining: float = 0.0
 var _combat_player: CharacterBody3D
 var _combat_attack: Node3D
 var _combat_skill: Node3D
+var _tutorial_mode: bool = false
+var _tutorial_message: String = ""
+var _tutorial_move_directions: Array[String] = []
+var _revealed_actions: Array[String] = []
+var _nearby_prompt: String = ""
 
 
 func _ready() -> void:
@@ -53,11 +71,14 @@ func _ready() -> void:
 	hp_bar.add_theme_stylebox_override("fill", _hp_fill)
 	_weapon_badge_style = weapon_badge.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
 	weapon_badge.add_theme_stylebox_override("panel", _weapon_badge_style)
+	update_energy_bar(0.0, 0.0)
+	update_gold(0)
+	update_ammo(0)
+	update_guard_rune(&"none")
 	update_room_label(0)
-	potion_button.pressed.connect(func() -> void: use_potion_requested.emit())
-	rune_button.pressed.connect(func() -> void: use_rune_requested.emit())
-	update_inventory(0, 0)
-	update_attack_buff(1.0, 0.0)
+	%TutorialPrompt.skip_requested.connect(func() -> void: skip_tutorial_requested.emit())
+	hotbar.selection_requested.connect(func(index: int, item_id: StringName) -> void: hotbar_selection_requested.emit(index, item_id))
+	item_message.hide()
 	update_pickup_prompt("")
 
 
@@ -67,6 +88,8 @@ func _process(delta: float) -> void:
 		_message_remaining = maxf(0.0, _message_remaining - delta)
 		if _message_remaining == 0.0:
 			item_message.text = ""
+			item_message.hide()
+			_update_feedback_visibility()
 
 
 func bind_combat_actions(player: CharacterBody3D) -> void:
@@ -81,6 +104,16 @@ func _update_combat_cooldowns() -> void:
 		for indicator in [melee_cooldown, dodge_cooldown, skill_cooldown]:
 			indicator.update_cooldown(0.0, 1.0, "未就绪")
 		return
+	var ability := _combat_player.get_node("CharacterAbility")
+	%CharacterCooldown.visible = _combat_player.character_id != "knight"
+	var ability_block := ""
+	if _combat_player.is_dead() or not _combat_player.can_process():
+		ability_block = "暂不可用"
+	elif _combat_player.is_dodging():
+		ability_block = "闪避中"
+	elif ability.remaining > 0.0:
+		ability_block = "持续 %.1fs" % ability.remaining
+	%CharacterCooldown.update_cooldown(ability.get_cooldown_remaining(), ability.get_cooldown_duration(), ability_block)
 	# Read the same timers and guards used by the actions, including freeze/death.
 	# This HUD owns no cooldown clock and never changes an action's state.
 	var blocked := ""
@@ -94,16 +127,18 @@ func _update_combat_cooldowns() -> void:
 			attack_block = "闪避中" if _combat_player.is_dodging() else "暂不可用"
 		elif _combat_attack.is_attacking():
 			attack_block = "攻击中"
+		elif ability.is_guarding():
+			attack_block = "举盾中"
+		elif ability.is_casting() or _combat_skill.is_action_locked():
+			attack_block = "施法中"
 	var attack_duration := maxf(_combat_attack.attack_cooldown,
 		_combat_attack.windup_duration + _combat_attack.active_duration + _combat_attack.recovery_duration)
-	var inventory := _combat_player.get_node_or_null("ItemInventory")
-	if inventory != null and inventory.equipped_weapon == inventory.FIREARM:
-		var firearm := _combat_player.get_node("Firearm")
-		if attack_block.is_empty() and inventory.ammo <= 0:
-			attack_block = "无弹药"
-		melee_cooldown.update_cooldown(firearm.get_cooldown_remaining(), firearm.cooldown, attack_block)
-	else:
-		melee_cooldown.update_cooldown(_combat_attack.get_cooldown_remaining(), attack_duration, attack_block)
+	var inventory := _combat_player.get_node("ItemInventory")
+	var firearm := _combat_player.get_node("Firearm")
+	var ranged: bool = inventory.equipped_weapon == inventory.FIREARM
+	melee_cooldown.get_node("%AbilityName").text = "手炮" if ranged else "普通攻击"
+	if ranged and inventory.ammo <= 0 and attack_block.is_empty(): attack_block = "弹药不足"
+	melee_cooldown.update_cooldown(firearm.get_cooldown_remaining() if ranged else _combat_attack.get_cooldown_remaining(), firearm.cooldown if ranged else attack_duration, attack_block)
 	var dodge_block := blocked
 	if dodge_block.is_empty():
 		if _combat_player.is_dodging():
@@ -118,28 +153,125 @@ func _update_combat_cooldowns() -> void:
 			skill_block = "暂不可用"
 		elif _combat_player.is_dodging():
 			skill_block = "闪避中"
-	skill_cooldown.update_cooldown(_combat_skill.get_cooldown_remaining(), _combat_skill.cooldown, skill_block)
+		elif ability.is_guarding():
+			skill_block = "举盾中"
+		elif ability.is_casting():
+			skill_block = "施法中"
+		elif not _combat_attack.can_chain_cast():
+			skill_block = "攻击中"
+		elif _combat_player.energy < _combat_player.get_spell_cost():
+			skill_block = "能量不足"
+	skill_cooldown.update_cooldown(_combat_skill.get_cooldown_remaining(), _combat_skill.get_cooldown_duration(), skill_block)
+
+
+func update_energy_bar(current: float, maximum: float) -> void:
+	# This display accepts external resource data. It never spends energy or
+	# blocks the existing spell; an unknown maximum is shown explicitly.
+	if not is_finite(current) or not is_finite(maximum) or maximum <= 0.0:
+		energy_bar.max_value = 1.0
+		energy_bar.value = 0.0
+		energy_text.text = "-- / --"
+		energy_text.tooltip_text = ""
+		return
+	energy_bar.max_value = maximum
+	energy_bar.value = clampf(current, 0.0, maximum)
+	energy_text.text = "%s / %s" % [_resource_number(roundi(energy_bar.value)), _resource_number(roundi(maximum))]
+	energy_text.tooltip_text = "技能能量 %s / %s" % [str(energy_bar.value), str(maximum)]
+
+
+func update_gold(amount: int) -> void:
+	gold_label.text = _resource_number(maxi(amount, 0))
+	gold_label.tooltip_text = "金币 %d" % maxi(amount, 0)
+
+
+func update_ammo(amount: int) -> void:
+	ammo_label.text = _resource_number(maxi(amount, 0))
+	ammo_label.tooltip_text = "弹药 %d" % maxi(amount, 0)
+
+
+func update_guard_rune(state: StringName, charges: int = 0, remaining: float = 0.0) -> void:
+	# Remaining time is supplied by the caller; the HUD owns no gameplay clock.
+	var descriptions := {&"none": "未获得", &"ready": "可用", &"active": "生效中", &"depleted": "已耗尽"}
+	var known: bool = descriptions.has(state)
+	var lit := state in [&"ready", &"active"]
+	guard_rune_label.text = "守护符文 · %s" % descriptions.get(state, "未知")
+	guard_rune_label.add_theme_color_override("font_color", Color("d8b76d") if lit else Color("a29a86"))
+	guard_rune_icon.self_modulate = Color("d6b568") if lit else Color("6e6b5b")
+	var detail := ""
+	if known and charges > 0:
+		detail = "剩余 %s 次" % _resource_number(charges)
+	if known and is_finite(remaining) and remaining > 0.0:
+		detail += (" · " if not detail.is_empty() else "") + "%.1f 秒" % remaining
+	guard_rune_detail.text = detail
+	guard_rune_detail.visible = not detail.is_empty()
+
+
+func _resource_number(value: int) -> String:
+	if value >= 100000000:
+		return "%.1f亿" % (value / 100000000.0)
+	if value >= 1000000:
+		return "%.1f万" % (value / 10000.0)
+	return str(value)
 
 
 func update_inventory(potions: int, runes: int) -> void:
-	potion_button.text = "R 生命药剂 ×%d" % potions
-	rune_button.text = "F 强化符文 ×%d" % runes
-	potion_button.disabled = potions <= 0
-	rune_button.disabled = runes <= 0
+	# GameRun already supplies the real ItemInventory counts on spawn, pickup,
+	# use and checkpoint restore. Do not mix in the separate commerce demo data.
+	set_hotbar_data([
+		{"id": &"health_potion", "icon": POTION_ICON, "count": maxi(potions, 0), "tint": Color("9dbd8a")},
+		{"id": &"attack_rune", "icon": ATTACK_RUNE_ICON, "count": maxi(runes, 0), "tint": Color("d6b46b")},
+		{}, {}, {}, {},
+	])
 
 
-func update_attack_buff(multiplier: float, remaining: float) -> void:
-	buff_label.text = "攻击 ×%s · 剩余 %d 秒" % [str(multiplier).trim_suffix(".0"), int(ceil(remaining))] if remaining > 0.0 else "攻击强化：未激活"
-	buff_label.add_theme_color_override("font_color", Color("d2ae6a") if remaining > 0.0 else Color("9a968b"))
+func set_hotbar_data(items: Array, selected_index: int = -1) -> void:
+	# Display caller-owned icons/counts. Do not infer inventory or apply effects.
+	hotbar.set_items(items, selected_index)
+
+
+func set_hotbar_selected(index: int) -> bool:
+	return hotbar.set_selected(index)
+
+
+func get_hotbar_selected_index() -> int:
+	return hotbar.get_selected_index()
+
+
+func update_attack_buff(_multiplier: float, _remaining: float) -> void:
+	# Preserve the external update interface without owning or displaying buffs.
+	pass
 
 
 func update_pickup_prompt(message: String) -> void:
-	pickup_prompt.text = message if not message.is_empty() else "靠近道具按 E 拾取"
+	_nearby_prompt = message
+	pickup_prompt.text = message
+	pickup_prompt.visible = not message.is_empty() and _tutorial_message.is_empty()
+	_update_feedback_visibility()
+
+
+func _update_feedback_visibility() -> void:
+	feedback_panel.visible = pickup_prompt.visible or item_message.visible
+
+
+func set_tutorial_guidance(message: String, revealed: Array[String], move_directions: Array[String] = []) -> void:
+	if _tutorial_mode and _tutorial_message == message and _revealed_actions == revealed and _tutorial_move_directions == move_directions:
+		return
+	_tutorial_mode = true
+	_tutorial_message = message
+	_revealed_actions.assign(revealed)
+	_tutorial_move_directions.assign(move_directions)
+	%TutorialPrompt.set_lesson(message, move_directions)
+	melee_cooldown.get_node("%InputHint").visible = revealed.has("attack")
+	skill_cooldown.get_node("%InputHint").visible = revealed.has("spell")
+	dodge_cooldown.get_node("%InputHint").visible = revealed.has("dodge")
+	update_pickup_prompt(_nearby_prompt)
 
 
 func show_item_message(message: String) -> void:
 	item_message.text = message
+	item_message.visible = not message.is_empty()
 	_message_remaining = 3.0
+	_update_feedback_visibility()
 
 
 func update_hp_bar(current: int, maximum: int) -> void:
@@ -232,11 +364,11 @@ func show_death_screen(room_index: int) -> void:
 	_show_result_screen(screen)
 
 
-func show_win_screen(result: Dictionary = {}, offer_next_level: bool = false) -> void:
+func show_win_screen(result: Dictionary = {}, can_advance: bool = false) -> void:
 	var screen = WIN_SCREEN.instantiate()
 	screen.completed_rooms = total_rooms
 	screen.set_run_result(result)
-	screen.offer_next_level = offer_next_level
+	screen.offer_next_level = can_advance
 	screen.next_level_requested.connect(func() -> void: next_level_requested.emit())
 	_show_result_screen(screen)
 
@@ -256,10 +388,11 @@ func _show_result_screen(screen: Control) -> void:
 		_result_screen.queue_free()
 	_result_screen = screen
 	screen.connect("restart_requested", func() -> void: restart_requested.emit())
+	if screen.has_signal("main_menu_requested"):
+		screen.connect("main_menu_requested", func() -> void: main_menu_requested.emit())
 	_result_layer.add_child(screen)
 
 
-## 将载入失败显示在当前结算卡片内，保留所有可用操作。
 func show_result_error(message: String) -> void:
 	if is_instance_valid(_result_screen):
 		_result_screen.get_node("Center/Card/Padding/Content/Description").text = message
