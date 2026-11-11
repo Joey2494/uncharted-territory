@@ -36,4 +36,9 @@ func _refresh_depth() -> void:
 
 func _focus_action() -> void:
 	if is_node_ready() and is_visible_in_tree():
-		restart_button.grab_focus.call_deferred()
+		_safe_focus.call_deferred(restart_button)
+
+
+func _safe_focus(button: Button) -> void:
+	if is_instance_valid(button) and button.is_inside_tree() and button.is_visible_in_tree():
+		button.grab_focus()

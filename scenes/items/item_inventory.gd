@@ -1,5 +1,7 @@
 extends Node3D
 
+signal pickup_succeeded(target: Node)
+signal item_used(item_type: int)
 signal inventory_changed(potions: int, runes: int)
 signal buff_changed(multiplier: float, remaining: float)
 signal pickup_prompt_changed(message: String)
@@ -64,7 +66,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		try_use_guard()
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("switch_weapon"):
-		try_equip(Catalog.MELEE if equipped_weapon == FIREARM else FIREARM)
+		if _can_use() and not owns_firearm:
+			feedback.emit("尚未获得手炮 · 可先在商城购买")
+		else:
+			try_equip(Catalog.MELEE if equipped_weapon == FIREARM else FIREARM)
 		get_viewport().set_input_as_handled()
 
 
@@ -153,7 +158,10 @@ func try_interact_nearest() -> bool:
 	var target := _get_nearest_interaction_target()
 	if target == null:
 		return false
-	return target.try_interact(_player) if target.has_method("try_interact") else target.try_collect(_player)
+	var success: bool = target.try_interact(_player) if target.has_method("try_interact") else target.try_collect(_player)
+	if success:
+		pickup_succeeded.emit(target)
+	return success
 
 
 func add_item(item_type: int, quantity: int = 1) -> bool:
@@ -182,6 +190,7 @@ func try_use_potion(menu: Node = null) -> bool:
 	_heal_pulse.scale = Vector3.ONE * 0.6
 	_heal_pulse.transparency = 0.0
 	_publish_state()
+	item_used.emit(HEALTH_POTION)
 	feedback.emit("使用生命药剂 · 恢复 %d 点生命" % restored)
 	return true
 
@@ -200,6 +209,7 @@ func try_use_rune(menu: Node = null) -> bool:
 	_buff_aura.show()
 	_publish_state()
 	buff_changed.emit(get_multiplier(), _buff_remaining)
+	item_used.emit(ATTACK_RUNE)
 	feedback.emit("攻击强化%s · 伤害 ×%s，持续 %s 秒" % ["已刷新" if was_active else "已激活", str(rune_multiplier).trim_suffix(".0"), str(rune_duration).trim_suffix(".0")])
 	return true
 
@@ -383,8 +393,12 @@ func try_equip(item_id: int, menu: Node = null) -> bool:
 		return false
 	if _player.is_dodging() or _player.get_node("MeleeAttack").is_attacking():
 		return false
+	var ability := _player.get_node("CharacterAbility")
+	if ability.is_guarding() or ability.is_casting() or _player.get_node("EnergyShock").is_action_locked():
+		return false
 	equipped_weapon = item_id
 	_publish_state()
+	feedback.emit("已切换手炮 · J 开火，I 切回近战" if item_id == FIREARM else "已切换近战 · J 攻击，I 切换手炮")
 	return true
 
 

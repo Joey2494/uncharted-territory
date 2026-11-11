@@ -49,12 +49,15 @@ func get_cooldown_remaining() -> float:
 func try_fire() -> bool:
 	if not is_node_ready() or not can_process() or _remaining > 0.0 or _player.is_dead() or _player.is_dodging():
 		return false
+	var ability := _player.get_node("CharacterAbility")
+	if ability.is_guarding() or ability.is_casting() or _player.get_node("EnergyShock").is_action_locked():
+		return false
 	if _inventory.equipped_weapon != Catalog.FIREARM or _player.get_node("MeleeAttack").is_attacking():
 		return false
 	if _inventory.ammo <= 0:
 		_inventory.feedback.emit("弹药不足")
 		return false
-	_remaining = cooldown
+	_remaining = cooldown / 1.3 if ability.is_focused() else cooldown
 	if not _inventory.try_spend_ammo():
 		_remaining = 0.0
 		return false

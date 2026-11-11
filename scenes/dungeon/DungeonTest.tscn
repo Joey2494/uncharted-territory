@@ -507,6 +507,9 @@ position = Vector3(3, 0.05, -23)
 [node name="AttackRune" parent="." instance=ExtResource("5_rune")]
 position = Vector3(-27, 0.05, -23)
 
+[node name="EntrancePotion" parent="." instance=ExtResource("4_potion")]
+position = Vector3(-2.4, 0.05, 1.6)
+
 [node name="SupplyPotion" parent="." instance=ExtResource("4_potion")]
 position = Vector3(-24, 0.05, -26)
 

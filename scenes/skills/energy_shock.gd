@@ -6,7 +6,7 @@ signal released(projectile: Node3D)
 @export_range(1, 100, 1) var damage: int = 2
 @export_range(1.0, 100.0, 0.5) var projectile_speed: float = 18.0
 @export_range(1.0, 30.0, 0.5) var max_distance: float = 10.0
-@export_range(0.1, 10.0, 0.1) var cooldown: float = 2.0
+@export_range(0.1, 10.0, 0.1) var cooldown: float = 0.8
 @export_range(0.05, 1.0, 0.01) var release_effect_duration: float = 0.18
 
 @onready var _caster: CharacterBody3D = get_parent()
@@ -15,6 +15,7 @@ signal released(projectile: Node3D)
 
 var _cooldown_remaining: float = 0.0
 var _effect_remaining: float = 0.0
+var _action_lock_remaining: float = 0.0
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -26,8 +27,18 @@ func _unhandled_input(event: InputEvent) -> void:
 func try_cast() -> bool:
 	if not is_node_ready() or not can_process() or _cooldown_remaining > 0.0:
 		return false
-	if _caster.is_dead() or _caster.is_dodging() or projectile_scene == null:
+	if _caster.is_dead() or _caster.is_dodging() or projectile_scene == null or _caster.get_node("CharacterAbility").is_guarding():
 		return false
+	if _caster.get_node("CharacterAbility").is_casting():
+		return false
+	var attack := _caster.get_node("MeleeAttack")
+	# Only cancel recovery; never erase a swing before its damage window.
+	if not attack.can_chain_cast():
+		return false
+	if not _caster.spend_energy(_caster.get_spell_cost()):
+		_caster.feedback.emit("能量不足 · J普攻可继续使用")
+		return false
+	attack.cancel_attack()
 	var direction := -_facing.global_basis.z
 	direction.y = 0.0
 	direction = direction.normalized()
@@ -37,7 +48,8 @@ func try_cast() -> bool:
 	_caster.get_parent().add_child(projectile)
 	projectile.global_position = _caster.global_position + Vector3.UP * 0.95
 	projectile.launch(direction, _caster.get_attack_damage(damage), projectile_speed, max_distance, _caster)
-	_cooldown_remaining = cooldown
+	_cooldown_remaining = get_cooldown_duration()
+	_action_lock_remaining = 0.18
 	_effect_remaining = release_effect_duration
 	_effect.global_rotation = Vector3(0.0, atan2(-direction.x, -direction.z), 0.0)
 	_update_effect()
@@ -48,8 +60,15 @@ func try_cast() -> bool:
 func get_cooldown_remaining() -> float:
 	return _cooldown_remaining
 
+func get_cooldown_duration() -> float:
+	return cooldown / 1.3 if _caster.get_node("CharacterAbility").is_focused() else cooldown
+
+func is_action_locked() -> bool:
+	return _action_lock_remaining > 0.0
+
 
 func _physics_process(delta: float) -> void:
+	_action_lock_remaining = maxf(0.0, _action_lock_remaining - delta)
 	_cooldown_remaining = maxf(0.0, _cooldown_remaining - delta)
 	if _cooldown_remaining < 0.000001:
 		_cooldown_remaining = 0.0

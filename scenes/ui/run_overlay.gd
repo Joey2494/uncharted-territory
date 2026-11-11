@@ -39,7 +39,7 @@ func update_view(playing: bool, paused: bool, guide: bool) -> void:
 	%BackpackButton.visible = paused
 	%Title.text = "探索指引" if guide else "探索已暂停"
 	%Body.text = (
-		"WASD / 方向键移动，左键攻击，Q 发射能量弹，方向键加 Space 闪避。\n\n靠近道具或机关按 E，R 使用药剂，F 使用强化符文，G 激活守护，V 切换手炮，P 打开商城。战斗房完整入场后封门，清除守卫即可继续。\n\n生命耗尽可从入口重开。击败守门者后踏入出口即可通关，再从结算页前往第二关。新关卡会重新整备生命和道具。"
+		"WASD / 方向键移动，J 攻击，K 发射能量弹，方向键加 Space 闪避。\n\n靠近道具或机关按 E，R 使用药剂，F 使用强化符文，G 激活守护，I 切换手炮，P 打开商城。战斗房完整入场后封门，清除守卫即可继续。\n\n生命耗尽可从入口重开。击败守门者后踏入出口即可通关，再从结算页前往第二关。新关卡会重新整备生命和道具。"
 		if guide else "继续当前探索，或从入口重新开始。"
 	)
 	if _modal.visible:
@@ -53,7 +53,6 @@ func show_error(message: String) -> void:
 
 
 func _layout_corner() -> void:
-	# 窄窗口的道具面板横跨底部，控制按钮移到该面板上方。
-	var bottom := -226.0 if get_viewport_rect().size.x < 960.0 else -44.0
-	_corner.offset_top = bottom - 44.0
-	_corner.offset_bottom = bottom
+	_corner.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	_corner.position = Vector2(24, 184)
+	_corner.size = _corner.get_combined_minimum_size()

@@ -93,7 +93,6 @@ func update_product(data: Dictionary) -> void:
 	_owned.text = "已持有 %d" % maxi(int(data.get("owned",0)),0)
 	_buy.text = str(data.get("purchase_label","购买"))
 	_buy.disabled = not data.get("can_buy",false)
-	_buy.tooltip_text = _buy.text if _buy.disabled else str(data.get("name",""))
 
 func get_buy_button() -> Button:
 	return _buy

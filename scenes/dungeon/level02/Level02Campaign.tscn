@@ -1,0 +1,5 @@
+[gd_scene load_steps=3 format=3]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/level02/Level02.tscn" id="base"]
+[ext_resource type="Script" path="res://scenes/dungeon/level02/campaign_level02.gd" id="script"]
+[node name="Level02" instance=ExtResource("base")]
+script = ExtResource("script")

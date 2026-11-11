@@ -75,6 +75,28 @@ theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(0.83,0.70,0.41,1)
 text = ""
 
+[node name="Tabs" type="HBoxContainer" parent="Center/Card/Padding/Content"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ShopTab" type="Button" parent="Center/Card/Padding/Content/Tabs"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_default_cursor_shape = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 15
+text = "商城"
+disabled = false
+
+[node name="BackpackTab" type="Button" parent="Center/Card/Padding/Content/Tabs"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_default_cursor_shape = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 15
+text = "背包"
+disabled = true
+
 [node name="Body" type="HBoxContainer" parent="Center/Card/Padding/Content"]
 layout_mode = 2
 theme_override_constants/separation = 16

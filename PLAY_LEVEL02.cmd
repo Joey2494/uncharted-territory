@@ -6,4 +6,4 @@ if not exist "%GODOT_EXE%" (
   pause
   exit /b 1
 )
-start "" "%GODOT_EXE%" --path "%~dp0." res://tests/scenes/Level02Preview.tscn
+start "" "%GODOT_EXE%" --path "%~dp0." res://scenes/dungeon/Level02Run.tscn

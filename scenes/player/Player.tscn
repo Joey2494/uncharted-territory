@@ -1,6 +1,7 @@
-[gd_scene load_steps=21 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://scenes/player/Player.gd" id="1_player"]
+[ext_resource type="Script" path="res://scenes/player/character_ability.gd" id="19_ability"]
 [ext_resource type="PackedScene" path="res://scenes/player/MeleeAttack.tscn" id="2_attack"]
 [ext_resource type="Script" path="res://scenes/ui/hit_flash_3d.gd" id="3_flash"]
 [ext_resource type="PackedScene" path="res://scenes/skills/EnergyShock.tscn" id="4_skill"]
@@ -81,5 +82,7 @@ script = ExtResource("16_cast_animation")
 [node name="DeathAnimation" type="Node" parent="."]
 script = ExtResource("18_death_animation")
 
+[node name="CharacterAbility" type="Node3D" parent="."]
+script = ExtResource("19_ability")
 [node name="Firearm" type="Node3D" parent="."]
 script = ExtResource("19_firearm")

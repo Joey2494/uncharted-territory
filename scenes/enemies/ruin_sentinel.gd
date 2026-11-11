@@ -34,6 +34,8 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	_control_remaining = maxf(0.0, _control_remaining - delta)
+	_slow_remaining = maxf(0.0, _slow_remaining - delta)
 	velocity.x = 0.0
 	velocity.z = 0.0
 	velocity.y = 0.0 if is_on_floor() else velocity.y + get_gravity().y * delta
@@ -42,7 +44,7 @@ func _physics_process(delta: float) -> void:
 	if not _has_live_target():
 		_cancel_shot()
 		state = State.IDLE
-	elif _hurt_remaining > 0.0:
+	elif _hurt_remaining > 0.0 or _control_remaining > 0.0:
 		_cancel_shot()
 		state = State.HURT
 	elif _charging:
@@ -85,8 +87,9 @@ func _update_ranged_pursuit() -> void:
 			state = State.IDLE
 	else:
 		state = State.CHASE
-		velocity.x = direction.x * move_speed
-		velocity.z = direction.z * move_speed
+		var speed_scale := 0.7 if _slow_remaining > 0.0 else 1.0
+		velocity.x = direction.x * move_speed * speed_scale
+		velocity.z = direction.z * move_speed * speed_scale
 
 
 func _release_shot() -> void:

@@ -31,9 +31,11 @@ func _ready() -> void:
 	inventory.pickup_prompt_changed.connect(_hud.update_pickup_prompt)
 	_hud.use_potion_requested.connect(inventory.try_use_potion)
 	_hud.use_rune_requested.connect(inventory.try_use_rune)
-	var economy := preload("res://scenes/items/economy_hud.gd").new()
-	_hud.get_node("ItemsPanel/Padding/Content").add_child(economy)
-	economy.bind_inventory(inventory)
+	inventory.state_changed.connect(func(_snapshot: Dictionary) -> void:
+		_hud.update_gold(inventory.gold)
+		_hud.update_ammo(inventory.ammo))
+	_player.energy_changed.connect(_hud.update_energy_bar)
+	_hud.update_energy_bar(_player.energy, _player.max_energy)
 	# Explicit sandbox loadout, never granted in the first-level main scene.
 	inventory.grant_reward("prototype_loadout", {0: 3, 1: 2, 2: 2, 3: 1, 4: 12}, 80)
 	_commerce = preload("res://scenes/ui/CommerceLayer.tscn").instantiate()

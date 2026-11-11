@@ -34,9 +34,9 @@ mouse_filter = 2
 [node name="Padding" type="MarginContainer" parent="."]
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/margin_left = 8
+theme_override_constants/margin_left = 6
 theme_override_constants/margin_top = 7
-theme_override_constants/margin_right = 8
+theme_override_constants/margin_right = 6
 theme_override_constants/margin_bottom = 7
 
 [node name="Content" type="VBoxContainer" parent="Padding"]
@@ -47,11 +47,11 @@ theme_override_constants/separation = 4
 [node name="Header" type="HBoxContainer" parent="Padding/Content"]
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 4
 
 [node name="AbilityIcon" type="TextureRect" parent="Padding/Content/Header"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(24, 24)
+custom_minimum_size = Vector2(20, 20)
 layout_mode = 2
 size_flags_vertical = 4
 mouse_filter = 2
@@ -70,7 +70,7 @@ unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.85, 0.78, 0.62, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 13
 text = "普攻"
 
 [node name="InputHint" type="Label" parent="Padding/Content/Header/Titles"]
@@ -78,7 +78,7 @@ unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.60, 0.57, 0.50, 1)
-theme_override_font_sizes/font_size = 10
+theme_override_font_sizes/font_size = 12
 text = "鼠标左键"
 
 [node name="StateLabel" type="Label" parent="Padding/Content"]
@@ -86,7 +86,7 @@ unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.64, 0.60, 0.53, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 13
 text = "未就绪"
 horizontal_alignment = 1
 

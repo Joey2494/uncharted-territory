@@ -44,7 +44,7 @@ Main（团队真实游戏宿主，名称仅示意）
 │       └── ResultLayer (CanvasLayer，layer=20，HUD 动态创建)
 │           └── DeathScreen 或 WinScreen
 └── StartLayer (CanvasLayer，宿主自行管理)
-    └── StartScreen（开始后隐藏或释放）
+	└── StartScreen（开始后隐藏或释放）
 ```
 
 每个菜单内部：Full Rect Control → Backdrop + Center → Card → 石面/角饰/Padding/Content → 标题、摘要和按钮。Card 宽 520；开始背景不透明，结算遮罩保留后方世界/HUD 的可见轮廓。静态装饰忽略鼠标，菜单根节点阻挡背景点击；真实玩法输入必须由宿主另外停止。
@@ -61,12 +61,12 @@ StartScreen 自身只发出 start_requested。宿主可通过自有的导出 Pac
 @export var gameplay_scene: PackedScene
 
 func _on_start_requested() -> void:
-    if gameplay_scene != null:
-        get_tree().change_scene_to_packed(gameplay_scene)
+	if gameplay_scene != null:
+		get_tree().change_scene_to_packed(gameplay_scene)
 
 func _on_restart_requested() -> void:
-    get_tree().paused = false
-    # 由真实主流程重载/新建游戏，清理旧世界并初始化状态。
+	get_tree().paused = false
+	# 由真实主流程重载/新建游戏，清理旧世界并初始化状态。
 ```
 
 这个重开示意不包含团队玩法实现；真实地牢、敌人、装备、旧信号、随机生成和暂停恢复必须由宿主管理。

@@ -1,13 +1,16 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scenes/dungeon/level02/level02.gd" id="map"]
+[ext_resource type="Script" path="res://scenes/dungeon/level02/stone_region.gd" id="stone_region"]
+[ext_resource type="Script" path="res://scenes/dungeon/level02/stone_cover.gd" id="stone_cover"]
 [ext_resource type="Script" path="res://scenes/dungeon/level02/hub_guard.gd" id="hub_guard"]
 [ext_resource type="PackedScene" path="res://scenes/dungeon/DungeonRegion.tscn" id="region"]
 [ext_resource type="PackedScene" path="res://scenes/dungeon/components/ProgressionGate.tscn" id="gate"]
 [ext_resource type="Script" path="res://scenes/dungeon/components/room_progress_controller.gd" id="progress"]
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="player"]
-[ext_resource type="PackedScene" path="res://scenes/enemies/MeleeEnemy.tscn" id="enemy"]
-[ext_resource type="PackedScene" path="res://scenes/bosses/RuinGatekeeper.tscn" id="boss"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/RuinCrawler.tscn" id="enemy"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/RuinSentinel.tscn" id="sentinel"]
+[ext_resource type="PackedScene" path="res://scenes/bosses/RuinColossus.tscn" id="boss"]
 [ext_resource type="PackedScene" path="res://scenes/items/HealthPotion.tscn" id="potion"]
 [ext_resource type="Script" path="res://scenes/dungeon/follow_camera.gd" id="camera"]
 [ext_resource type="PackedScene" path="res://scenes/puzzles/energy_relay/RelayControl.tscn" id="control"]
@@ -16,9 +19,9 @@
 
 [sub_resource type="Environment" id="Environment"]
 background_mode = 1
-background_color = Color(0.048, 0.065, 0.078, 1)
+background_color = Color(0.035, 0.04, 0.032, 1)
 ambient_light_source = 3
-ambient_light_color = Color(0.71, 0.82, 0.9, 1)
+ambient_light_color = Color(0.60, 0.65, 0.72, 1)
 ambient_light_energy = 0.65
 
 [sub_resource type="BoxShape3D" id="ExitShape"]
@@ -65,6 +68,7 @@ shadow_enabled = true
 [node name="Regions" type="Node3D" parent="."]
 
 [node name="Arrival" parent="Regions" instance=ExtResource("region")]
+script = ExtResource("stone_region")
 position = Vector3(0, 0, 0)
 dimensions = Vector2(14, 12)
 display_name = "A · 到达平台"
@@ -72,6 +76,7 @@ floor_color = Color(0.23, 0.28, 0.29, 1)
 open_north = true
 
 [node name="Hub" parent="Regions" instance=ExtResource("region")]
+script = ExtResource("stone_region")
 position = Vector3(0, 0, -26)
 dimensions = Vector2(22, 18)
 display_name = "B · 分流中庭"
@@ -82,6 +87,7 @@ open_east = true
 open_west = true
 
 [node name="Relay" parent="Regions" instance=ExtResource("region")]
+script = ExtResource("stone_region")
 position = Vector3(34, 0, -26)
 dimensions = Vector2(18, 14)
 display_name = "C · 导能回廊"
@@ -90,6 +96,7 @@ open_north = true
 open_west = true
 
 [node name="Antechamber" parent="Regions" instance=ExtResource("region")]
+script = ExtResource("stone_region")
 position = Vector3(34, 0, -56)
 dimensions = Vector2(20, 16)
 display_name = "D · 共鸣前厅"
@@ -99,6 +106,7 @@ open_south = true
 open_west = true
 
 [node name="Boss" parent="Regions" instance=ExtResource("region")]
+script = ExtResource("stone_region")
 position = Vector3(34, 0, -86)
 dimensions = Vector2(26, 24)
 display_name = "E · 守门者大厅"
@@ -107,6 +115,7 @@ open_north = true
 open_south = true
 
 [node name="Exit" parent="Regions" instance=ExtResource("region")]
+script = ExtResource("stone_region")
 position = Vector3(34, 0, -110)
 dimensions = Vector2(12, 8)
 display_name = "F · 出口"
@@ -114,6 +123,7 @@ floor_color = Color(0.34, 0.32, 0.22, 1)
 open_south = true
 
 [node name="Archive" parent="Regions" instance=ExtResource("region")]
+script = ExtResource("stone_region")
 position = Vector3(-34, 0, -26)
 dimensions = Vector2(16, 14)
 display_name = "G · 符文档案室"
@@ -123,6 +133,7 @@ open_east = true
 open_north = true
 
 [node name="Vault" parent="Regions" instance=ExtResource("region")]
+script = ExtResource("stone_region")
 position = Vector3(-34, 0, -52)
 dimensions = Vector2(12, 10)
 display_name = "H · 奖励密室"
@@ -131,6 +142,7 @@ optional_branch = true
 open_south = true
 
 [node name="ArrivalPass" parent="Regions" instance=ExtResource("region")]
+script = ExtResource("stone_region")
 position = Vector3(0, 0, -11.5)
 dimensions = Vector2(5, 11)
 display_name = "入口通道"
@@ -140,6 +152,7 @@ open_north = true
 open_south = true
 
 [node name="EastPass" parent="Regions" instance=ExtResource("region")]
+script = ExtResource("stone_region")
 position = Vector3(18, 0, -26)
 dimensions = Vector2(14, 5)
 display_name = "导能通道"
@@ -149,6 +162,7 @@ open_east = true
 open_west = true
 
 [node name="RelayPass" parent="Regions" instance=ExtResource("region")]
+script = ExtResource("stone_region")
 position = Vector3(34, 0, -40.5)
 dimensions = Vector2(5, 15)
 display_name = "前厅通道"
@@ -158,6 +172,7 @@ open_north = true
 open_south = true
 
 [node name="BossPass" parent="Regions" instance=ExtResource("region")]
+script = ExtResource("stone_region")
 position = Vector3(34, 0, -69)
 dimensions = Vector2(5, 10)
 display_name = "大厅通道"
@@ -167,6 +182,7 @@ open_north = true
 open_south = true
 
 [node name="ExitPass" parent="Regions" instance=ExtResource("region")]
+script = ExtResource("stone_region")
 position = Vector3(34, 0, -102)
 dimensions = Vector2(5, 8)
 display_name = "出口通道"
@@ -176,6 +192,7 @@ open_north = true
 open_south = true
 
 [node name="ArchivePass" parent="Regions" instance=ExtResource("region")]
+script = ExtResource("stone_region")
 position = Vector3(-18.5, 0, -26)
 dimensions = Vector2(15, 5)
 display_name = "支线通道"
@@ -186,6 +203,7 @@ open_east = true
 open_west = true
 
 [node name="VaultPass" parent="Regions" instance=ExtResource("region")]
+script = ExtResource("stone_region")
 position = Vector3(-34, 0, -40)
 dimensions = Vector2(5, 14)
 display_name = "密室通道"
@@ -196,6 +214,7 @@ open_north = true
 open_south = true
 
 [node name="ShortcutVertical" parent="Regions" instance=ExtResource("region")]
+script = ExtResource("stone_region")
 position = Vector3(0, 0, -44.25)
 dimensions = Vector2(5, 18.5)
 display_name = "回环北段"
@@ -205,6 +224,7 @@ open_north = true
 open_south = true
 
 [node name="ShortcutElbow" parent="Regions" instance=ExtResource("region")]
+script = ExtResource("stone_region")
 position = Vector3(0, 0, -56)
 dimensions = Vector2(5, 5)
 display_name = "回环转角"
@@ -214,6 +234,7 @@ open_south = true
 open_east = true
 
 [node name="ShortcutHorizontal" parent="Regions" instance=ExtResource("region")]
+script = ExtResource("stone_region")
 position = Vector3(13.25, 0, -56)
 dimensions = Vector2(21.5, 5)
 display_name = "回环东段"
@@ -334,7 +355,7 @@ target_path = NodePath("../../Player")
 detection_range = 18.0
 lose_range = 24.0
 
-[node name="Relay2" parent="Enemies" instance=ExtResource("enemy")]
+[node name="Relay2" parent="Enemies" instance=ExtResource("sentinel")]
 position = Vector3(39, 0.05, -27)
 target_path = NodePath("../../Player")
 detection_range = 18.0
@@ -346,7 +367,7 @@ target_path = NodePath("../../Player")
 detection_range = 18.0
 lose_range = 24.0
 
-[node name="Antechamber2" parent="Enemies" instance=ExtResource("enemy")]
+[node name="Antechamber2" parent="Enemies" instance=ExtResource("sentinel")]
 position = Vector3(38, 0.05, -59)
 target_path = NodePath("../../Player")
 detection_range = 18.0
@@ -360,7 +381,7 @@ lose_range = 24.0
 
 [node name="Boss" parent="." instance=ExtResource("boss")]
 position = Vector3(34, 0.05, -88)
-boss_name = "遗迹守门者 · 第二关占位"
+boss_name = "灾厄巨蝎"
 detection_range = 20.0
 
 [node name="Cover" type="Node3D" parent="."]
@@ -384,6 +405,9 @@ mesh = SubResource("CoverMesh")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Cover/East"]
 shape = SubResource("CoverShape")
+
+[node name="StoneDressing" type="Node3D" parent="Cover"]
+script = ExtResource("stone_cover")
 
 [node name="Supplies" type="Node3D" parent="."]
 

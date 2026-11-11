@@ -13,7 +13,7 @@
 ```text
 左上角 (24,24)
 [心形框] 生命 / 状态提示                 5/5 HP
-         [──────────细长暗红血条──────────]
+		 [──────────细长暗红血条──────────]
 [房间图标  房间 X/3                 ] [武器图标]
 [          ▰▰▰  ▰▰▰  ▱▱▱          ] [无武器/已装备]
 ```
@@ -48,7 +48,7 @@ HUD (Control，Full Rect；外部提供 CanvasLayer)
 │   │       └── Padding → Content → WeaponIcon / WeaponLabel
 │   └── WeaponHint (隐藏的兼容字段)
 └── ResultLayer (CanvasLayer，layer=20；首次结算时动态创建)
-    └── DeathScreen 或 WinScreen（一次仅一个）
+	└── DeathScreen 或 WinScreen（一次仅一个）
 ```
 
 ## 世界、HUD 与结算层的接入结构
@@ -62,10 +62,10 @@ Main（团队真实游戏宿主，待接入）
 ├── Enemy 实例（Visuals / HitFlash / HealthLabel: Label3D）
 ├── Pickup 实例
 └── HUDLayer (CanvasLayer，layer=10，关闭跟随视口)
-    └── HUD
-        ├── Panel（透明定位组及三个独立组件）
-        └── ResultLayer (CanvasLayer，layer=20，HUD 动态创建)
-            └── DeathScreen 或 WinScreen
+	└── HUD
+		├── Panel（透明定位组及三个独立组件）
+		└── ResultLayer (CanvasLayer，layer=20，HUD 动态创建)
+			└── DeathScreen 或 WinScreen
 ```
 
 ResultLayer 的生命周期跟随 HUD，释放旧 HUD 会一并释放结果层。暂停/恢复、实际世界重建和新一局初始化由宿主负责；HUD 不自行决定通关、暂停或游戏目标场景。详细流程见 [screen_flow.md](screen_flow.md)。

@@ -1,6 +1,7 @@
 extends Control
 ## Grid, selection and use intents; gameplay effects belong to the data provider.
 signal use_item_requested(item_id: StringName)
+signal shop_requested
 signal back_requested
 const SLOT = preload("res://scenes/ui/inventory_slot.gd")
 const UI_STYLE = preload("res://scenes/ui/commerce_ui_style.gd")
@@ -12,18 +13,8 @@ var _demo_mode: bool = true
 func _ready() -> void:
 	theme = UI_STYLE.create_theme()
 	%BackButton.pressed.connect(func() -> void: back_requested.emit())
+	%ShopTab.pressed.connect(func() -> void: shop_requested.emit())
 	%UseButton.pressed.connect(_request_use)
-	get_viewport().size_changed.connect(_layout)
-	_layout()
-
-
-func _layout() -> void:
-	var viewport := get_viewport_rect().size
-	var compact := viewport.x < 800
-	%Card.custom_minimum_size.x = minf(840.0, viewport.x - 48.0)
-	%ItemGrid.columns = 3 if compact else 4
-	$Center/Card/Padding/Content/Body/GridScroll.custom_minimum_size = Vector2(
-		248 if compact else 334, clampf(viewport.y - 320.0, 180.0, 360.0))
 
 func set_inventory_data(items: Array, capacity: int = 12) -> void:
 	_items.clear()
@@ -45,14 +36,14 @@ func set_inventory_data(items: Array, capacity: int = 12) -> void:
 	%CapacityLabel.text = "物品 %d / %d" % [_items.size(),count]
 	_refresh()
 	if _items.is_empty() and is_visible_in_tree():
-		%BackButton.grab_focus.call_deferred()
+		_safe_focus.call_deferred(%BackButton)
 
 func show_backpack(back_label: String = "返回主菜单") -> void:
 	%BackButton.text = back_label
-	show_feedback("",true)
+	show_feedback("选择物品查看详情。",true)
 	show()
 	var target: Button = _slots[0] if not _items.is_empty() else %BackButton
-	target.grab_focus.call_deferred()
+	_safe_focus.call_deferred(target)
 
 func show_feedback(message: String, success: bool) -> void:
 	%FeedbackLabel.text = message
@@ -107,3 +98,8 @@ func set_demo_mode(enabled: bool) -> void:
 	%ModeLabel.text = "演示数据 · 每次启动重置 · Esc 返回" if enabled else "Esc 返回"
 	_demo_mode = enabled
 	_refresh()
+
+
+func _safe_focus(control: Control) -> void:
+	if is_instance_valid(control) and control.is_inside_tree() and control.is_visible_in_tree():
+		control.grab_focus()

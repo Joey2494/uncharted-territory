@@ -168,6 +168,8 @@ func close_all() -> void:
 	view = View.NONE
 	_restore_pause()
 	_update_shortcut()
+	if external_pause and get_parent().has_method("_refresh_overlay"):
+		get_parent()._refresh_overlay()
 
 
 func _hide_views() -> void:
@@ -196,7 +198,7 @@ func _restore_pause() -> void:
 	Input.mouse_mode = _previous_mouse_mode
 	var focus: Control = _previous_focus.get_ref() if _previous_focus != null else null
 	if is_instance_valid(focus) and focus.is_visible_in_tree() and not focus.is_queued_for_deletion():
-		focus.grab_focus.call_deferred()
+		_safe_focus.call_deferred(focus)
 	_previous_focus = null
 
 
@@ -280,12 +282,19 @@ func _refresh() -> void:
 
 func _update_shortcut() -> void:
 	if external_pause:
-		var top := 140.0 if get_viewport().get_visible_rect().size.x >= 960.0 else 24.0
+		# Shared campaign HUD owns the top-right resources at every window width.
+		var top := 154.0
 		shortcut.offset_top = top
 		shortcut.offset_bottom = top + 76.0
+		wallet.hide() # The shared resource panel already displays the same wallet.
 	shortcut.visible = _playing and _enabled and view == View.NONE
 	shop_button.disabled = not _can_open()
 
 
 func _exit_tree() -> void:
 	_restore_pause()
+
+
+func _safe_focus(control: Control) -> void:
+	if is_instance_valid(control) and control.is_inside_tree() and control.is_visible_in_tree():
+		control.grab_focus()

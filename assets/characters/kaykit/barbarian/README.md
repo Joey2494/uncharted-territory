@@ -1,4 +1,6 @@
-# KayKit Barbarian Boss model
+# KayKit Barbarian character model
+
+2026-11-11 role update: this body is now the playable Iron guard, with separate round-shield and armor presentation. The first-level Boss now uses `../BronzeGatekeeper.tscn`. The original import and animation notes below are retained for provenance.
 
 - Author: Kay Lousberg — https://www.kaylousberg.com/
 - Source: https://kaylousberg.itch.io/kaykit-adventurers
