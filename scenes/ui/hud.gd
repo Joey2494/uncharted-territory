@@ -96,7 +96,14 @@ func _update_combat_cooldowns() -> void:
 			attack_block = "攻击中"
 	var attack_duration := maxf(_combat_attack.attack_cooldown,
 		_combat_attack.windup_duration + _combat_attack.active_duration + _combat_attack.recovery_duration)
-	melee_cooldown.update_cooldown(_combat_attack.get_cooldown_remaining(), attack_duration, attack_block)
+	var inventory := _combat_player.get_node_or_null("ItemInventory")
+	if inventory != null and inventory.equipped_weapon == inventory.FIREARM:
+		var firearm := _combat_player.get_node("Firearm")
+		if attack_block.is_empty() and inventory.ammo <= 0:
+			attack_block = "无弹药"
+		melee_cooldown.update_cooldown(firearm.get_cooldown_remaining(), firearm.cooldown, attack_block)
+	else:
+		melee_cooldown.update_cooldown(_combat_attack.get_cooldown_remaining(), attack_duration, attack_block)
 	var dodge_block := blocked
 	if dodge_block.is_empty():
 		if _combat_player.is_dodging():

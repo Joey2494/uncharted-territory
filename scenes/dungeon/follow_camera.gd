@@ -7,6 +7,7 @@ extends Camera3D
 @export_range(0.1, 20.0, 0.1) var zoom_speed: float = 5.0
 @export_range(0.1, 1.0, 0.05) var actor_padding: float = 0.45
 @export_range(0.5, 0.98, 0.01) var occluder_transparency: float = 0.9
+@export_range(10.0, 32.0) var label_height_pixels := 24.0
 
 # Default framing also supports using the dungeon scene on its own.
 const SAFE_FRAME := Rect2(0.30, 0.18, 0.64, 0.74)
@@ -112,6 +113,9 @@ func _actor_dimensions(actor: Node3D) -> Vector2:
 	for child in actor.get_children():
 		if child is Label3D and child.visible:
 			height = maxf(height, child.position.y + 0.7)
+	# Arthropod silhouettes extend beyond their central collision capsules.
+	radius = maxf(radius, float(actor.get_meta("camera_radius", radius)))
+	height = maxf(height, float(actor.get_meta("camera_height", height)))
 	return Vector2(radius, height)
 
 
@@ -156,7 +160,7 @@ func _update_labels(actors: Array[Node3D]) -> void:
 	var active: Dictionary = {}
 	var viewport_size := get_viewport().get_visible_rect().size
 	# Match UI text in logical pixels; Window applies the uniform screen scale.
-	var label_height := 24.0
+	var label_height := label_height_pixels
 	var camera_transform := get_camera_transform()
 	for actor in actors:
 		for child in actor.get_children():

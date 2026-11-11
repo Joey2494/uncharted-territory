@@ -51,6 +51,9 @@ func _unhandled_input(event: InputEvent) -> void:
 func try_attack() -> bool:
 	if not is_node_ready() or not can_process() or not attack_enabled or _attacking or _cooldown_remaining > 0.0:
 		return false
+	var inventory := get_parent().get_node_or_null("ItemInventory")
+	if player_input_enabled and inventory != null and inventory.equipped_weapon == inventory.FIREARM:
+		return get_parent().get_node("Firearm").try_fire()
 	# Snapshot the facing direction: moving or turning does not widen this swing.
 	global_rotation = Vector3(0.0, _facing.global_rotation.y, 0.0)
 	_current_damage = attack_damage

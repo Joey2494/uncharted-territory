@@ -8,6 +8,8 @@ enum State { READY, RESETTING, OPENING, OPEN, CLAIMED }
 
 const CORRECT_SEQUENCE: Array[int] = [1, 2, 0]
 const SYMBOLS: Array[String] = ["日", "月", "星"]
+@export var opening_gold: int = 40
+@export var reward_items: Dictionary = {0: 2, 1: 2, 2: 1, 3: 1}
 
 @onready var _runes: Array[StaticBody3D] = [$SunRune, $MoonRune, $StarRune]
 @onready var _hidden_passage: Node3D = $"../Regions/SecretPassage"
@@ -85,14 +87,18 @@ func claim_reward(player: CharacterBody3D) -> bool:
 		return false
 	# Reserve before inventory signals fire so repeated E requests cannot dupe it.
 	state = State.CLAIMED
-	inventory.add_item(0)
-	inventory.add_item(0)
-	inventory.add_item(1)
+	if not inventory.grant_reward("chest:" + str(get_path()), reward_items):
+		state = State.OPEN
+		feedback.emit("背包空间不足，奖励保留在宝箱内")
+		return false
 	$RewardChest/ChestLabel.text = "奖励已领取"
 	var tween := create_tween()
 	tween.tween_property($RewardChest/LidPivot, "rotation:x", -1.2, 0.35)
 	$StatusLabel.text = "共鸣完成 · 奖励已领取"
-	feedback.emit("密室奖励：生命药剂 ×2，强化符文 ×1")
+	var names := PackedStringArray()
+	for item_id in reward_items:
+		names.append("%s ×%d" % [preload("res://data/item_catalog.gd").get_item(item_id).name, reward_items[item_id]])
+	feedback.emit("密室奖励：" + "，".join(names))
 	reward_claimed.emit()
 	return true
 
@@ -110,11 +116,16 @@ func _open_hidden_room() -> void:
 
 
 func _finish_opening() -> void:
+	if state != State.OPENING:
+		return
 	$HiddenDoor/CollisionShape3D.set_deferred("disabled", true)
 	$HiddenDoor.hide()
 	state = State.OPEN
 	$StatusLabel.text = "隐藏奖励房间已开启"
 	feedback.emit("符文共鸣！隐藏奖励房间已开启")
+	preload("res://scenes/items/coin_pickup.gd").spawn(
+		get_parent(), _hidden_room.global_position + Vector3(1.5, 0.05, 1.5),
+		opening_gold, "secret:" + str(get_path()))
 	solved.emit()
 
 

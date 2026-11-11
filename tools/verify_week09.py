@@ -9,7 +9,7 @@ from pathlib import Path
 
 SUITES = (
     "test_secret_door", "test_room_progress", "test_gate_lifecycle",
-    "test_gate_integration", "test_tutorial", "test_level02_layout",
+    "test_gate_integration", "test_level02_layout",
     "test_energy_relay", "test_level02_integration", "test_level02_navigation",
     "test_campaign_flow", "test_export_presentation",
 )

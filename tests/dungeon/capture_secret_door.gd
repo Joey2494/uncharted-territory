@@ -17,7 +17,6 @@ func run() -> void:
     root.add_child(game)
     root.size = window_size
     game._on_run_started()
-    game.get_node("DungeonTest").request_tutorial_skip()
     var dungeon = game.get_node("DungeonTest")
     var player = dungeon.get_node("Player")
     player.position = Vector3(-26, 0.05, -28)

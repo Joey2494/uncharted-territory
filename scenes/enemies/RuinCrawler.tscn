@@ -1,0 +1,47 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scenes/enemies/MeleeEnemy.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player/MeleeAttack.tscn" id="2"]
+[ext_resource type="Script" path="res://scenes/ui/hit_flash_3d.gd" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/ui/enemy_health_label_3d.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/CryptSpiderModel.tscn" id="5"]
+
+[sub_resource type="CapsuleShape3D" id="Shape"]
+radius = 0.62
+height = 1.6
+
+[node name="RuinCrawler" type="CharacterBody3D" groups=["camera_targets"]]
+collision_layer = 4
+collision_mask = 7
+script = ExtResource("1")
+metadata/camera_radius = 1.85
+metadata/camera_height = 1.85
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.8, 0)
+shape = SubResource("Shape")
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="Model" parent="Visuals" instance=ExtResource("5")]
+
+[node name="MeleeAttack" parent="." instance=ExtResource("2")]
+player_input_enabled = false
+range_color = Color(0.95, 0.20, 0.08, 0.30)
+show_windup_preview = true
+attack_range = 1.65
+attack_arc_degrees = 100.0
+attack_height = 1.4
+windup_duration = 0.4
+recovery_duration = 0.28
+attack_cooldown = 1.2
+target_collision_mask = 2
+
+[node name="HitFlash" type="Node" parent="."]
+script = ExtResource("3")
+visual_root = NodePath("../Visuals")
+
+[node name="HealthLabel" parent="." instance=ExtResource("4")]
+position = Vector3(0, 1.85, 0)
+font_size = 40
+pixel_size = 0.004

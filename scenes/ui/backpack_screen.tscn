@@ -1,0 +1,183 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/backpack_screen.gd" id="1_script"]
+[ext_resource type="Theme" path="res://scenes/ui/menu_theme.tres" id="2_theme"]
+[ext_resource type="Material" path="res://scenes/ui/stone_material.tres" id="3_stone"]
+[ext_resource type="PackedScene" path="res://scenes/ui/dungeon_frame.tscn" id="4_frame"]
+
+[node name="BackpackScreen" type="Control"]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_script")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.035, 0.04, 0.032, 1)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Card" type="PanelContainer" parent="Center"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(680, 0)
+layout_mode = 2
+
+[node name="StoneSurface" type="ColorRect" parent="Center/Card"]
+material = ExtResource("3_stone")
+layout_mode = 2
+mouse_filter = 2
+
+[node name="DungeonFrame" parent="Center/Card" instance=ExtResource("4_frame")]
+
+[node name="Padding" type="MarginContainer" parent="Center/Card"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="Content" type="VBoxContainer" parent="Center/Card/Padding"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="HBoxContainer" parent="Center/Card/Padding/Content"]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="Center/Card/Padding/Content/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 32
+text = "行囊背包"
+
+[node name="CapacityLabel" type="Label" parent="Center/Card/Padding/Content/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.83,0.70,0.41,1)
+text = ""
+
+[node name="Body" type="HBoxContainer" parent="Center/Card/Padding/Content"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="GridScroll" type="ScrollContainer" parent="Center/Card/Padding/Content/Body"]
+custom_minimum_size = Vector2(334,300)
+layout_mode = 2
+horizontal_scroll_mode = 0
+follow_focus = true
+
+[node name="ItemGrid" type="GridContainer" parent="Center/Card/Padding/Content/Body/GridScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0
+columns = 4
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+
+[node name="DetailPanel" type="VBoxContainer" parent="Center/Card/Padding/Content/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="ItemHeader" type="HBoxContainer" parent="Center/Card/Padding/Content/Body/DetailPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DetailIcon" type="TextureRect" parent="Center/Card/Padding/Content/Body/DetailPanel/ItemHeader"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(44,44)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Titles" type="VBoxContainer" parent="Center/Card/Padding/Content/Body/DetailPanel/ItemHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+
+[node name="ItemName" type="Label" parent="Center/Card/Padding/Content/Body/DetailPanel/ItemHeader/Titles"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = ""
+
+[node name="ItemCategory" type="Label" parent="Center/Card/Padding/Content/Body/DetailPanel/ItemHeader/Titles"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = ""
+
+[node name="Divider" type="HSeparator" parent="Center/Card/Padding/Content/Body/DetailPanel"]
+layout_mode = 2
+
+[node name="ItemDescription" type="RichTextLabel" parent="Center/Card/Padding/Content/Body/DetailPanel"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0,90)
+layout_mode = 2
+theme_override_font_sizes/normal_font_size = 14
+theme_override_colors/default_color = Color(0.78,0.73,0.61,1)
+text = ""
+
+[node name="ItemCount" type="Label" parent="Center/Card/Padding/Content/Body/DetailPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = ""
+
+[node name="EquipmentState" type="Label" parent="Center/Card/Padding/Content/Body/DetailPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.83,0.70,0.41,1)
+text = ""
+
+[node name="UseButton" type="Button" parent="Center/Card/Padding/Content/Body/DetailPanel"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0,42)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 15
+text = "使用物品"
+
+[node name="FeedbackLabel" type="Label" parent="Center/Card/Padding/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0,32)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = ""
+autowrap_mode = 2
+max_lines_visible = 2
+
+[node name="BackButton" type="Button" parent="Center/Card/Padding/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0,44)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+text = "返回主菜单"
+
+[node name="ModeLabel" type="Label" parent="Center/Card/Padding/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.64,0.60,0.51,1)
+text = "演示数据 · 每次启动重置 · Esc 返回"
+horizontal_alignment = 1

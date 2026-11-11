@@ -16,7 +16,6 @@ func run() -> void:
 	root.add_child(g)
 	root.size = size
 	g._on_run_started()
-	g.get_node("DungeonTest").request_tutorial_skip()
 	# 让 HUD 完成本次尺寸适配，再固定镜头以免安全框重新定位相机。
 	await process_frame
 	await process_frame

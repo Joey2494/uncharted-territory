@@ -24,7 +24,8 @@ func run() -> void:
 		if path.ends_with("Main.tscn"):
 			scene._on_run_started()
 			await physics_frame
-			check(scene.get_node("DungeonTest").request_tutorial_skip(), "第一关教学可主动跳过")
+			check(scene.get_node("DungeonTest/RoomProgress").is_complete(&"l1_entrance"),
+				"第一关入口目标随开局完成")
 		else:
 			scene.start_run()
 			await physics_frame

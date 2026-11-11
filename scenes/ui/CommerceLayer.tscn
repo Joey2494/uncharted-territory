@@ -1,0 +1,55 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/commerce_controller.gd" id="1_controller"]
+[ext_resource type="PackedScene" path="res://scenes/ui/shop_screen.tscn" id="2_shop"]
+[ext_resource type="PackedScene" path="res://scenes/ui/backpack_screen.tscn" id="3_backpack"]
+[ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="4_pause"]
+[ext_resource type="Theme" path="res://scenes/ui/menu_theme.tres" id="5_theme"]
+[ext_resource type="Texture2D" path="res://assets/ui/coin.svg" id="6_coin"]
+
+[node name="CommerceLayer" type="CanvasLayer"]
+process_mode = 3
+layer = 30
+script = ExtResource("1_controller")
+
+[node name="Shortcut" type="VBoxContainer" parent="."]
+visible = false
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -168.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = 100.0
+grow_horizontal = 0
+mouse_filter = 2
+theme = ExtResource("5_theme")
+theme_override_constants/separation = 4
+
+[node name="ShopButton" type="Button" parent="Shortcut"]
+custom_minimum_size = Vector2(144, 44)
+layout_mode = 2
+focus_mode = 0
+mouse_default_cursor_shape = 2
+tooltip_text = "商城"
+theme_override_font_sizes/font_size = 16
+theme_override_constants/icon_max_width = 20
+text = "商城 [P]"
+icon = ExtResource("6_coin")
+
+[node name="Wallet" type="Label" parent="Shortcut"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.83, 0.70, 0.41, 1)
+text = "金币 0"
+horizontal_alignment = 2
+mouse_filter = 2
+
+[node name="PauseMenu" parent="." instance=ExtResource("4_pause")]
+visible = false
+
+[node name="ShopScreen" parent="." instance=ExtResource("2_shop")]
+visible = false
+
+[node name="BackpackScreen" parent="." instance=ExtResource("3_backpack")]
+visible = false

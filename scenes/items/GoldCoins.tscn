@@ -1,0 +1,46 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scenes/items/coin_pickup.gd" id="1"]
+[ext_resource type="Font" path="res://scenes/ui/dungeon_font.tres" id="2"]
+
+[sub_resource type="SphereShape3D" id="Shape"]
+radius = 0.45
+
+[sub_resource type="StandardMaterial3D" id="Gold"]
+albedo_color = Color(1, 0.78, 0.12, 1)
+metallic = 0.65
+roughness = 0.25
+emission_enabled = true
+emission = Color(0.2, 0.12, 0, 1)
+
+[sub_resource type="CylinderMesh" id="Coin"]
+material = SubResource("Gold")
+top_radius = 0.32
+bottom_radius = 0.32
+height = 0.12
+
+[node name="GoldCoins" type="Area3D" groups=["item_pickups", "coin_pickups"]]
+collision_layer = 8
+collision_mask = 0
+monitoring = false
+script = ExtResource("1")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.7, 0)
+shape = SubResource("Shape")
+
+[node name="Visuals" type="Node3D" parent="."]
+position = Vector3(0, 0.7, 0)
+
+[node name="Coin" type="MeshInstance3D" parent="Visuals"]
+rotation = Vector3(1.5708, 0, 0)
+mesh = SubResource("Coin")
+
+[node name="NameLabel" type="Label3D" parent="."]
+position = Vector3(0, 1.5, 0)
+billboard = 1
+font = ExtResource("2")
+font_size = 40
+pixel_size = 0.01
+outline_size = 5
+modulate = Color(1, 0.85, 0.35, 1)

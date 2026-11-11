@@ -30,7 +30,7 @@ func run() -> void:
 	check(not c.define_room(&"bad", [&"missing"], &"enemies"), "拒绝不存在的前置")
 	check(c.define_room(&"combat", [&"entry"], &"enemies", 2), "定义战斗房")
 	check(c.define_room(&"boss", [&"combat"], &"enemies", 1), "定义Boss房")
-	check(c.define_room(&"lesson", [], &"tutorial"), "外部目标房间")
+	check(not c.define_room(&"lesson", [], &"unsupported"), "拒绝未支持的房间目标")
 	check(c.define_room(&"empty", [], &"enemies", 1), "空战斗房配置")
 	check(c.define_room(&"deleted", [], &"enemies", 1), "异常删除用例房间")
 	var a := Enemy.new()
@@ -58,7 +58,6 @@ func run() -> void:
 	check(c.get_remaining_enemies(&"combat") == 1, "记录激活前的有效死亡")
 	a.died.emit()
 	check(c.get_remaining_enemies(&"combat") == 1, "重复死亡不重复扣数")
-	check(not c.complete_objective(&"combat",&"enemies"), "不能用外部目标伪造清敌")
 	b.died.emit()
 	check(not c.is_complete(&"combat"), "未真正死亡的信号不能清敌")
 	b.die()
@@ -72,10 +71,6 @@ func run() -> void:
 	deleted.queue_free()
 	await process_frame
 	check(not c.is_complete(&"deleted"), "直接移除节点不算击杀")
-	c.activate_room(&"lesson")
-	check(not c.complete_objective(&"lesson",&"wrong"), "拒绝无关外部目标")
-	check(c.complete_objective(&"lesson",&"tutorial"), "教程完成事件")
-	check(not c.complete_objective(&"lesson",&"tutorial"), "教程事件防重")
 	c.process_mode = Node.PROCESS_MODE_DISABLED
 	check(not c.activate_room(&"boss"), "暂停时不能推进")
 	c.process_mode = Node.PROCESS_MODE_INHERIT

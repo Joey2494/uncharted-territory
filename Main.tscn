@@ -7,9 +7,8 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/BossHealthBar.tscn" id="5_boss_bar"]
 [ext_resource type="Script" path="res://scenes/ui/responsive_layout.gd" id="6_layout"]
 
-[ext_resource type="PackedScene" path="res://scenes/dungeon/tutorial/TutorialOverlay.tscn" id="7_tutorial"]
-
 [ext_resource type="PackedScene" path="res://scenes/ui/RunOverlay.tscn" id="8_run_overlay"]
+[ext_resource type="PackedScene" path="res://scenes/ui/CommerceLayer.tscn" id="9_commerce"]
 
 [node name="Main" type="Node3D"]
 process_mode = 3
@@ -30,11 +29,11 @@ total_rooms = 5
 
 [node name="BossHealthBar" parent="UILayer" instance=ExtResource("5_boss_bar")]
 
-[node name="TutorialOverlay" parent="UILayer" instance=ExtResource("7_tutorial")]
-
 [node name="RunOverlay" parent="UILayer" instance=ExtResource("8_run_overlay")]
 
 [node name="ResponsiveLayout" type="Node" parent="UILayer"]
 process_mode = 3
 script = ExtResource("6_layout")
 
+[node name="CommerceLayer" parent="." instance=ExtResource("9_commerce")]
+external_pause = true

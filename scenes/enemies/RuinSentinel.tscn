@@ -1,0 +1,46 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scenes/enemies/ruin_sentinel.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player/MeleeAttack.tscn" id="2"]
+[ext_resource type="Script" path="res://scenes/ui/hit_flash_3d.gd" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/ui/enemy_health_label_3d.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/VenomSpiderModel.tscn" id="5"]
+
+[sub_resource type="CapsuleShape3D" id="Shape"]
+radius = 0.62
+height = 1.6
+
+[node name="RuinSentinel" type="CharacterBody3D" groups=["camera_targets"]]
+collision_layer = 4
+collision_mask = 7
+script = ExtResource("1")
+max_hp = 4
+detection_range = 10.0
+lose_range = 18.0
+move_speed = 1.8
+gold_reward = 18
+metadata/camera_radius = 1.85
+metadata/camera_height = 1.9
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.8, 0)
+shape = SubResource("Shape")
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="Model" parent="Visuals" instance=ExtResource("5")]
+
+[node name="MeleeAttack" parent="." instance=ExtResource("2")]
+player_input_enabled = false
+attack_enabled = false
+target_collision_mask = 2
+
+[node name="HitFlash" type="Node" parent="."]
+script = ExtResource("3")
+visual_root = NodePath("../Visuals")
+
+[node name="HealthLabel" parent="." instance=ExtResource("4")]
+position = Vector3(0, 1.9, 0)
+font_size = 40
+pixel_size = 0.004
+text = "HP 4/4"

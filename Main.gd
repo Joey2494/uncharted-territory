@@ -11,6 +11,7 @@ const LEVEL02_PATH := "res://tests/scenes/Level02Preview.tscn"
 @onready var _boss_bar: Control = $UILayer/BossHealthBar
 @onready var _rune_puzzle: Node3D = $DungeonTest/RunePuzzle
 @onready var _start_screen: Control = $UILayer/StartScreen
+@onready var _commerce: CanvasLayer = $CommerceLayer
 
 @onready var _overlay: Control = $UILayer/RunOverlay
 
@@ -26,11 +27,12 @@ var _death_room_index: int = 0
 
 
 func _ready() -> void:
-	$UILayer/TutorialOverlay.bind(_dungeon.get_tutorial())
 	_overlay.pause_requested.connect(set_paused.bind(true))
 	_overlay.guide_requested.connect(open_guide)
 	_overlay.resume_requested.connect(_resume_playing)
 	_overlay.restart_requested.connect(_on_restart_requested)
+	_overlay.shop_requested.connect(_commerce.open_shop)
+	_overlay.backpack_requested.connect(_commerce.open_backpack)
 	_hud.update_hp_bar(_player.hp, _player.max_hp)
 	_hud.total_rooms = _dungeon.get_room_count()
 	_hud.update_room_label(_dungeon.get_visited_count() - 1)
@@ -40,6 +42,12 @@ func _ready() -> void:
 	_dungeon.exit_unlocked.connect(_on_exit_unlocked)
 	_dungeon.exit_opening_started.connect(_on_exit_opening_started)
 	_start_screen.start_requested.connect(_on_run_started)
+	_commerce.bind_inventory(_items, func() -> bool:
+		return _run_state in [RunState.PLAYING, RunState.PAUSED],
+		func() -> float: return _elapsed_seconds)
+	_commerce.external_pause_state = func() -> bool: return _run_state == RunState.PAUSED
+	_start_screen.shop_requested.connect(_commerce.open_menu_shop)
+	_start_screen.backpack_requested.connect(_commerce.open_menu_backpack)
 	_rune_puzzle.feedback.connect(_hud.show_item_message)
 	_rune_puzzle.solved.connect(_on_rune_puzzle_solved)
 	_hud.update_weapon_status(true)
@@ -55,6 +63,10 @@ func _ready() -> void:
 	_items.buff_changed.connect(_hud.update_attack_buff)
 	_items.pickup_prompt_changed.connect(_hud.update_pickup_prompt)
 	_items.feedback.connect(_hud.show_item_message)
+	var economy := preload("res://scenes/items/economy_hud.gd").new()
+	economy.name = "Economy"
+	_hud.get_node("ItemsPanel/Padding/Content").add_child(economy)
+	economy.bind_inventory(_items)
 	_hud.use_potion_requested.connect(_items.try_use_potion)
 	_hud.use_rune_requested.connect(_items.try_use_rune)
 	_boss_bar.update_hp(_boss.hp, _boss.max_hp)
@@ -72,7 +84,7 @@ func _process(delta: float) -> void:
 
 
 func _on_run_started() -> void:
-	if _run_state != RunState.MENU:
+	if _run_state != RunState.MENU or _commerce.view != _commerce.View.NONE:
 		return
 	_run_state = RunState.PLAYING
 	_elapsed_seconds = 0.0
@@ -80,6 +92,7 @@ func _on_run_started() -> void:
 	_dungeon.process_mode = Node.PROCESS_MODE_PAUSABLE
 	_hud.show()
 	_dungeon.begin_run()
+	_commerce.set_run_active(true)
 	_refresh_overlay()
 
 
@@ -126,6 +139,7 @@ func _on_exit_reached() -> void:
 		return
 	# Set the terminal state before any UI signals; death/exit cannot replace it.
 	_run_state = RunState.VICTORY
+	_commerce.finish_run()
 	_run_result = {
 		"elapsed_seconds": _elapsed_seconds,
 		"rooms_visited": _dungeon.get_visited_count(),
@@ -156,8 +170,8 @@ func _on_player_died() -> void:
 	# Stop the run clock and reject victory immediately; keep the world processing
 	# while the already input-locked player completes Death_A.
 	_run_state = RunState.DYING
+	_commerce.finish_run()
 	_death_room_index = _dungeon.get_visited_count() - 1
-	$UILayer/TutorialOverlay.hide()
 	_refresh_overlay()
 
 
@@ -218,6 +232,8 @@ func _resume_playing() -> void:
 func _input(event: InputEvent) -> void:
 	if event.is_echo() or not event.is_action_pressed("pause"):
 		return
+	if _commerce.view != _commerce.View.NONE:
+		return
 	if _run_state == RunState.PLAYING:
 		if set_paused(true):
 			get_viewport().set_input_as_handled()
@@ -248,6 +264,7 @@ func advance_to_level02() -> bool:
 
 
 func _change_scene(destination: String) -> void:
+	_commerce.close_all()
 	var tree := get_tree()
 	tree.paused = false
 	var error := tree.reload_current_scene() if destination.is_empty() else tree.change_scene_to_file(destination)

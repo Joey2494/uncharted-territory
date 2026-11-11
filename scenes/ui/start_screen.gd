@@ -2,6 +2,8 @@ extends Control
 ## The host decides which gameplay scene to launch; this view has no scene path.
 
 signal start_requested
+signal shop_requested
+signal backpack_requested
 
 @onready var start_button: Button = %StartButton
 @onready var status_label: Label = %StatusLabel
@@ -9,6 +11,8 @@ signal start_requested
 
 func _ready() -> void:
 	start_button.pressed.connect(func() -> void: start_requested.emit())
+	%ShopButton.pressed.connect(func() -> void: shop_requested.emit())
+	%BackpackButton.pressed.connect(func() -> void: backpack_requested.emit())
 	visibility_changed.connect(_focus_action)
 	_focus_action()
 
