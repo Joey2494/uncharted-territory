@@ -85,7 +85,7 @@ layout_mode = 2
 [node name="Description" type="Label" parent="Center/Card/Padding/Content"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.64, 0.60, 0.51, 1)
-text = "从入口教学出发，穿过中庭，击败守门者。\n踏入出口通关后，可前往第二关。"
+text = "探索地牢，穿过中庭，击败守门者。\n踏入出口通关后，可前往第二关。"
 horizontal_alignment = 1
 
 [node name="StartButton" type="Button" parent="Center/Card/Padding/Content"]

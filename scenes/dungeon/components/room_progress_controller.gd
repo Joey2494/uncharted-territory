@@ -14,13 +14,13 @@ var last_error := ""
 func define_room(room_id: StringName, prerequisites: Array = [], objective: StringName = &"arrival", minimum_enemies: int = 1) -> bool:
 	if _configuration_locked or room_id == &"" or _rooms.has(room_id):
 		return _invalid("房间ID重复、为空或配置已经封存：%s" % room_id)
-	if objective not in [&"arrival", &"enemies", &"tutorial"] or minimum_enemies < 1:
+	if objective not in [&"arrival", &"enemies"] or minimum_enemies < 1:
 		return _invalid("房间目标或敌人下限无效：%s" % room_id)
 	for prerequisite in prerequisites:
 		if (not prerequisite is StringName and not prerequisite is String) or not _rooms.has(prerequisite):
 			return _invalid("房间%s引用未定义的前置%s" % [room_id, prerequisite])
 	_rooms[room_id] = {"state": RoomState.UNVISITED, "prerequisites": prerequisites.duplicate(),
-		"objective": objective, "minimum": minimum_enemies, "enemies": {}, "sealed": false, "fulfilled": false}
+		"objective": objective, "minimum": minimum_enemies, "enemies": {}, "sealed": false}
 	return true
 
 ## 绑定实际敌人的无参数 died；实例ID只用作本局去重，绝不跨关存储。
@@ -58,16 +58,6 @@ func activate_room(room_id: StringName) -> bool:
 	_try_complete(room_id)
 	return true
 
-## 目前仅接收显式教程完成；清敌必须由已登记敌人真实死亡触发。
-func complete_objective(room_id: StringName, objective_id: StringName) -> bool:
-	if not _can_advance() or not _rooms.has(room_id): return false
-	var room: Dictionary = _rooms[room_id]
-	if room.state != RoomState.ACTIVE or room.objective != &"tutorial" or objective_id != room.objective:
-		return false
-	room.fulfilled = true
-	_try_complete(room_id)
-	return is_complete(room_id)
-
 func is_complete(room_id: StringName) -> bool:
 	return get_room_state(room_id) == RoomState.COMPLETE
 
@@ -101,7 +91,7 @@ func _try_complete(room_id: StringName) -> void:
 	if not _can_advance(): return
 	var room: Dictionary = _rooms[room_id]
 	if room.state != RoomState.ACTIVE: return
-	var fulfilled: bool = room.objective == &"arrival" or room.fulfilled
+	var fulfilled: bool = room.objective == &"arrival"
 	if room.objective == &"enemies":
 		fulfilled = room.sealed and get_remaining_enemies(room_id) == 0
 	if not fulfilled: return

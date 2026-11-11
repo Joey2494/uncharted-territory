@@ -27,7 +27,6 @@ var _death_room_index: int = 0
 
 
 func _ready() -> void:
-	$UILayer/TutorialOverlay.bind(_dungeon.get_tutorial())
 	_overlay.pause_requested.connect(set_paused.bind(true))
 	_overlay.guide_requested.connect(open_guide)
 	_overlay.resume_requested.connect(_resume_playing)
@@ -173,7 +172,6 @@ func _on_player_died() -> void:
 	_run_state = RunState.DYING
 	_commerce.finish_run()
 	_death_room_index = _dungeon.get_visited_count() - 1
-	$UILayer/TutorialOverlay.hide()
 	_refresh_overlay()
 
 

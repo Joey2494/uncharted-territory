@@ -10,13 +10,10 @@ signal progression_feedback(message: String)
 
 enum ExitState { LOCKED, OPENING, OPEN }
 
-const TutorialLayout = preload("res://scenes/dungeon/tutorial/tutorial_layout.gd")
-const TutorialOverlay = preload("res://scenes/dungeon/tutorial/TutorialOverlay.tscn")
 const CombatRoomEncounter = preload("res://scenes/dungeon/components/combat_room_encounter.gd")
 @onready var _player: CharacterBody3D = $Player
 @onready var _progress: Node = $RoomProgress
-@onready var _tutorial: TutorialLayout = get_node_or_null("Regions/EntranceHall/TutorialLayout") as TutorialLayout
-var _tutorial_started := false
+var _entrance_started := false
 var _run_started := false
 var _run_stopped := false
 var _encounters: Array[CombatRoomEncounter] = []
@@ -38,11 +35,7 @@ func _ready() -> void:
 			stand.position = Vector3(-6.0 + item_id * 3.0, 0.0, -3.0)
 			add_child(stand)
 	_progress.configuration_error.connect(_on_configuration_error)
-	_progress.define_room(&"l1_entrance", [], &"tutorial")
-	if is_instance_valid(_tutorial):
-		_player.global_position = _tutorial.get_node("PlayerSpawn").global_position
-		_tutorial.completed.connect(_on_tutorial_completed)
-		_tutorial.feedback.connect(progression_feedback.emit)
+	_progress.define_room(&"l1_entrance")
 	_progress.define_room(&"l1_crossroads", [&"l1_entrance"], &"enemies", 1)
 	_progress.define_room(&"l1_boss", [&"l1_crossroads"], &"enemies", 1)
 	_add_encounter($Regions/Crossroads, &"l1_crossroads", [$MeleeEnemy],
@@ -70,12 +63,6 @@ func _add_encounter(region: Node3D, room_id: StringName, enemies: Array, gates: 
 ## F6独立地图也能游玩；主场景必须等开始按钮，不能在菜单期间推进。
 func _start_standalone() -> void:
 	if get_tree().current_scene == self:
-		var layer := CanvasLayer.new()
-		layer.layer = 10
-		add_child(layer)
-		var overlay := TutorialOverlay.instantiate()
-		layer.add_child(overlay)
-		overlay.bind(_tutorial)
 		begin_run()
 
 
@@ -92,8 +79,6 @@ func begin_run() -> bool:
 func stop_run() -> void:
 	_run_stopped = true
 	_progress.stop_run()
-	if is_instance_valid(_tutorial):
-		_tutorial.stop()
 	for encounter in _encounters:
 		encounter.stop()
 	$Gates/EntranceGate.freeze_gate()
@@ -200,8 +185,9 @@ func is_camera_target_relevant(actor: Node3D, player: Node3D) -> bool:
 func _update_region() -> void:
 	var region := get_region_at(_player.global_position)
 	if _run_started and not _run_stopped:
-		if region == $Regions/EntranceHall and not _tutorial_started:
-			_activate_tutorial()
+		if region == $Regions/EntranceHall and not _entrance_started:
+			_entrance_started = true
+			_progress.activate_room(&"l1_entrance")
 		# 战斗房要求玩家完整进入，不能用探索边界直接触发。
 		for encounter in _encounters:
 			encounter.try_activate()
@@ -214,28 +200,6 @@ func _update_region() -> void:
 			int(room_gold_rewards[str(region.name)]), "room:" + str(region.name))
 	_visited[region.name] = true
 	room_changed.emit(region.display_name, _visited.size())
-
-
-## 将入口房间激活后才开始教学，接线失效时维持实体锁门。
-func _activate_tutorial() -> void:
-	_tutorial_started = true
-	if not _progress.activate_room(&"l1_entrance"):
-		return
-	if not is_instance_valid(_tutorial) or not _tutorial.begin(_player):
-		_on_configuration_error("入口教学启动失败，北门保持封闭")
-
-
-func get_tutorial() -> TutorialLayout:
-	return _tutorial if is_instance_valid(_tutorial) else null
-
-
-func request_tutorial_skip() -> bool:
-	return is_instance_valid(_tutorial) and _tutorial.request_skip()
-
-
-func _on_tutorial_completed(skipped: bool) -> void:
-	if _progress.complete_objective(&"l1_entrance", &"tutorial"):
-		progression_feedback.emit("已跳过教学 · 北门正在开启" if skipped else "入口教学已完成 · 北门正在开启")
 
 
 func _on_entrance_gate_opened(_gate_id: StringName) -> void:

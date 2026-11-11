@@ -58,42 +58,34 @@ func run() -> void:
 	var dungeon := first.get_node("DungeonTest")
 	var player := dungeon.get_node("Player") as CharacterBody3D
 	var hud := first.get_node("UILayer/HUD")
-	var tutorial: Node = dungeon.get_tutorial()
 	await checkpoint("01_first_menu")
 	if not press(first, START):
 		finish()
 		return
-	check(tutorial.is_active(), "菜单通过真实按钮启动入口教学")
-	await checkpoint("02_first_tutorial")
+	check(dungeon.get_node("RoomProgress").is_complete(&"l1_entrance"), "菜单开始后完成入口目标")
+	await checkpoint("02_first_entrance")
 	if press(first, CORNER + "GuideButton"):
 		check(paused and not dungeon.can_process(), "指引冻结第一关世界")
-		check(not dungeon.request_tutorial_skip(), "打开指引不能跳过教学")
 		await checkpoint("03_first_guide")
 		action("pause")
-		check(not paused and tutorial.is_active(), "ESC 关闭指引恢复原步骤")
+		check(not paused and dungeon.can_process(), "ESC 关闭指引恢复探索")
 	if press(first, CORNER + "PauseButton"):
 		await checkpoint("04_first_paused")
 		var seconds: float = first._elapsed_seconds
-		var tutorial_text: String = first.get_node("UILayer/TutorialOverlay/Card/Stack/Top/Progress").text
 		var position := player.position
 		hud.show_item_message("测试暂停提示")
 		Input.action_press("move_forward")
 		await create_timer(0.22).timeout
 		Input.action_release("move_forward")
 		check(paused and first._elapsed_seconds == seconds and player.position == position, "暂停冻结世界和通关计时")
-		check(first.get_node("UILayer/TutorialOverlay/Card/Stack/Top/Progress").text == tutorial_text and hud._message_remaining == 3.0, "教学步骤和反馈计时同时冻结")
+		check(hud._message_remaining == 3.0, "暂停冻结反馈计时")
 		action("pause")
 		check(not paused, "ESC 关闭暂停")
 	check(not first.has_method("advance_to_level02") or not first.advance_to_level02(), "游戏中拒绝直接跨关")
-	# 第一关携带真实拾取的药剂，才能验证切关初始化会清空背包。
-	Input.action_press("move_left")
-	for i in 45:
-		await physics_frame
-	Input.action_release("move_left")
-	await go(player, Vector3(-4, 0.05, 2))
+	# 第一关携带补给房间的真实药剂，验证切关初始化清空背包。
+	await go(player, dungeon.get_node("SupplyPotion").global_position + Vector3(0, 0, 1))
 	action("interact")
 	check(player.get_node("ItemInventory").potion_count == 1, "第一关实际拾取药剂")
-	check(dungeon.request_tutorial_skip(), "使用入口教学真实跳过 API")
 	await create_timer(1.1).timeout
 	check(dungeon.get_node("Gates/EntranceGate").is_open(), "入口门实际打开")
 	await go(player, Vector3(0, 0.05, -23))
@@ -118,7 +110,7 @@ func run() -> void:
 		return
 	check(not first.advance_to_level02() and not first.restart_run(), "同帧跨关或重开只接收一次")
 	await scene_ready()
-	check(not is_instance_valid(first) and not is_instance_valid(tutorial), "旧地图和教学均被释放")
+	check(not is_instance_valid(first), "旧地图已被释放")
 	var second := current_scene
 	check(second.scene_file_path == SECOND and not paused, "胜利按钮打开第二关菜单且树未暂停")
 	if second.scene_file_path != SECOND:
@@ -157,7 +149,6 @@ func run() -> void:
 		await scene_ready()
 		check(current_scene.scene_file_path == FIRST and not paused, "返回第一关干净菜单")
 	await verify_restarts()
-	await verify_tutorial_layout()
 	finish()
 
 func verify_restarts() -> void:
@@ -175,7 +166,6 @@ func verify_restarts() -> void:
 	check(first._run_state == first.RunState.DYING and not paused, "死亡动画期间不能暂停")
 	await create_timer(2.0).timeout
 	check(first._run_state == first.RunState.DEAD and not first.open_guide() and not first.set_paused(false), "死亡界面不能恢复探索")
-	check(not first.get_node("UILayer/TutorialOverlay").visible, "终局关闭教学提示")
 
 	change_scene_to_file(SECOND)
 	await scene_ready()
@@ -200,30 +190,6 @@ func verify_restarts() -> void:
 	if press(second, "%ReturnToFirst"):
 		await scene_ready()
 		check(current_scene.scene_file_path == FIRST and not paused, "第二关死亡后返回第一关")
-
-## 教学卡片在窄窗口共享未启用的 Boss 行，宽窗口恢复右上角。
-func verify_tutorial_layout() -> void:
-	var first := current_scene
-	if first.scene_file_path != FIRST or not press(first, START):
-		return
-	var original_size := root.size
-	var original_mode := root.mode
-	root.mode = Window.MODE_WINDOWED
-	var layer := first.get_node("UILayer")
-	var card := layer.get_node("TutorialOverlay/Card") as Control
-	for dimensions in [Vector2i(720, 720), Vector2i(800, 720), Vector2i(1280, 720)]:
-		root.size = dimensions
-		await scene_ready()
-		var rect := card.get_global_rect()
-		var viewport_size := root.get_visible_rect().size
-		var compact: bool = dimensions.x < 960
-		check(is_equal_approx(viewport_size.x, float(dimensions.x)), "测试窗口实际宽度 %s" % dimensions)
-		for path in ["HUD/Panel", "HUD/CooldownBar", "HUD/ItemsPanel"]:
-			var panel := layer.get_node(path) as Control
-			check(not rect.intersects(panel.get_global_rect()), "%s 教学卡不遮挡 %s" % [dimensions, path])
-		check(is_equal_approx(rect.position.x, 24.0) if compact else is_equal_approx(rect.end.x, viewport_size.x - 24.0) and is_equal_approx(rect.position.y, 24.0), "%s 教学卡放在预定位置" % dimensions)
-	root.size = original_size
-	root.mode = original_mode
 
 func finish() -> void:
 	print("CAMPAIGN_FLOW: ", checks, " checks, ", failures, " failures")

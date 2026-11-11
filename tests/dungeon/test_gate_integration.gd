@@ -52,9 +52,8 @@ func run() -> void:
 	check(not entry.is_open() and not gate.is_open(), "菜单中不能开门")
 	check(not progress.is_complete(&"l1_entrance"), "菜单不完成入口")
 	game._on_run_started()
-	game.get_node("DungeonTest").request_tutorial_skip()
 	await create_timer(1.1).timeout
-	check(entry.is_open(), "跳过教学后入口门正常开启")
+	check(entry.is_open(), "开始后入口门正常开启")
 	check(not gate.is_open(), "开始游戏不自动开中庭门")
 	p.position = Vector3(0, 0.05, -17.24)
 	await frames()
@@ -172,7 +171,6 @@ func run() -> void:
 	check(d.get_node("Gates/CourtyardSouthSeal").is_open() and d.get_node("Gates/BossNorthSeal").is_open(), "重开恢复纯战斗门的初始开态")
 	check(d.has_node("MeleeEnemy") and not d.get_node("MeleeEnemy").is_dead() and not d.get_node("MeleeEnemy").can_process(), "重开恢复敌人的休眠初态")
 	game._on_run_started()
-	game.get_node("DungeonTest").request_tutorial_skip()
 	p = d.get_node("Player")
 	p.position = Vector3(6,0.05,-23)
 	await frames()
@@ -190,7 +188,6 @@ func run() -> void:
 	# 死亡中断下降过程，禁止敌人继续推进，直到换一局。
 	game = new_game()
 	game._on_run_started()
-	game.get_node("DungeonTest").request_tutorial_skip()
 	d = game.get_node("DungeonTest")
 	p = d.get_node("Player")
 	p.position = Vector3(0,0.05,-23)
@@ -210,7 +207,6 @@ func run() -> void:
 	# 与上面的真实击杀严格区分：只删除敌人，不能误认为清敌。
 	game = new_game()
 	game._on_run_started()
-	game.get_node("DungeonTest").request_tutorial_skip()
 	d = game.get_node("DungeonTest")
 	d.get_node("Player").position = Vector3(0,0.05,-23)
 	await frames()
@@ -233,7 +229,6 @@ func run() -> void:
 			required_gate.queue_free()
 			await process_frame
 		game._on_run_started()
-		game.get_node("DungeonTest").request_tutorial_skip()
 		d.get_node("Player").position = Vector3(0, 0.05, -23)
 		await frames()
 		progress = d.get_node("RoomProgress")
@@ -255,7 +250,6 @@ func run() -> void:
 	d.add_child(encounter)
 	check(not encounter.configure(d.get_node("Player"), d.get_node("Regions/Crossroads"), progress, &"invalid_seals", [extra_enemy], []), "无必需门的配置失败")
 	game._on_run_started()
-	game.get_node("DungeonTest").request_tutorial_skip()
 	check(not extra_enemy.can_process(), "无必需门的配置仍保持敌人休眠")
 	game.queue_free()
 	await process_frame

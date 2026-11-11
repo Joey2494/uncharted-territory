@@ -297,9 +297,6 @@ func test_layouts() -> void:
 		check(viewport.encloses(button_rect), "%s shortcut inside viewport" % dimensions)
 		check(not stats.get_global_rect().intersects(button_rect), "%s shortcut avoids player HUD" % dimensions)
 		check(not boss.get_global_rect().intersects(button_rect), "%s shortcut avoids Boss bar" % dimensions)
-		var tutorial: Control = main.get_node("UILayer/TutorialOverlay/Card")
-		check(not tutorial.get_global_rect().intersects(button_rect),
-			"%s shortcut avoids team tutorial" % dimensions)
 		ui.open_shop()
 		await frames(6)
 		check(viewport.encloses(ui.shop.get_node("%Card").get_global_rect()), "%s shop card fits" % dimensions)
