@@ -6,6 +6,8 @@ const EnemyScene = preload("res://scenes/enemies/MeleeEnemy.tscn")
 const ColossusScene = preload("res://scenes/bosses/RuinColossus.tscn")
 const SentinelScene = preload("res://scenes/enemies/RuinSentinel.tscn")
 const Coins = preload("res://scenes/items/coin_pickup.gd")
+const Profile = preload("res://scripts/integration/player_profile.gd")
+const Progress = preload("res://scripts/integration/campaign_progress.gd")
 
 var passed := 0
 var failed := 0
@@ -16,6 +18,10 @@ var observed := {}
 
 
 func _initialize() -> void:
+	# 使用独立存档，覆盖真实的跨局钱包行为且不写入玩家档案。
+	var run_id := str(OS.get_process_id()) + "-" + str(Time.get_ticks_usec())
+	Profile.override_path = "user://regression-profile-" + run_id + ".cfg"
+	Progress.override_path = "user://regression-progress-" + run_id + ".cfg"
 	_run.call_deferred()
 
 
@@ -431,13 +437,14 @@ func test_main_lifecycle() -> void:
 	await frames(5)
 	check(main._run_state == main.RunState.VICTORY, "entering unlocked exit still wins")
 	check(not inventory.try_purchase(0), "victory freezes economy")
+	var saved_gold: int = inventory.gold
 	await cleanup()
 	main = main_scene.instantiate()
 	root.add_child(main)
 	world = main
 	player = main.get_node("DungeonTest/Player")
 	inventory = player.get_node("ItemInventory")
-	check(inventory.gold == 0 and not inventory.guard_active and not inventory.owns_firearm, "fresh main resets per-run economy")
+	check(inventory.gold == saved_gold and not inventory.guard_active and not inventory.owns_firearm, "fresh main restores wallet and resets temporary equipment")
 	main._on_run_started()
 	inventory.add_item(1)
 	inventory.try_use_rune()

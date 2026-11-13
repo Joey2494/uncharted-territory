@@ -2,6 +2,10 @@ extends SceneTree
 ## 源项目和 Windows 测试包共用的界面验收，检查实物路牌及标签真实字符边界。
 
 const DUNGEON := preload("res://scenes/dungeon/DungeonTest.tscn")
+const START := "UILayer/StartScreen/Center/Card/Padding/Content/StartButton"
+const GUIDE := "UILayer/RunOverlay/Corner/GuideButton"
+const PROFILE := preload("res://scripts/integration/player_profile.gd")
+const PROGRESS := preload("res://scripts/integration/campaign_progress.gd")
 const SIGNS := {
 	"Entrance": "地牢入口",
 	"CourtyardEntrance": "北门封闭",
@@ -68,6 +72,9 @@ func check_repacked_signs() -> void:
 
 
 func run() -> void:
+	var run_id := str(OS.get_process_id()) + "-" + str(Time.get_ticks_usec())
+	PROFILE.override_path = "user://presentation-test-profile-" + run_id + ".cfg"
+	PROGRESS.override_path = "user://presentation-test-progress-" + run_id + ".cfg"
 	root.mode = Window.MODE_WINDOWED
 	root.size = Vector2i(1280, 720)
 	change_scene_to_file("res://Main.tscn")
@@ -75,20 +82,26 @@ func run() -> void:
 	var first := current_scene
 	check_signs(first.get_node("DungeonTest"), "主场景")
 	check_repacked_signs()
-	first.get_node("UILayer/StartScreen/Center/Card/Padding/Content/StartButton").pressed.emit()
-	first.get_node("UILayer/RunOverlay/Corner/GuideButton").pressed.emit()
-	await settle_layout()
-	check_label(first.get_node("UILayer/RunOverlay/Modal/Center/Card/Content/Body"), "第一关指引")
-	first.close_guide()
+	await check_guide(first, "第一关")
 
-	change_scene_to_file("res://tests/scenes/Level02Preview.tscn")
+	change_scene_to_file("res://scenes/dungeon/Level02Run.tscn")
 	await settle_layout()
 	var second := current_scene
-	check_label(second.get_node("%OverlayBody"), "第二关菜单")
-	second.get_node("%Primary").pressed.emit()
-	second.get_node("%GuideButton").pressed.emit()
-	await settle_layout()
-	check_label(second.get_node("UI/Overlay/Center/Modal/Content/GuideDetails/SealRule"), "第二关区域指引")
-	second.close_guide()
+	check_label(second.get_node("UILayer/StartScreen/Center/Card/Padding/Content/Description"), "第二关菜单")
+	await check_guide(second, "第二关")
 	print("EXPORT_PRESENTATION: ", checks, " checks, ", failures, " failures")
 	quit(1 if failures else 0)
+
+
+## 整合版通过设置打开可滚动的操作指南，检查实际可见的按键说明。
+func check_guide(host: Node, title: String) -> void:
+	host.get_node(START).pressed.emit()
+	host.get_node(GUIDE).pressed.emit()
+	var settings: Control = host.get_node("MenuNavigation").settings_screen
+	settings.get_node("%ControlsGuideButton").pressed.emit()
+	await settle_layout()
+	var guide := settings.get_node("ControlsGuide")
+	var first_detail := guide.find_child("Bindings", true, false).get_child(0).get_child(1).get_child(1) as Label
+	check_label(first_detail, title + "操作指南")
+	settings.go_back()
+	settings.go_back()
