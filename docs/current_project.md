@@ -4,7 +4,7 @@
 
 使用 Godot 4.7.2，根目录 `project.godot` 指定 `Main.tscn` 为启动场景。`main` 保存当前整合结果；队友继续开发前先拉取最新主分支，再创建各自的功能分支。
 
-第一关实际出口胜利后可进入第二关；第二关正式入口为 `scenes/dungeon/Level02Run.tscn`。需要单独调试第二关时直接运行该场景。正常关卡选择根据玩家存档中的通关进度解锁。
+第一关实际出口胜利后可进入第二关，正式入口为 `scenes/dungeon/Level02Run.tscn`。需要单独调试第二关时直接运行该场景。正常关卡选择根据玩家存档中的通关进度解锁。
 
 ## 角色与操作
 
@@ -27,7 +27,9 @@ WASD / 方向键移动，J 使用当前武器，K 法术，L 角色技能，Spac
 
 `Main.gd` 管理两关的菜单、运行、暂停、死亡和胜利；`scripts/integration/run_bindings.gd` 连接玩家、经济、教程、音效和 HUD；`menu_navigation.gd` 负责关卡选择和设置。`campaign_progress.gd` 负责跨关进度。
 
-第一关地图为 `scenes/dungeon/DungeonTest.tscn`。第二关地图在 `scenes/dungeon/level02/Level02.tscn`，通过 `Level02Campaign.tscn` 和 `campaign_level02.gd` 接入共享宿主。第二关 Boss 为灾厄巨蝎；清敌、导能、回环和档案室双阶段机关仍由原地图系统负责，击败 Boss 后必须实际进入出口才结算。
+第一关地图为 `scenes/dungeon/DungeonTest.tscn`。第二关地图在 `scenes/dungeon/level02/Level02.tscn`，通过 `Level02Campaign.tscn` 和 `campaign_level02.gd` 接入共享宿主。第二关 Boss 为灾厄巨蝎，击败后必须实际进入出口才结算。
+
+第二关档案室是可选路线。C 区清敌并启动导能后，G 区可以操作能源。两枚能源可以在托架、手持与插槽之间回收转移。临时桥需要一枚能源，检修手柄会展开无需持续供电的机械步道并接通断线。档案门要求两路接收器都供能且检修线接通。门完全开启后可在 H 领取一次强化符文，前台复位保留本局的领取记录。
 
 第二关全部房间与通道使用第一关同系列的 AlmsyONE 石砖、墙体及陈设。`stone_region.gd` 负责可视层，继承第一关入口的石材处理和遮挡淡出；`stone_cover.gd` 负责中庭掩体的石砌外观。基础 `dungeon_region.gd` 继续生成碰撞，新增陈设不添加碰撞，不改变门洞和原有通行范围。地砖按房间边界铺设并使用 MultiMesh，避免相邻区域重叠闪烁。
 

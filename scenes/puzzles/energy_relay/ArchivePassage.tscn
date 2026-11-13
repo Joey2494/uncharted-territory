@@ -1,0 +1,94 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="TrenchMaterial"]
+albedo_color = Color(0.055, 0.07, 0.095, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="RimMaterial"]
+albedo_color = Color(0.32, 0.25, 0.19, 1)
+metallic = 0.44
+roughness = 0.61
+
+[sub_resource type="StandardMaterial3D" id="EdgeMaterial"]
+albedo_color = Color(0.62, 0.47, 0.25, 1)
+metallic = 0.48
+roughness = 0.43
+
+[sub_resource type="StandardMaterial3D" id="DeckMaterial"]
+albedo_color = Color(0.16, 0.32, 0.33, 1)
+metallic = 0.48
+roughness = 0.48
+
+[sub_resource type="BoxMesh" id="Trench"]
+material = SubResource("TrenchMaterial")
+size = Vector3(2.9, 0.025, 4.05)
+
+[sub_resource type="BoxMesh" id="Deck"]
+material = SubResource("DeckMaterial")
+size = Vector3(2.9, 0.045, 4.05)
+
+[sub_resource type="BoxMesh" id="DeckEdge"]
+material = SubResource("EdgeMaterial")
+size = Vector3(2.9, 0.06, 0.09)
+
+[sub_resource type="BoxMesh" id="Rim"]
+material = SubResource("RimMaterial")
+size = Vector3(0.35, 1.28, 4.05)
+
+[sub_resource type="BoxShape3D" id="RimShape"]
+size = Vector3(0.35, 1.28, 4.05)
+
+[sub_resource type="BoxMesh" id="RimEdge"]
+material = SubResource("EdgeMaterial")
+size = Vector3(0.39, 0.09, 4.05)
+
+[node name="ArchivePassage" type="Node3D"]
+
+[node name="Trench" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.007, 0)
+mesh = SubResource("Trench")
+
+[node name="FrontRim" type="StaticBody3D" parent="."]
+position = Vector3(1.325, 0.64, 0)
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="FrontRim"]
+shape = SubResource("RimShape")
+
+[node name="Panel" type="MeshInstance3D" parent="FrontRim"]
+mesh = SubResource("Rim")
+
+[node name="UpperRail" type="MeshInstance3D" parent="FrontRim"]
+position = Vector3(0, 0.64, 0)
+mesh = SubResource("RimEdge")
+
+[node name="ServiceRim" type="StaticBody3D" parent="."]
+position = Vector3(-1.325, 0.64, 0)
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ServiceRim"]
+shape = SubResource("RimShape")
+
+[node name="Panel" type="MeshInstance3D" parent="ServiceRim"]
+mesh = SubResource("Rim")
+
+[node name="UpperRail" type="MeshInstance3D" parent="ServiceRim"]
+position = Vector3(0, 0.64, 0)
+mesh = SubResource("RimEdge")
+
+[node name="Deck" type="MeshInstance3D" parent="."]
+visible = false
+position = Vector3(0, 0.018, 0)
+mesh = SubResource("Deck")
+
+[node name="NorthRail" type="MeshInstance3D" parent="Deck"]
+position = Vector3(0, 0.027, -1.83)
+mesh = SubResource("DeckEdge")
+
+[node name="SouthRail" type="MeshInstance3D" parent="Deck"]
+position = Vector3(0, 0.027, 1.83)
+mesh = SubResource("DeckEdge")
+
+[node name="Crossbar" type="MeshInstance3D" parent="Deck"]
+position = Vector3(0, 0.027, 0)
+mesh = SubResource("DeckEdge")
