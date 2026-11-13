@@ -23,8 +23,10 @@ func _run() -> void:
 	_check(not _blocked(&"BC") and _blocked(&"BE"), "低水位只允许下层主通道")
 	await _use(&"tide")
 	_check(_blocked(&"BC") and not _blocked(&"BE"), "高水位物理交换主通道")
+	_check(_blocked(&"EF"), "浮栈战区未清场时实体挡板阻止绕入 F")
 
 	await _clear_room(&"E")
+	_check(not _blocked(&"EF"), "高水位且浮栈战区清场后开放 F")
 	await _clear_room(&"F")
 	await _use(&"charge")
 	_check(level.get_storage_state() == 0, "断开的输入不能充能")

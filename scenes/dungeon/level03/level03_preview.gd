@@ -20,7 +20,7 @@ const PUZZLE_BARRIERS := {
 	&"CD": [Vector3(-37, 0, 0), true, "低水位 · 折流廊"],
 	&"CI": [Vector3(-25, 0, -12), false, "低水位 · 维修井"],
 	&"BE": [Vector3(14, 0, 0), true, "高水位 · 浮栈战区"],
-	&"EF": [Vector3(25, 0, -12), false, "高水位 · 蓄能工房"],
+	&"EF": [Vector3(25, 0, -12), false, "高水位且 E 清场 · 蓄能工房"],
 	&"FH": [Vector3(36, 0, -24), true, "高水位 · 溢流花园"],
 	&"FB": [Vector3(12.5, 0, -12), false, "高架捷径 · 由 F 开启"],
 	&"BG": [Vector3(0, 0, -13.5), false, "中心闸门 · 等待 I 泄压"],
@@ -377,6 +377,7 @@ func _battle_completed(id: StringName) -> void:
 	elif id == &"C":
 		feedback.emit("C 已清场 · 从托架取用导体。")
 	else:
+		_refresh_world()
 		feedback.emit("浮栈战区已清场 · 前往北侧 F。")
 
 
@@ -386,7 +387,7 @@ func _refresh_world() -> void:
 	_set_blocked(&"CD", _high)
 	_set_blocked(&"CI", _high or not _highwalk)
 	_set_blocked(&"BE", not _high)
-	_set_blocked(&"EF", not _high)
+	_set_blocked(&"EF", not _high or not _progress.is_complete(&"E"))
 	_set_blocked(&"FH", not _high)
 	_set_blocked(&"FB", not _highwalk)
 	_set_blocked(&"BG", _storage != Storage.RELEASED)
