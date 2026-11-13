@@ -15,6 +15,7 @@ const MIN_SAFE_FRAME_SIZE := Vector2(0.25, 0.15)
 @onready var _boss_bar: PanelContainer = $"../BossHealthBar"
 @onready var _tutorial: PanelContainer = $"../HUD/%TutorialPrompt"
 @onready var _objective: Control = get_node_or_null("../HUD/LevelObjective")
+@onready var _run_buttons: Control = get_node_or_null("../RunOverlay/Corner")
 @export var camera_path: NodePath = NodePath("../../DungeonTest/Camera3D")
 @export var compact_combat_layout: bool = false
 @onready var _camera: Camera3D = get_node_or_null(camera_path)
@@ -59,6 +60,14 @@ func _apply_layout() -> void:
 	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
 		return
 	var wide := viewport_size.x >= WIDE_WIDTH
+	if not wide and _objective != null:
+		_layout_level02_compact(viewport_size)
+		return
+	for panel in [_stats, _resources, _feedback, _cooldowns, _hotbar, _boss_bar, _objective, _run_buttons]:
+		if panel != null:
+			panel.scale = Vector2.ONE
+	if _run_buttons != null:
+		_run_buttons.position = Vector2(24, 184)
 	var half_width := (viewport_size.x - MARGIN * 2.0 - GAP) * 0.5
 	var left_width := COLUMN_WIDTH if wide else minf(COLUMN_WIDTH, half_width)
 	var right_width := 256.0 if wide else left_width
@@ -116,6 +125,41 @@ func _apply_layout() -> void:
 		frame_end.y = minf(_feedback.position.y, _cooldowns.position.y) - MARGIN
 	if is_instance_valid(_camera):
 		_camera.set_safe_frame(Rect2(0.10, 0.18, 0.80, 0.58) if compact_combat_layout else _bounded_safe_frame(frame_start, frame_end, viewport_size))
+
+
+## 第二关窄窗把信息集中在上下两条区域，战斗中的提示变化不挤压取景。
+func _layout_level02_compact(viewport_size: Vector2) -> void:
+	const EDGE := 16.0
+	const SCALE := 0.75
+	var column := minf(COLUMN_WIDTH, (viewport_size.x - EDGE * 3.0) / (2.0 * SCALE))
+	_place_compact(_stats, Vector2(EDGE, EDGE), Vector2(column, 144), SCALE)
+	_place_compact(_resources, Vector2(viewport_size.x - EDGE - column * SCALE, EDGE),
+		Vector2(column, maxf(114, _resources.get_combined_minimum_size().y)), SCALE)
+	if _run_buttons != null:
+		_place_compact(_run_buttons, Vector2(EDGE, 134), _run_buttons.get_combined_minimum_size(), SCALE)
+	var top_size := Vector2(minf(480.0, (viewport_size.x - EDGE * 2.0) / SCALE), 88)
+	_place_compact(_boss_bar, Vector2(EDGE, 170), top_size, SCALE)
+	_objective.visible = not _boss_bar.visible
+	_place_compact(_objective, Vector2(EDGE, 170), Vector2(top_size.x, _objective.get_combined_minimum_size().y), SCALE)
+
+	var hotbar_size := _hotbar.get_combined_minimum_size()
+	var cooldown_size := Vector2(maxf(COLUMN_WIDTH, _cooldowns.get_combined_minimum_size().x), 86)
+	var bottom_scale := minf(SCALE, (viewport_size.x - EDGE * 3.0) / (hotbar_size.x + cooldown_size.x))
+	_place_compact(_hotbar, Vector2(EDGE, viewport_size.y - EDGE - hotbar_size.y * bottom_scale),
+		hotbar_size, bottom_scale)
+	_place_compact(_cooldowns, Vector2(viewport_size.x - EDGE - cooldown_size.x * bottom_scale,
+		viewport_size.y - EDGE - cooldown_size.y * bottom_scale), cooldown_size, bottom_scale)
+	var feedback_size := Vector2((viewport_size.x - EDGE * 2.0) / SCALE, _feedback.get_combined_minimum_size().y)
+	var bottom_edge := minf(_hotbar.position.y, _cooldowns.position.y)
+	_place_compact(_feedback, Vector2(EDGE, bottom_edge - 9.0 - feedback_size.y * SCALE), feedback_size, SCALE)
+	if is_instance_valid(_camera):
+		_camera.set_safe_frame(_bounded_safe_frame(Vector2(EDGE, 244),
+			Vector2(viewport_size.x - EDGE, bottom_edge - 64), viewport_size))
+
+
+func _place_compact(control: Control, at: Vector2, dimensions: Vector2, factor: float) -> void:
+	_place(control, at, dimensions)
+	control.scale = Vector2.ONE * factor
 
 
 func _bounded_safe_frame(start: Vector2, end: Vector2, viewport_size: Vector2) -> Rect2:

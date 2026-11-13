@@ -12,7 +12,7 @@
 [ext_resource type="PackedScene" path="res://scenes/enemies/RuinSentinel.tscn" id="sentinel"]
 [ext_resource type="PackedScene" path="res://scenes/bosses/RuinColossus.tscn" id="boss"]
 [ext_resource type="PackedScene" path="res://scenes/items/HealthPotion.tscn" id="potion"]
-[ext_resource type="Script" path="res://scenes/dungeon/follow_camera.gd" id="camera"]
+[ext_resource type="Script" path="res://scenes/dungeon/level02/level02_camera.gd" id="camera"]
 [ext_resource type="PackedScene" path="res://scenes/puzzles/energy_relay/RelayControl.tscn" id="control"]
 [ext_resource type="PackedScene" path="res://scenes/puzzles/energy_relay/EnergyRelayPuzzle.tscn" id="puzzle"]
 [ext_resource type="Font" path="res://scenes/ui/dungeon_font.tres" id="font"]
@@ -53,6 +53,21 @@ albedo_color = Color(0.43, 0.59, 0.47, 1)
 [sub_resource type="BoxMesh" id="PathMesh"]
 size = Vector3(1, 0.018, 1)
 
+[sub_resource type="StandardMaterial3D" id="SignalGold"]
+shading_mode = 0
+albedo_color = Color(0.96, 0.67, 0.22, 1)
+
+[sub_resource type="StandardMaterial3D" id="SignalDark"]
+albedo_color = Color(0.19, 0.28, 0.28, 1)
+roughness = 0.78
+
+[sub_resource type="BoxMesh" id="SignalCap"]
+size = Vector3(0.68, 0.20, 0.68)
+
+[sub_resource type="BoxMesh" id="SignalBase"]
+material = SubResource("SignalDark")
+size = Vector3(0.52, 0.90, 0.52)
+
 [node name="Level02" type="Node3D"]
 script = ExtResource("map")
 
@@ -69,7 +84,7 @@ shadow_enabled = true
 
 [node name="Arrival" parent="Regions" instance=ExtResource("region")]
 script = ExtResource("stone_region")
-position = Vector3(0, 0, 0)
+position = Vector3(0, 0, -5)
 dimensions = Vector2(14, 12)
 display_name = "A · 到达平台"
 floor_color = Color(0.23, 0.28, 0.29, 1)
@@ -88,7 +103,7 @@ open_west = true
 
 [node name="Relay" parent="Regions" instance=ExtResource("region")]
 script = ExtResource("stone_region")
-position = Vector3(34, 0, -26)
+position = Vector3(28, 0, -26)
 dimensions = Vector2(18, 14)
 display_name = "C · 导能回廊"
 floor_color = Color(0.23, 0.29, 0.3, 1)
@@ -97,26 +112,26 @@ open_west = true
 
 [node name="Antechamber" parent="Regions" instance=ExtResource("region")]
 script = ExtResource("stone_region")
-position = Vector3(34, 0, -56)
+position = Vector3(14, 0, -45)
 dimensions = Vector2(20, 16)
 display_name = "D · 共鸣前厅"
 floor_color = Color(0.32, 0.29, 0.23, 1)
 open_north = true
-open_south = true
+open_east = true
 open_west = true
 
 [node name="Boss" parent="Regions" instance=ExtResource("region")]
 script = ExtResource("stone_region")
-position = Vector3(34, 0, -86)
+position = Vector3(14, 0, -69)
 dimensions = Vector2(26, 24)
-display_name = "E · 守门者大厅"
+display_name = "E · 巨蝎大厅"
 floor_color = Color(0.32, 0.24, 0.22, 1)
 open_north = true
 open_south = true
 
 [node name="Exit" parent="Regions" instance=ExtResource("region")]
 script = ExtResource("stone_region")
-position = Vector3(34, 0, -110)
+position = Vector3(14, 0, -89)
 dimensions = Vector2(12, 8)
 display_name = "F · 出口"
 floor_color = Color(0.34, 0.32, 0.22, 1)
@@ -126,7 +141,7 @@ open_south = true
 script = ExtResource("stone_region")
 position = Vector3(-34, 0, -26)
 dimensions = Vector2(16, 14)
-display_name = "G · 符文档案室"
+display_name = "G · 断流档案室"
 floor_color = Color(0.2, 0.3, 0.31, 1)
 optional_branch = true
 open_east = true
@@ -143,8 +158,8 @@ open_south = true
 
 [node name="ArrivalPass" parent="Regions" instance=ExtResource("region")]
 script = ExtResource("stone_region")
-position = Vector3(0, 0, -11.5)
-dimensions = Vector2(5, 11)
+position = Vector3(0, 0, -14)
+dimensions = Vector2(5, 6)
 display_name = "入口通道"
 floor_color = Color(0.25, 0.24, 0.19, 1)
 exploration_room = false
@@ -153,8 +168,8 @@ open_south = true
 
 [node name="EastPass" parent="Regions" instance=ExtResource("region")]
 script = ExtResource("stone_region")
-position = Vector3(18, 0, -26)
-dimensions = Vector2(14, 5)
+position = Vector3(15, 0, -26)
+dimensions = Vector2(8, 5)
 display_name = "导能通道"
 floor_color = Color(0.25, 0.24, 0.19, 1)
 exploration_room = false
@@ -163,18 +178,38 @@ open_west = true
 
 [node name="RelayPass" parent="Regions" instance=ExtResource("region")]
 script = ExtResource("stone_region")
-position = Vector3(34, 0, -40.5)
-dimensions = Vector2(5, 15)
+position = Vector3(28, 0, -37.75)
+dimensions = Vector2(5, 9.5)
 display_name = "前厅通道"
 floor_color = Color(0.25, 0.24, 0.19, 1)
 exploration_room = false
 open_north = true
 open_south = true
 
+[node name="RelayElbow" parent="Regions" instance=ExtResource("region")]
+script = ExtResource("stone_region")
+position = Vector3(28, 0, -45)
+dimensions = Vector2(5, 5)
+display_name = "导能转角"
+floor_color = Color(0.25, 0.24, 0.19, 1)
+exploration_room = false
+open_south = true
+open_west = true
+
+[node name="AntechamberPass" parent="Regions" instance=ExtResource("region")]
+script = ExtResource("stone_region")
+position = Vector3(24.75, 0, -45)
+dimensions = Vector2(1.5, 5)
+display_name = "前厅入口"
+floor_color = Color(0.25, 0.24, 0.19, 1)
+exploration_room = false
+open_east = true
+open_west = true
+
 [node name="BossPass" parent="Regions" instance=ExtResource("region")]
 script = ExtResource("stone_region")
-position = Vector3(34, 0, -69)
-dimensions = Vector2(5, 10)
+position = Vector3(14, 0, -55)
+dimensions = Vector2(5, 4)
 display_name = "大厅通道"
 floor_color = Color(0.25, 0.24, 0.19, 1)
 exploration_room = false
@@ -183,8 +218,8 @@ open_south = true
 
 [node name="ExitPass" parent="Regions" instance=ExtResource("region")]
 script = ExtResource("stone_region")
-position = Vector3(34, 0, -102)
-dimensions = Vector2(5, 8)
+position = Vector3(14, 0, -83)
+dimensions = Vector2(5, 4)
 display_name = "出口通道"
 floor_color = Color(0.25, 0.24, 0.19, 1)
 exploration_room = false
@@ -215,8 +250,8 @@ open_south = true
 
 [node name="ShortcutVertical" parent="Regions" instance=ExtResource("region")]
 script = ExtResource("stone_region")
-position = Vector3(0, 0, -44.25)
-dimensions = Vector2(5, 18.5)
+position = Vector3(0, 0, -38.75)
+dimensions = Vector2(5, 7.5)
 display_name = "回环北段"
 floor_color = Color(0.22, 0.24, 0.22, 1)
 exploration_room = false
@@ -225,7 +260,7 @@ open_south = true
 
 [node name="ShortcutElbow" parent="Regions" instance=ExtResource("region")]
 script = ExtResource("stone_region")
-position = Vector3(0, 0, -56)
+position = Vector3(0, 0, -45)
 dimensions = Vector2(5, 5)
 display_name = "回环转角"
 floor_color = Color(0.22, 0.24, 0.22, 1)
@@ -235,8 +270,8 @@ open_east = true
 
 [node name="ShortcutHorizontal" parent="Regions" instance=ExtResource("region")]
 script = ExtResource("stone_region")
-position = Vector3(13.25, 0, -56)
-dimensions = Vector2(21.5, 5)
+position = Vector3(3.25, 0, -45)
+dimensions = Vector2(1.5, 5)
 display_name = "回环东段"
 floor_color = Color(0.22, 0.24, 0.22, 1)
 exploration_room = false
@@ -246,7 +281,7 @@ open_west = true
 [node name="Gates" type="Node3D" parent="."]
 
 [node name="Arrival" parent="Gates" instance=ExtResource("gate")]
-position = Vector3(0, 0, -6)
+position = Vector3(0, 0, -11)
 gate_id = &"Arrival"
 locked_message = "开始探索后开启"
 
@@ -275,52 +310,53 @@ gate_id = &"HubNorth"
 locked_message = "从前厅开启回环"
 
 [node name="RelayWest" parent="Gates" instance=ExtResource("gate")]
-position = Vector3(25, 0, -26)
+position = Vector3(19, 0, -26)
 gate_id = &"RelayWest"
 locked_message = "回廊战斗封锁"
 rotation_degrees = Vector3(0, 90, 0)
 initially_open = true
 
 [node name="RelayNorth" parent="Gates" instance=ExtResource("gate")]
-position = Vector3(34, 0, -33)
+position = Vector3(28, 0, -33)
 gate_id = &"RelayNorth"
 locked_message = "清敌后启动导能核心"
 
 [node name="AntechamberSouth" parent="Gates" instance=ExtResource("gate")]
-position = Vector3(34, 0, -48)
+position = Vector3(24, 0, -45)
 gate_id = &"AntechamberSouth"
 locked_message = "前厅战斗封锁"
+rotation_degrees = Vector3(0, 90, 0)
 initially_open = true
 
 [node name="AntechamberNorth" parent="Gates" instance=ExtResource("gate")]
-position = Vector3(34, 0, -64)
+position = Vector3(14, 0, -53)
 gate_id = &"AntechamberNorth"
 locked_message = "清除前厅守卫"
 
 [node name="AntechamberWest" parent="Gates" instance=ExtResource("gate")]
-position = Vector3(24, 0, -56)
+position = Vector3(4, 0, -45)
 gate_id = &"AntechamberWest"
 locked_message = "清敌后启动回环控制柄"
 rotation_degrees = Vector3(0, 90, 0)
 
 [node name="BossSouth" parent="Gates" instance=ExtResource("gate")]
-position = Vector3(34, 0, -74)
+position = Vector3(14, 0, -57)
 gate_id = &"BossSouth"
 locked_message = "大厅战斗封锁"
 initially_open = true
 
 [node name="BossNorth" parent="Gates" instance=ExtResource("gate")]
-position = Vector3(34, 0, -98)
+position = Vector3(14, 0, -81)
 gate_id = &"BossNorth"
 locked_message = "击败遗迹守门者"
 
 [node name="Vault" parent="Gates" instance=ExtResource("gate")]
 position = Vector3(-34, 0, -33)
 gate_id = &"Vault"
-locked_message = "完成档案室双阶段机关"
+locked_message = "档案门 · 双接收器与检修线"
 
 [node name="Player" parent="." instance=ExtResource("player")]
-position = Vector3(0, 0.05, 2)
+position = Vector3(0, 0.05, -3)
 
 [node name="Camera3D" type="Camera3D" parent="."]
 current = true
@@ -350,37 +386,37 @@ detection_range = 18.0
 lose_range = 24.0
 
 [node name="Relay1" parent="Enemies" instance=ExtResource("enemy")]
-position = Vector3(30, 0.05, -29)
+position = Vector3(24, 0.05, -29)
 target_path = NodePath("../../Player")
 detection_range = 18.0
 lose_range = 24.0
 
 [node name="Relay2" parent="Enemies" instance=ExtResource("sentinel")]
-position = Vector3(39, 0.05, -27)
+position = Vector3(33, 0.05, -27)
 target_path = NodePath("../../Player")
 detection_range = 18.0
 lose_range = 24.0
 
 [node name="Antechamber1" parent="Enemies" instance=ExtResource("enemy")]
-position = Vector3(29, 0.05, -58)
+position = Vector3(9, 0.05, -47)
 target_path = NodePath("../../Player")
 detection_range = 18.0
 lose_range = 24.0
 
 [node name="Antechamber2" parent="Enemies" instance=ExtResource("sentinel")]
-position = Vector3(38, 0.05, -59)
+position = Vector3(18, 0.05, -48)
 target_path = NodePath("../../Player")
 detection_range = 18.0
 lose_range = 24.0
 
 [node name="Antechamber3" parent="Enemies" instance=ExtResource("enemy")]
-position = Vector3(39, 0.05, -53)
+position = Vector3(19, 0.05, -42)
 target_path = NodePath("../../Player")
 detection_range = 18.0
 lose_range = 24.0
 
 [node name="Boss" parent="." instance=ExtResource("boss")]
-position = Vector3(34, 0.05, -88)
+position = Vector3(14, 0.05, -71)
 boss_name = "灾厄巨蝎"
 detection_range = 20.0
 
@@ -412,25 +448,25 @@ script = ExtResource("stone_cover")
 [node name="Supplies" type="Node3D" parent="."]
 
 [node name="ArrivalPotion" parent="Supplies" instance=ExtResource("potion")]
-position = Vector3(-2, 0.34, 1)
+position = Vector3(-2, 0.34, -4)
 
 [node name="RelayPotion" parent="Supplies" instance=ExtResource("potion")]
-position = Vector3(38, 0.34, -23)
+position = Vector3(32, 0.34, -23)
 
 [node name="AntechamberPotion" parent="Supplies" instance=ExtResource("potion")]
-position = Vector3(37, 0.34, -50)
+position = Vector3(17, 0.34, -50)
 
 [node name="Devices" type="Node3D" parent="."]
 
 [node name="Relay" parent="Devices" instance=ExtResource("control")]
-position = Vector3(34, 0, -29)
+position = Vector3(28, 0, -29)
 receiver_path = NodePath("../..")
 control_id = &"relay"
 caption = "导能核心"
 accent = Color(0.91, 0.71, 0.36, 1)
 
 [node name="Shortcut" parent="Devices" instance=ExtResource("control")]
-position = Vector3(28, 0, -54)
+position = Vector3(8, 0, -43)
 receiver_path = NodePath("../..")
 control_id = &"shortcut"
 caption = "回环控制柄"
@@ -445,7 +481,7 @@ gate_path = NodePath("../Gates/Vault")
 reward_point_path = NodePath("../Regions/Vault/VaultReward")
 
 [node name="ExitArea" type="Area3D" parent="."]
-position = Vector3(34, 1.15, -111)
+position = Vector3(14, 1.15, -90)
 collision_layer = 0
 collision_mask = 2
 monitorable = false
@@ -456,7 +492,7 @@ shape = SubResource("ExitShape")
 [node name="Signs" type="Node3D" parent="."]
 
 [node name="Arrival" type="Label3D" parent="Signs"]
-position = Vector3(0, 2, -2)
+position = Vector3(0, 2, -7)
 billboard = 1
 modulate = Color(0.95, 0.83, 0.59, 1)
 text = "A · 到达平台"
@@ -476,7 +512,7 @@ pixel_size = 0.009
 outline_size = 10
 
 [node name="Relay" type="Label3D" parent="Signs"]
-position = Vector3(39, 2, -29)
+position = Vector3(33, 2, -29)
 billboard = 1
 modulate = Color(0.95, 0.83, 0.59, 1)
 text = "C · 导能回廊"
@@ -486,7 +522,7 @@ pixel_size = 0.009
 outline_size = 10
 
 [node name="Antechamber" type="Label3D" parent="Signs"]
-position = Vector3(37, 2, -61)
+position = Vector3(17, 2, -50)
 billboard = 1
 modulate = Color(0.95, 0.83, 0.59, 1)
 text = "D · 共鸣前厅"
@@ -496,17 +532,17 @@ pixel_size = 0.009
 outline_size = 10
 
 [node name="Boss" type="Label3D" parent="Signs"]
-position = Vector3(34, 2, -94)
+position = Vector3(14, 2, -77)
 billboard = 1
 modulate = Color(0.95, 0.83, 0.59, 1)
-text = "E · 守门者大厅"
+text = "E · 巨蝎大厅"
 font = ExtResource("font")
 font_size = 48
 pixel_size = 0.009
 outline_size = 10
 
 [node name="Exit" type="Label3D" parent="Signs"]
-position = Vector3(34, 2, -112)
+position = Vector3(14, 2, -91)
 billboard = 1
 modulate = Color(0.95, 0.83, 0.59, 1)
 text = "F · 出口"
@@ -519,7 +555,7 @@ outline_size = 10
 position = Vector3(-34, 2, -20.3)
 billboard = 1
 modulate = Color(0.65, 0.91, 0.88, 1)
-text = "G · 符文档案室"
+text = "G · 断流档案室"
 font = ExtResource("font")
 font_size = 48
 pixel_size = 0.009
@@ -535,35 +571,147 @@ font_size = 48
 pixel_size = 0.009
 outline_size = 10
 
+[node name="RelayTurn" type="Label3D" parent="Signs"]
+position = Vector3(28, 1.55, -46.5)
+billboard = 1
+modulate = Color(0.95, 0.83, 0.59, 1)
+text = "前厅 ←"
+font = ExtResource("font")
+font_size = 40
+pixel_size = 0.009
+outline_size = 8
+
+[node name="BossApproach" type="Label3D" parent="Signs"]
+position = Vector3(15.65, 1.38, -55)
+billboard = 1
+modulate = Color(0.95, 0.83, 0.59, 1)
+text = "巨蝎大厅"
+font = ExtResource("font")
+font_size = 40
+pixel_size = 0.009
+outline_size = 8
+
+[node name="ExitApproach" type="Label3D" parent="Signs"]
+position = Vector3(14, 1.5, -84)
+billboard = 1
+modulate = Color(0.95, 0.83, 0.59, 1)
+text = "出口"
+font = ExtResource("font")
+font_size = 40
+pixel_size = 0.009
+outline_size = 8
+
+[node name="ArchiveApproach" type="Label3D" parent="Signs"]
+position = Vector3(-23, 1.45, -27.6)
+billboard = 1
+modulate = Color(0.65, 0.91, 0.88, 1)
+text = "档案室 ←"
+font = ExtResource("font")
+font_size = 40
+pixel_size = 0.009
+outline_size = 8
+
+[node name="ArchiveReturn" type="Label3D" parent="Signs"]
+position = Vector3(0, 1.4, -46.5)
+billboard = 1
+modulate = Color(0.72, 0.85, 0.73, 1)
+text = "经中庭返回档案室"
+font = ExtResource("font")
+font_size = 40
+pixel_size = 0.009
+outline_size = 8
+
+[node name="RouteBeacons" type="Node3D" parent="."]
+
+[node name="RelayTurn" type="MeshInstance3D" parent="RouteBeacons"]
+position = Vector3(28, 0.45, -46.5)
+mesh = SubResource("SignalBase")
+
+[node name="Lamp" type="MeshInstance3D" parent="RouteBeacons/RelayTurn"]
+position = Vector3(0, 0.55, 0)
+material_override = SubResource("SignalGold")
+mesh = SubResource("SignalCap")
+
+[node name="BossApproach" type="MeshInstance3D" parent="RouteBeacons"]
+position = Vector3(15.65, 0.45, -55)
+mesh = SubResource("SignalBase")
+
+[node name="Lamp" type="MeshInstance3D" parent="RouteBeacons/BossApproach"]
+position = Vector3(0, 0.55, 0)
+material_override = SubResource("SignalGold")
+mesh = SubResource("SignalCap")
+
+[node name="ExitLeft" type="MeshInstance3D" parent="RouteBeacons"]
+position = Vector3(12.35, 0.45, -84)
+mesh = SubResource("SignalBase")
+
+[node name="Lamp" type="MeshInstance3D" parent="RouteBeacons/ExitLeft"]
+position = Vector3(0, 0.55, 0)
+material_override = SubResource("SignalGold")
+mesh = SubResource("SignalCap")
+
+[node name="ExitRight" type="MeshInstance3D" parent="RouteBeacons"]
+position = Vector3(15.65, 0.45, -84)
+mesh = SubResource("SignalBase")
+
+[node name="Lamp" type="MeshInstance3D" parent="RouteBeacons/ExitRight"]
+position = Vector3(0, 0.55, 0)
+material_override = SubResource("SignalGold")
+mesh = SubResource("SignalCap")
+
+[node name="ArchiveApproach" type="MeshInstance3D" parent="RouteBeacons"]
+position = Vector3(-23, 0.45, -27.6)
+mesh = SubResource("SignalBase")
+
+[node name="Lamp" type="MeshInstance3D" parent="RouteBeacons/ArchiveApproach"]
+position = Vector3(0, 0.55, 0)
+material_override = SubResource("CyanPath")
+mesh = SubResource("SignalCap")
+
+[node name="ArchiveReturn" type="MeshInstance3D" parent="RouteBeacons"]
+position = Vector3(0, 0.45, -46.5)
+mesh = SubResource("SignalBase")
+
+[node name="Lamp" type="MeshInstance3D" parent="RouteBeacons/ArchiveReturn"]
+position = Vector3(0, 0.55, 0)
+material_override = SubResource("ShortcutPath")
+mesh = SubResource("SignalCap")
+
 [node name="Paths" type="Node3D" parent="."]
 
 [node name="Arrival" type="MeshInstance3D" parent="Paths"]
-position = Vector3(0, 0.02, -10)
-scale = Vector3(0.12, 1, 17)
+position = Vector3(0, 0.02, -12.5)
+scale = Vector3(0.12, 1, 14)
 material_override = SubResource("GoldPath")
 mesh = SubResource("PathMesh")
 
 [node name="HubEast" type="MeshInstance3D" parent="Paths"]
-position = Vector3(13, 0.02, -26)
-scale = Vector3(24, 1, 0.12)
+position = Vector3(13.5, 0.02, -26)
+scale = Vector3(25, 1, 0.12)
 material_override = SubResource("GoldPath")
 mesh = SubResource("PathMesh")
 
 [node name="Relay" type="MeshInstance3D" parent="Paths"]
-position = Vector3(34, 0.02, -39.5)
-scale = Vector3(0.12, 1, 23)
+position = Vector3(28, 0.02, -37)
+scale = Vector3(0.12, 1, 16)
+material_override = SubResource("GoldPath")
+mesh = SubResource("PathMesh")
+
+[node name="RelayTurn" type="MeshInstance3D" parent="Paths"]
+position = Vector3(23.97, 0.02, -45)
+scale = Vector3(7.94, 1, 0.12)
 material_override = SubResource("GoldPath")
 mesh = SubResource("PathMesh")
 
 [node name="Boss" type="MeshInstance3D" parent="Paths"]
-position = Vector3(34, 0.02, -68)
+position = Vector3(14, 0.02, -54)
 scale = Vector3(0.12, 1, 14)
 material_override = SubResource("GoldPath")
 mesh = SubResource("PathMesh")
 
 [node name="Exit" type="MeshInstance3D" parent="Paths"]
-position = Vector3(34, 0.02, -103)
-scale = Vector3(0.12, 1, 18)
+position = Vector3(14, 0.02, -83)
+scale = Vector3(0.12, 1, 14)
 material_override = SubResource("GoldPath")
 mesh = SubResource("PathMesh")
 
@@ -580,13 +728,13 @@ material_override = SubResource("CyanPath")
 mesh = SubResource("PathMesh")
 
 [node name="Shortcut1" type="MeshInstance3D" parent="Paths"]
-position = Vector3(0, 0.02, -45)
-scale = Vector3(0.12, 1, 22)
+position = Vector3(0, 0.02, -39)
+scale = Vector3(0.12, 1, 12)
 material_override = SubResource("ShortcutPath")
 mesh = SubResource("PathMesh")
 
 [node name="Shortcut2" type="MeshInstance3D" parent="Paths"]
-position = Vector3(11.03, 0.02, -56)
-scale = Vector3(21.94, 1, 0.12)
+position = Vector3(4.03, 0.02, -45)
+scale = Vector3(7.94, 1, 0.12)
 material_override = SubResource("ShortcutPath")
 mesh = SubResource("PathMesh")

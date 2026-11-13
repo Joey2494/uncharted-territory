@@ -89,6 +89,15 @@ func run() -> void:
 	var second := current_scene
 	check_label(second.get_node("UILayer/StartScreen/Center/Card/Padding/Content/Description"), "第二关菜单")
 	await check_guide(second, "第二关")
+	root.size = Vector2i(720, 720)
+	second._boss_bar.show()
+	await settle_layout()
+	var camera := second.get_node("DungeonTest/Camera3D")
+	var compact_frame: Rect2 = camera.get_safe_frame()
+	check(compact_frame.size.y >= 0.45, "方窗为第二关战斗预留至少 45% 高度")
+	second._hud.show_item_message("前厅与档案室已供能 · 演示槽内能源可按 E 取回")
+	await settle_layout()
+	check(camera.get_safe_frame().is_equal_approx(compact_frame), "临时提示不会改变窄窗战斗取景")
 	print("EXPORT_PRESENTATION: ", checks, " checks, ", failures, " failures")
 	quit(1 if failures else 0)
 
