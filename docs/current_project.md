@@ -29,11 +29,15 @@ WASD / 方向键移动，J 使用当前武器，K 法术，L 角色技能，Spac
 
 第一关地图为 `scenes/dungeon/DungeonTest.tscn`。第二关地图在 `scenes/dungeon/level02/Level02.tscn`，通过 `Level02Campaign.tscn` 和 `campaign_level02.gd` 接入共享宿主。第二关 Boss 为灾厄巨蝎；清敌、导能、回环和档案室双阶段机关仍由原地图系统负责，击败 Boss 后必须实际进入出口才结算。
 
-第二关全部房间与通道使用第一关同系列的 AlmsyONE 石砖、墙体及陈设。`stone_region.gd` 负责可视层，继承第一关入口的石材处理和遮挡淡出；`stone_cover.gd` 负责中庭掩体的石砌外观。基础 `dungeon_region.gd` 继续生成碰撞，新增陈设不添加碰撞，不改变门洞和原有通行范围。地砖按房间边界铺设并使用 MultiMesh，避免相邻区域重叠闪烁。
+第二关房间与通道使用天然岩壁、沉积岩地面、钟乳石、岩台与天然掩体；`stone_region.gd`、`stone_cover.gd` 通过 `cavern_geometry.gd` 更新可视外观。原有地图布局、碰撞、门洞、敌人和机关规则继续由团队实现负责，所有新增可视结构复用相机遮挡淡出。
+
+`spider_habitat.gd` 加入蛛网、悬丝、蛛茧和巢穴，避让中央战斗区与门洞。结构与验证见 [天然蜘蛛洞窟](spider_cavern.md) 和 [蜘蛛栖息地陈设](spider_habitat.md)。
 
 ## UI 与后续接入
 
 界面以汤的 `scenes/ui/menu_theme.tres`、石纹与暗金风格为准。两关共用血量、能量、资源、快捷栏、冷却、暂停、商城、背包及设置界面。
+
+角色选择页左侧使用统一四项属性卡，读取真实攻击、生命、护盾与常规移速，配以独立量程、细对比条和相对初始旅人的具体差值，底部保留两句人物与职业简介。数据含义、量程设置、组件和验证见 [角色选择属性面板](character_stats.md)。
 
 第二关 `LevelObjective.tscn` 从真实地图读取房间、当前目标、探索、导能与回环状态；窄窗口 Boss 战期间让位给 Boss 血条，战后恢复。修改地图目标时更新地图的 `get_objective()`，不要另建 UI 进度状态。
 

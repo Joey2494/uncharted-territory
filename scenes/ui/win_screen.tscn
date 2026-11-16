@@ -1,140 +1,165 @@
-[gd_scene load_steps=5 format=3]
-
-[ext_resource type="Script" path="res://scenes/ui/win_screen.gd" id="1_script"]
-[ext_resource type="Theme" path="res://scenes/ui/menu_theme.tres" id="2_theme"]
-[ext_resource type="Material" path="res://scenes/ui/stone_material.tres" id="3_stone"]
-[ext_resource type="PackedScene" path="res://scenes/ui/dungeon_frame.tscn" id="4_frame"]
-
+[gd_scene load_steps=7 format=3]
+[ext_resource type="Script" path="res://scenes/ui/win_screen.gd" id="1"]
+[ext_resource type="Theme" path="res://scenes/ui/menu_theme.tres" id="2"]
+[ext_resource type="Shader" path="res://assets/shaders/victory_glow.gdshader" id="3"]
+[ext_resource type="Shader" path="res://assets/shaders/victory_edge_mask.gdshader" id="4"]
+[sub_resource type="ShaderMaterial" id="Glow"]
+shader = ExtResource("3")
+[sub_resource type="ShaderMaterial" id="Mask"]
+shader = ExtResource("4")
 [node name="WinScreen" type="Control"]
 process_mode = 3
-layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("2_theme")
-script = ExtResource("1_script")
-
+theme = ExtResource("2")
+script = ExtResource("1")
 [node name="Backdrop" type="ColorRect" parent="."]
-layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
 mouse_filter = 2
-color = Color(0.018, 0.02, 0.016, 0.90)
-
-[node name="Center" type="CenterContainer" parent="."]
-layout_mode = 1
+material = SubResource("Mask")
+[node name="GoldGlow" type="ColorRect" parent="."]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
 mouse_filter = 2
+material = SubResource("Glow")
 
-[node name="Card" type="PanelContainer" parent="Center"]
+[node name="Center" type="Control" parent="."]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(520, 0)
-layout_mode = 2
-
-[node name="StoneSurface" type="ColorRect" parent="Center/Card"]
-material = ExtResource("3_stone")
-layout_mode = 2
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 mouse_filter = 2
 
-[node name="DungeonFrame" parent="Center/Card" instance=ExtResource("4_frame")]
+[node name="Card" type="Control" parent="Center"]
+unique_name_in_owner = true
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
 
-[node name="Padding" type="MarginContainer" parent="Center/Card"]
-layout_mode = 2
-theme_override_constants/margin_left = 40
-theme_override_constants/margin_top = 40
-theme_override_constants/margin_right = 40
-theme_override_constants/margin_bottom = 40
+[node name="Padding" type="Control" parent="Center/Card"]
+unique_name_in_owner = true
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
 
-[node name="Content" type="VBoxContainer" parent="Center/Card/Padding"]
-layout_mode = 2
-theme_override_constants/separation = 24
+[node name="Content" type="Control" parent="Center/Card/Padding"]
+unique_name_in_owner = true
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
 
 [node name="Eyebrow" type="Label" parent="Center/Card/Padding/Content"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.725, 0.604, 0.361, 1)
-theme_override_font_sizes/font_size = 13
-text = "本次探索完成"
+unique_name_in_owner = true
+text = "V I C T O R Y"
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.82,0.67,0.38,1)
+theme_override_colors/font_shadow_color = Color(0,0,0,0.8)
+theme_override_constants/shadow_offset_y = 1
 horizontal_alignment = 1
 
 [node name="TitleLabel" type="Label" parent="Center/Card/Padding/Content"]
 unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.83, 0.74, 0.52, 1)
-theme_override_font_sizes/font_size = 44
-text = "You Win"
+text = "探索完成"
+theme_override_font_sizes/font_size = 80
+theme_override_colors/font_color = Color(0.82,0.67,0.38,1)
+theme_override_colors/font_shadow_color = Color(0,0,0,0.8)
+theme_override_constants/shadow_offset_y = 1
 horizontal_alignment = 1
 
 [node name="SummaryLabel" type="Label" parent="Center/Card/Padding/Content"]
 unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "已清完全部 3 个房间"
+text = "探索结算"
+theme_override_font_sizes/font_size = 19
+theme_override_colors/font_color = Color(0.82,0.67,0.38,1)
+theme_override_colors/font_shadow_color = Color(0,0,0,0.8)
+theme_override_constants/shadow_offset_y = 1
 horizontal_alignment = 1
 
-[node name="Divider" type="HSeparator" parent="Center/Card/Padding/Content"]
-layout_mode = 2
-
-[node name="ResultDetails" type="VBoxContainer" parent="Center/Card/Padding/Content"]
-visible = false
-layout_mode = 2
-theme_override_constants/separation = 6
+[node name="ResultDetails" type="GridContainer" parent="Center/Card/Padding/Content"]
+unique_name_in_owner = true
+columns = 2
+theme_override_constants/h_separation = 32
+theme_override_constants/v_separation = 8
 
 [node name="TimeLabel" type="Label" parent="Center/Card/Padding/Content/ResultDetails"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "通关用时：00:00"
-horizontal_alignment = 1
+theme_override_font_sizes/font_size = 14
 
 [node name="ExplorationLabel" type="Label" parent="Center/Card/Padding/Content/ResultDetails"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "探索区域：0/5"
-horizontal_alignment = 1
+theme_override_font_sizes/font_size = 14
 
 [node name="HealthLabel" type="Label" parent="Center/Card/Padding/Content/ResultDetails"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "剩余生命：0/5"
-horizontal_alignment = 1
+theme_override_font_sizes/font_size = 14
 
 [node name="PuzzleLabel" type="Label" parent="Center/Card/Padding/Content/ResultDetails"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "符文机关：未解开"
-horizontal_alignment = 1
+theme_override_font_sizes/font_size = 14
 
 [node name="RewardLabel" type="Label" parent="Center/Card/Padding/Content/ResultDetails"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "密室奖励：未领取"
-horizontal_alignment = 1
+theme_override_font_sizes/font_size = 14
 
-[node name="Description" type="Label" parent="Center/Card/Padding/Content"]
+[node name="RewardsPanel" type="VBoxContainer" parent="Center/Card/Padding/Content"]
+unique_name_in_owner = true
+theme_override_constants/separation = 8
+[node name="RewardCaption" type="Label" parent="Center/Card/Padding/Content/RewardsPanel"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.64, 0.60, 0.51, 1)
-text = "这一局抵达终点，下一局仍有未知。"
-horizontal_alignment = 1
+text = "本局剩余补给"
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.68,0.61,0.45,1)
+[node name="RewardsRow" type="HBoxContainer" parent="Center/Card/Padding/Content/RewardsPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ProgressLabel" type="Label" parent="Center/Card/Padding/Content"]
+unique_name_in_owner = true
+text = "本关已通关"
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.68,0.61,0.45,1)
+autowrap_mode = 2
+
+[node name="RestartButton" type="Button" parent="Center/Card/Padding/Content"]
+unique_name_in_owner = true
+text = "再次挑战"
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 15
 
 [node name="NextLevelButton" type="Button" parent="Center/Card/Padding/Content"]
 unique_name_in_owner = true
 visible = false
-custom_minimum_size = Vector2(0, 54)
-layout_mode = 2
+text = "下一关"
 mouse_default_cursor_shape = 2
-text = "前往第二关"
+theme_override_font_sizes/font_size = 15
 
-[node name="RestartButton" type="Button" parent="Center/Card/Padding/Content"]
+[node name="Description" type="Label" parent="Center/Card/Padding/Content"]
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 2
+
+[node name="LevelSelectButton" type="Button" parent="Center/Card/Padding/Content"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 54)
-layout_mode = 2
+text = "返回关卡选择"
 mouse_default_cursor_shape = 2
-text = "重新开始"
+theme_override_font_sizes/font_size = 15
+
+[node name="MainMenuButton" type="Button" parent="Center/Card/Padding/Content"]
+unique_name_in_owner = true
+text = "返回主菜单"
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 15

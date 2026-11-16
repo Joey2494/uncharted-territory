@@ -1,9 +1,33 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/start_screen.gd" id="1_script"]
 [ext_resource type="Theme" path="res://scenes/ui/menu_theme.tres" id="2_theme"]
-[ext_resource type="Material" path="res://scenes/ui/stone_material.tres" id="3_stone"]
-[ext_resource type="PackedScene" path="res://scenes/ui/dungeon_frame.tscn" id="4_frame"]
+[ext_resource type="Script" path="res://scenes/ui/menu_dungeon_preview.gd" id="3_preview"]
+[ext_resource type="Shader" path="res://assets/shaders/menu_atmosphere.gdshader" id="4_atmosphere"]
+[ext_resource type="Material" path="res://scenes/ui/stone_material.tres" id="5_stone"]
+[ext_resource type="Shader" path="res://assets/shaders/menu_title_metal.gdshader" id="6_metal"]
+
+[sub_resource type="ShaderMaterial" id="TitleMetal"]
+shader = ExtResource("6_metal")
+
+[sub_resource type="StyleBoxEmpty" id="ClearPanel"]
+
+[sub_resource type="ShaderMaterial" id="Atmosphere"]
+shader = ExtResource("4_atmosphere")
+
+[sub_resource type="StyleBoxFlat" id="SecondaryStone"]
+bg_color = Color(0.065, 0.07, 0.055, 0.97)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.40, 0.35, 0.23, 1)
+content_margin_left = 12.0
+content_margin_right = 12.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
+shadow_color = Color(0, 0, 0, 0.4)
+shadow_size = 6
 
 [node name="StartScreen" type="Control"]
 process_mode = 3
@@ -26,7 +50,38 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0.035, 0.04, 0.032, 1)
 
-[node name="Center" type="CenterContainer" parent="."]
+[node name="DungeonPreview" type="SubViewportContainer" parent="."]
+layout_mode = 1
+anchor_left = 0.30
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+stretch = true
+
+[node name="PreviewViewport" type="SubViewport" parent="DungeonPreview"]
+unique_name_in_owner = true
+own_world_3d = true
+size = Vector2i(896, 720)
+msaa_3d = 2
+render_target_update_mode = 0
+
+[node name="PreviewStage" type="Node3D" parent="DungeonPreview/PreviewViewport"]
+unique_name_in_owner = true
+script = ExtResource("3_preview")
+
+[node name="Atmosphere" type="ColorRect" parent="."]
+material = SubResource("Atmosphere")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Center" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -37,114 +92,127 @@ mouse_filter = 2
 
 [node name="Card" type="PanelContainer" parent="Center"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(520, 0)
-layout_mode = 2
-
-[node name="StoneSurface" type="ColorRect" parent="Center/Card"]
-material = ExtResource("3_stone")
-layout_mode = 2
-mouse_filter = 2
-
-[node name="DungeonFrame" parent="Center/Card" instance=ExtResource("4_frame")]
+offset_left = 80.0
+offset_top = 80.0
+offset_right = 464.0
+offset_bottom = 640.0
+theme_override_styles/panel = SubResource("ClearPanel")
 
 [node name="Padding" type="MarginContainer" parent="Center/Card"]
 layout_mode = 2
-theme_override_constants/margin_left = 40
-theme_override_constants/margin_top = 14
-theme_override_constants/margin_right = 40
-theme_override_constants/margin_bottom = 14
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
 
 [node name="Content" type="VBoxContainer" parent="Center/Card/Padding"]
 layout_mode = 2
-theme_override_constants/separation = 6
-
-[node name="Eyebrow" type="Label" parent="Center/Card/Padding/Content"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.725, 0.604, 0.361, 1)
-theme_override_font_sizes/font_size = 13
-text = "UNCHARTED TERRITORY"
-horizontal_alignment = 1
+theme_override_constants/separation = 14
 
 [node name="TitleLabel" type="Label" parent="Center/Card/Padding/Content"]
 unique_name_in_owner = true
+material = SubResource("TitleMetal")
 layout_mode = 2
-theme_override_font_sizes/font_size = 36
+theme_override_colors/font_color = Color(0.94, 0.81, 0.54, 1)
+theme_override_colors/font_outline_color = Color(0.13, 0.105, 0.055, 0.9)
+theme_override_constants/outline_size = 1
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 3
+theme_override_font_sizes/font_size = 72
 text = "未知之境"
-horizontal_alignment = 1
+
+[node name="Eyebrow" type="Label" parent="Center/Card/Padding/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.725, 0.604, 0.361, 1)
+theme_override_font_sizes/font_size = 14
+text = "U N C H A R T E D   T E R R I T O R Y"
 
 [node name="Tagline" type="Label" parent="Center/Card/Padding/Content"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.69, 0.56, 1)
 theme_override_font_sizes/font_size = 18
-text = "下一间房，会有什么？"
-horizontal_alignment = 1
+text = "下一间房，会有什么？\n踏入地牢，探寻黑暗深处的秘密。"
+autowrap_mode = 2
+
+[node name="SecondaryPanel" type="PanelContainer" parent="Center"]
+unique_name_in_owner = true
+offset_left = 83.0
+offset_top = 628.0
+offset_right = 467.0
+offset_bottom = 696.0
+theme_override_styles/panel = SubResource("SecondaryStone")
+
+[node name="StoneSurface" type="ColorRect" parent="Center/SecondaryPanel"]
+layout_mode = 2
+mouse_filter = 2
+material = ExtResource("5_stone")
+
+[node name="CommerceActions" type="HBoxContainer" parent="Center/SecondaryPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Caption" type="Label" parent="Center/SecondaryPanel/CommerceActions"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.62, 0.57, 0.44, 1)
+theme_override_font_sizes/font_size = 13
+text = "旅途整备"
+mouse_filter = 2
+
+[node name="ShopButton" type="Button" parent="Center/SecondaryPanel/CommerceActions"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 42)
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 15
+mouse_default_cursor_shape = 2
+text = "商城"
+
+[node name="BackpackButton" type="Button" parent="Center/SecondaryPanel/CommerceActions"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 42)
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 15
+mouse_default_cursor_shape = 2
+text = "背包"
 
 [node name="Divider" type="HSeparator" parent="Center/Card/Padding/Content"]
 layout_mode = 2
 
-[node name="Description" type="Label" parent="Center/Card/Padding/Content"]
+[node name="MainActions" type="VBoxContainer" parent="Center/Card/Padding/Content"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.64, 0.60, 0.51, 1)
-text = "探索 · 战斗 · 收集\n击败遗迹守门者，从开启的出口离开。"
-horizontal_alignment = 1
+theme_override_constants/separation = 10
 
-[node name="CharacterChoice" type="OptionButton" parent="Center/Card/Padding/Content"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 40)
-layout_mode = 2
-mouse_default_cursor_shape = 2
-
-[node name="Preview" type="SubViewportContainer" parent="Center/Card/Padding/Content"]
-custom_minimum_size = Vector2(0, 80)
-layout_mode = 2
-stretch = true
-mouse_filter = 2
-
-[node name="Viewport" type="SubViewport" parent="Center/Card/Padding/Content/Preview"]
-transparent_bg = true
-own_world_3d = true
-size = Vector2i(440, 150)
-render_target_update_mode = 4
-
-[node name="PreviewWorld" type="Node3D" parent="Center/Card/Padding/Content/Preview/Viewport"]
-unique_name_in_owner = true
-
-[node name="Camera" type="Camera3D" parent="Center/Card/Padding/Content/Preview/Viewport"]
-position = Vector3(0, 1.3, 5)
-projection = 1
-size = 3.2
-current = true
-
-[node name="Light" type="DirectionalLight3D" parent="Center/Card/Padding/Content/Preview/Viewport"]
-rotation_degrees = Vector3(-40, -30, 0)
-light_energy = 1.6
-
-[node name="Fill" type="OmniLight3D" parent="Center/Card/Padding/Content/Preview/Viewport"]
-position = Vector3(2, 3, 3)
-omni_range = 10.0
-light_energy = 2.0
-
-[node name="CharacterInfo" type="Label" parent="Center/Card/Padding/Content"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 44)
-layout_mode = 2
-theme_override_font_sizes/font_size = 14
-horizontal_alignment = 1
-autowrap_mode = 2
-
-[node name="Controls" type="Label" parent="Center/Card/Padding/Content"]
-autowrap_mode = 2
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "WASD 移动 · J 普攻 · K 法术 · L 技能 · Space 闪避 · I 切换武器"
-horizontal_alignment = 1
-
-[node name="StartButton" type="Button" parent="Center/Card/Padding/Content"]
+[node name="StartButton" type="Button" parent="Center/Card/Padding/Content/MainActions"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 54)
 layout_mode = 2
 mouse_default_cursor_shape = 2
 text = "开始游戏"
+
+[node name="ContinueButton" type="Button" parent="Center/Card/Padding/Content/MainActions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+text = "继续游戏"
+
+[node name="SettingsButton" type="Button" parent="Center/Card/Padding/Content/MainActions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+text = "设置"
+
+[node name="QuitButton" type="Button" parent="Center/Card/Padding/Content/MainActions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+text = "退出游戏"
 
 [node name="StatusLabel" type="Label" parent="Center/Card/Padding/Content"]
 unique_name_in_owner = true
@@ -152,23 +220,8 @@ custom_minimum_size = Vector2(0, 22)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.76, 0.65, 0.42, 1)
 theme_override_font_sizes/font_size = 13
-horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="CommerceActions" type="HBoxContainer" parent="Center/Card/Padding/Content"]
+[node name="Description" type="Label" parent="Center/Card/Padding/Content"]
+visible = false
 layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="ShopButton" type="Button" parent="Center/Card/Padding/Content/CommerceActions"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_default_cursor_shape = 2
-text = "商城"
-
-[node name="BackpackButton" type="Button" parent="Center/Card/Padding/Content/CommerceActions"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_default_cursor_shape = 2
-text = "背包"

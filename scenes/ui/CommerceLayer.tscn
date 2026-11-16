@@ -1,11 +1,96 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/commerce_controller.gd" id="1_controller"]
 [ext_resource type="PackedScene" path="res://scenes/ui/shop_screen.tscn" id="2_shop"]
 [ext_resource type="PackedScene" path="res://scenes/ui/backpack_screen.tscn" id="3_backpack"]
 [ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="4_pause"]
 [ext_resource type="Theme" path="res://scenes/ui/menu_theme.tres" id="5_theme"]
-[ext_resource type="Texture2D" path="res://assets/ui/coin.svg" id="6_coin"]
+[ext_resource type="Texture2D" path="res://assets/ui/shop.svg" id="6_shop"]
+
+[sub_resource type="StyleBoxFlat" id="ShopNormal"]
+content_margin_left = 8.0
+content_margin_right = 8.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.065, 0.07, 0.055, 0.97)
+border_width_left = 2
+border_width_right = 2
+border_width_top = 2
+border_width_bottom = 2
+border_color = Color(0.65, 0.53, 0.30, 1)
+corner_radius_top_left = 32
+corner_radius_top_right = 32
+corner_radius_bottom_left = 32
+corner_radius_bottom_right = 32
+corner_detail = 16
+shadow_color = Color(0, 0, 0, 0.45)
+shadow_size = 4
+
+[sub_resource type="StyleBoxFlat" id="ShopHover"]
+content_margin_left = 8.0
+content_margin_right = 8.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.16, 0.145, 0.095, 1)
+border_width_left = 2
+border_width_right = 2
+border_width_top = 2
+border_width_bottom = 2
+border_color = Color(0.91, 0.77, 0.46, 1)
+corner_radius_top_left = 32
+corner_radius_top_right = 32
+corner_radius_bottom_left = 32
+corner_radius_bottom_right = 32
+corner_detail = 16
+shadow_color = Color(0.73, 0.60, 0.35, 0.16)
+shadow_size = 5
+
+[sub_resource type="StyleBoxFlat" id="ShopPressed"]
+content_margin_left = 8.0
+content_margin_right = 8.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.10, 0.09, 0.06, 1)
+border_width_left = 2
+border_width_right = 2
+border_width_top = 2
+border_width_bottom = 2
+border_color = Color(0.76, 0.64, 0.36, 1)
+corner_radius_top_left = 32
+corner_radius_top_right = 32
+corner_radius_bottom_left = 32
+corner_radius_bottom_right = 32
+corner_detail = 16
+
+[sub_resource type="StyleBoxFlat" id="ShopDisabled"]
+content_margin_left = 8.0
+content_margin_right = 8.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.065, 0.07, 0.055, 0.97)
+border_width_left = 2
+border_width_right = 2
+border_width_top = 2
+border_width_bottom = 2
+border_color = Color(0.30, 0.28, 0.22, 1)
+corner_radius_top_left = 32
+corner_radius_top_right = 32
+corner_radius_bottom_left = 32
+corner_radius_bottom_right = 32
+corner_detail = 16
+
+[sub_resource type="StyleBoxFlat" id="ShopFocus"]
+draw_center = false
+border_width_left = 2
+border_width_right = 2
+border_width_top = 2
+border_width_bottom = 2
+border_color = Color(0.95, 0.84, 0.58, 1)
+corner_radius_top_left = 32
+corner_radius_top_right = 32
+corner_radius_bottom_left = 32
+corner_radius_bottom_right = 32
+corner_detail = 16
 
 [node name="CommerceLayer" type="CanvasLayer"]
 process_mode = 3
@@ -17,25 +102,35 @@ visible = false
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -168.0
+offset_left = -88.0
 offset_top = 24.0
 offset_right = -24.0
-offset_bottom = 100.0
+offset_bottom = 88.0
 grow_horizontal = 0
 mouse_filter = 2
 theme = ExtResource("5_theme")
 theme_override_constants/separation = 4
 
 [node name="ShopButton" type="Button" parent="Shortcut"]
-custom_minimum_size = Vector2(144, 44)
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
+size_flags_horizontal = 8
 focus_mode = 0
 mouse_default_cursor_shape = 2
-tooltip_text = "商城"
-theme_override_font_sizes/font_size = 16
-theme_override_constants/icon_max_width = 20
-text = "商城 [P]"
-icon = ExtResource("6_coin")
+tooltip_text = "商城 [P]"
+theme_override_colors/icon_normal_color = Color(0.88, 0.77, 0.53, 1)
+theme_override_colors/icon_hover_color = Color(0.98, 0.87, 0.62, 1)
+theme_override_colors/icon_pressed_color = Color(0.91, 0.78, 0.51, 1)
+theme_override_colors/icon_disabled_color = Color(0.40, 0.39, 0.34, 1)
+theme_override_constants/icon_max_width = 32
+theme_override_styles/normal = SubResource("ShopNormal")
+theme_override_styles/hover = SubResource("ShopHover")
+theme_override_styles/pressed = SubResource("ShopPressed")
+theme_override_styles/disabled = SubResource("ShopDisabled")
+theme_override_styles/focus = SubResource("ShopFocus")
+icon = ExtResource("6_shop")
+icon_alignment = 1
+expand_icon = true
 
 [node name="Wallet" type="Label" parent="Shortcut"]
 layout_mode = 2

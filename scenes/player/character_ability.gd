@@ -46,22 +46,23 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 func try_activate() -> bool:
-	if actor.character_id == "knight": return false
+	var ability := get_configuration()
+	if not ability.active: return false
 	if not is_node_ready() or not can_process() or actor.is_dead() or actor.is_dodging() or remaining > 0.0 or cooldown_remaining > 0.0:
 		return false
 	match actor.character_id:
 		"lan":
-			remaining = 4.0
+			remaining = ability.duration
 		"iron":
-			remaining = 1.2
+			remaining = ability.duration
 			blocked_hits = 0
 			precise = false
 			_guard_direction = -actor.visuals.global_basis.z
 			actor.get_node("MeleeAttack").cancel_attack()
 			actor.get_node("CastAnimation").cancel()
 		"astra":
-			remaining = 0.25
-	feedback.emit(CATALOG.definition(actor.character_id).skill)
+			remaining = ability.duration
+	feedback.emit(ability.name)
 	return true
 
 func _physics_process(delta: float) -> void:
@@ -132,7 +133,7 @@ func _finish_guard(counter: bool) -> void:
 		if direction.normalized().dot(_guard_direction) >= 0.5:
 			target.take_damage(actor.get_attack_damage(2 + mini(blocked_hits, 3)))
 			if precise and target.has_method("apply_control"):
-				target.apply_control(0.5)
+				target.apply_control(CATALOG.definition("iron").ability.control_duration)
 	feedback.emit("反击 · %d次格挡" % blocked_hits)
 
 func cancel() -> void:
@@ -145,3 +146,6 @@ func get_cooldown_remaining() -> float:
 
 func get_cooldown_duration() -> float:
 	return CATALOG.definition(actor.character_id).cooldown
+
+func get_configuration() -> Dictionary:
+	return CATALOG.ability_definition(actor.character_id)

@@ -19,10 +19,10 @@
 
 [sub_resource type="Environment" id="Environment"]
 background_mode = 1
-background_color = Color(0.035, 0.04, 0.032, 1)
+background_color = Color(0.018, 0.024, 0.025, 1)
 ambient_light_source = 3
-ambient_light_color = Color(0.60, 0.65, 0.72, 1)
-ambient_light_energy = 0.65
+ambient_light_color = Color(0.59, 0.67, 0.70, 1)
+ambient_light_energy = 0.58
 
 [sub_resource type="BoxShape3D" id="ExitShape"]
 size = Vector3(5.4, 2.3, 3.2)
@@ -61,8 +61,8 @@ environment = SubResource("Environment")
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
 rotation_degrees = Vector3(-58, -32, 0)
-light_color = Color(1, 0.93, 0.81, 1)
-light_energy = 1.15
+light_color = Color(0.94, 0.97, 0.93, 1)
+light_energy = 1.05
 shadow_enabled = true
 
 [node name="Regions" type="Node3D" parent="."]

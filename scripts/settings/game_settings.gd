@@ -1,8 +1,10 @@
 extends RefCounted
+const AUDIO_BUSES = preload("res://scenes/audio/audio_buses.gd")
 
 var fullscreen: bool = false
 var vsync: bool = true
 var volume: float = 0.8
+var music_volume: float = 0.65
 var path: String
 
 func _init(save_path: String = "user://settings.cfg") -> void:
@@ -19,10 +21,16 @@ func load_settings() -> void:
 	vsync = saved_vsync if saved_vsync is bool else true
 	if (saved_volume is float or saved_volume is int) and is_finite(float(saved_volume)):
 		volume = clampf(float(saved_volume), 0.0, 1.0)
+	var saved_music: Variant = config.get_value("audio", "music_volume", 0.65)
+	if (saved_music is float or saved_music is int) and is_finite(float(saved_music)):
+		music_volume = clampf(float(saved_music), 0.0, 1.0)
 
 func apply(window: Window) -> void:
 	AudioServer.set_bus_mute(0, volume == 0.0)
 	AudioServer.set_bus_volume_db(0, linear_to_db(maxf(volume, 0.0001)))
+	var music_bus := AUDIO_BUSES.ensure_music_bus()
+	AudioServer.set_bus_mute(music_bus, music_volume == 0.0)
+	AudioServer.set_bus_volume_db(music_bus, linear_to_db(maxf(music_volume, 0.0001)))
 	if DisplayServer.get_name() != "headless":
 		if fullscreen:
 			window.mode = Window.MODE_FULLSCREEN
@@ -35,4 +43,5 @@ func save_settings() -> bool:
 	config.set_value("display", "fullscreen", fullscreen)
 	config.set_value("display", "vsync", vsync)
 	config.set_value("audio", "volume", volume)
+	config.set_value("audio", "music_volume", music_volume)
 	return config.save(path) == OK

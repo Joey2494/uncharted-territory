@@ -1,0 +1,125 @@
+extends SceneTree
+## Compare the menu with real initialized players, then exercise switching and resizing.
+const CATALOG = preload("res://scenes/player/character_catalog.gd")
+const DOSSIERS = preload("res://scenes/ui/character_dossiers.gd")
+const PROFILE = preload("res://scripts/integration/player_profile.gd")
+const RANGES = preload("res://scenes/ui/character_stat_ranges.gd")
+var OUT := OS.get_environment("GODOT_TEST_OUTPUT_DIR") if not OS.get_environment("GODOT_TEST_OUTPUT_DIR").is_empty() else ProjectSettings.globalize_path("user://verification")
+const SCALES := {"Attack":2.0,"Health":6.0,"Shield":2.0,"Speed":6.0}
+const BASELINE := {"Attack":1.0,"Health":5.0,"Shield":0.0,"Speed":5.0}
+var selector: Control
+var failures := 0
+var checks := 0
+
+func _initialize() -> void: run.call_deferred()
+
+func run() -> void:
+	DirAccess.make_dir_recursive_absolute(OUT)
+	PROFILE.override_path = OUT.path_join("isolated-profile.cfg")
+	root.mode = Window.MODE_WINDOWED
+	root.size = Vector2i(1280,720)
+	selector = load("res://scenes/ui/character_select.tscn").instantiate()
+	root.add_child(selector)
+	await frames(5)
+	for id in CATALOG.IDS:
+		selector.show_selection(id)
+		await frames(5)
+		var actor: Node = load("res://scenes/player/Player%s.tscn" % id.capitalize()).instantiate()
+		root.add_child(actor)
+		actor.process_mode = Node.PROCESS_MODE_DISABLED
+		check(stat("Attack") == str(actor.get_attack_damage(actor.get_node("MeleeAttack").attack_damage)), id+": attack equals the actual unbuffed melee damage")
+		check(stat("Shield") == str(actor.max_shield), id+": shield equals actual starting shield")
+		check(stat("Health") == str(actor.max_hp), id+": health equals actual maximum HP")
+		check(stat("Speed") == "%.1f" % minf(actor.walk_speed,actor.move_speed), id+": speed equals actual ordinary movement speed")
+		check(selector.get_node("%CharacterDescription").text == DOSSIERS.entry(id).summary and selector.get_node("%CharacterDescription").text.count("。") == 2, id+": bottom summary is two sentences")
+		check(selector.get_node("%SkillTitleRow").tooltip_text.contains(CATALOG.ability_definition(id).description), id+": complete actual skill effect remains available on hover")
+		var actual := {"Attack":float(actor.get_node("MeleeAttack").attack_damage),"Health":float(actor.max_hp),"Shield":float(actor.max_shield),"Speed":minf(actor.walk_speed,actor.move_speed)}
+		for attribute: String in actual:
+			var card: Control = selector.get_node("%"+attribute+"Stat")
+			var bar: ProgressBar = card.get_node("%ComparisonBar")
+			check(is_equal_approx(bar.value,actual[attribute]) and is_equal_approx(bar.max_value,SCALES[attribute]) and bar.min_value == 0.0 and not bar.show_percentage, id+": "+attribute+" bar uses raw game units on its stable independent scale")
+			check(is_equal_approx(card.reference_value,BASELINE[attribute]), id+": "+attribute+" reference remains Knight while browsing")
+		if id == "iron":
+			check(selector.get_node("%HealthStat").get_node("%ComparisonLabel").text == "较旅人 +1" and selector.get_node("%ShieldStat").get_node("%ComparisonLabel").text == "较旅人 +2" and selector.get_node("%SpeedStat").get_node("%ComparisonLabel").text == "较旅人 −0.4", "Iron shows its exact HP, shield and speed differences")
+		if id == "knight":
+			check(selector.get_node("%ShieldStat").get_node("%ComparisonBar").value == 0.0, "zero shield remains an empty bar")
+		check(selector.get_node("%AttackStat").get_node("%ComparisonLabel").text == "与旅人相同", id+": equal actual attack is shown honestly")
+		actor.free()
+		await verify_layout(id, Vector2i(1280,720))
+		if "--capture" in OS.get_cmdline_user_args(): await capture(id+"-1280x720")
+	selector.show_selection("knight")
+	for id in ["lan","iron","astra","knight"]:
+		selector.get_node("%NextButton").pressed.emit()
+		await frames(3)
+		var data := CATALOG.definition(id)
+		check(selector.get_selected_id() == id and stat("Attack") == str(data.attack) and stat("Shield") == str(data.shield) and stat("Health") == str(data.hp) and stat("Speed") == "%.1f" % minf(data.walk,data.run) and is_equal_approx(selector.get_node("%ShieldStat").get_node("%ComparisonBar").value,float(data.shield)), "next button refreshes raw values and bars including wrap-around: "+id)
+	var left := InputEventKey.new()
+	left.keycode = KEY_LEFT
+	left.pressed = true
+	root.push_input(left)
+	await frames(3)
+	check(selector.get_selected_id() == "astra" and stat("Health") == "4", "keyboard cycling also refreshes the same stats")
+	check(RANGES.upper_bound_for("hp",7.0) == 8.0 and RANGES.upper_bound_for("shield",4.0) == 4.0 and RANGES.upper_bound_for("attack",12.0) == 12.0 and RANGES.upper_bound_for("speed",6.3) == 7.0, "future larger real configurations expand each scale without truncating values")
+	for dimensions in [Vector2i(720,720),Vector2i(540,960),Vector2i(1920,1080)]:
+		for id in CATALOG.IDS:
+			selector.show_selection(id)
+			await verify_layout(id,dimensions)
+			if "--capture" in OS.get_cmdline_user_args(): await capture("%s-%dx%d" % [id,dimensions.x,dimensions.y])
+	if "--capture" in OS.get_cmdline_user_args():
+		selector.show_selection("iron")
+		root.size = Vector2i(720,720)
+		await frames(6)
+		var row: Control = selector.get_node("%SkillTitleRow")
+		var motion := InputEventMouseMotion.new()
+		motion.position = row.get_global_rect().get_center()
+		root.push_input(motion,true)
+		check(root.gui_get_hovered_control() == row, "skill detail hover reaches the complete summary row")
+		await create_timer(0.8).timeout
+		await capture("iron-skill-tooltip-720x720")
+	selector.free()
+	root.get_node("MusicManager").stop_music()
+	await frames(2)
+	print("CHARACTER_STATS_RESULT %d checks, %d failures" % [checks,failures])
+	quit(1 if failures else 0)
+
+func stat(attribute: String) -> String:
+	return selector.get_node("%"+attribute+"Stat").get_value()
+
+func verify_layout(id: String, dimensions: Vector2i) -> void:
+	root.size = dimensions
+	await frames(6)
+	var scroll: ScrollContainer = selector.get_node("%InfoScroll")
+	var viewport := scroll.get_global_rect().grow(1)
+	var fits := true
+	for attribute in ["Attack","Health","Shield","Speed"]:
+		var card: Control = selector.get_node("%"+attribute+"Stat")
+		fits = fits and viewport.encloses(card.get_global_rect())
+		var value: Label = card.get_node("%Value")
+		fits = fits and card.get_global_rect().encloses(value.get_global_rect())
+		for name in ["AttributeLabel","DisplayRange","Meter","ComparisonLabel"]:
+			fits = fits and card.get_global_rect().grow(1).encloses(card.get_node("%"+name).get_global_rect())
+		var meter: Control = card.get_node("%Meter")
+		fits = fits and meter.get_global_rect().grow(1).encloses(card.get_node("%ReferenceMarker").get_global_rect())
+	check(fits, "%s %dx%d: all four stat cards and values visible without scrolling" % [id,dimensions.x,dimensions.y])
+	check(not scroll.get_h_scroll_bar().visible, "%s %dx%d: no horizontal overflow" % [id,dimensions.x,dimensions.y])
+	check(selector.get_node("%InfoCard").get_global_rect().end.y <= selector.get_node("%BackButton").get_global_rect().position.y, "%s %dx%d: information does not overlap bottom actions" % [id,dimensions.x,dimensions.y])
+	check(viewport.encloses(selector.get_node("%CharacterDescription").get_global_rect()), "%s %dx%d: full short summary visible" % [id,dimensions.x,dimensions.y])
+	var skill: Control = selector.get_node("%SkillTitleRow")
+	var tooltip: Control = skill._make_custom_tooltip(skill.tooltip_text)
+	root.add_child(tooltip)
+	check(tooltip.get_combined_minimum_size().x <= root.get_visible_rect().size.x, "%s %dx%d: full skill tooltip fits in the viewport" % [id,dimensions.x,dimensions.y])
+	tooltip.free()
+
+func capture(label: String) -> void:
+	await RenderingServer.frame_post_draw
+	root.get_texture().get_image().save_png(OUT.path_join(label+".png"))
+
+func frames(count: int) -> void:
+	for i in count:
+		await process_frame
+		await physics_frame
+
+func check(ok: bool, label: String) -> void:
+	checks += 1
+	print(("PASS " if ok else "FAIL ")+label)
+	if not ok: failures += 1

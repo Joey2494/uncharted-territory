@@ -81,7 +81,8 @@ func _layout() -> void:
 	_card.size = dimensions
 	_card.position = (viewport - dimensions) * 0.5
 
-func open_guide() -> void:
+func open_guide(back_label: String = "返回设置") -> void:
+	_close.text = back_label
 	show()
 	_scroll.scroll_vertical = 0
 	_safe_focus.call_deferred(_close)

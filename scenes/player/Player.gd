@@ -66,6 +66,7 @@ func _ready() -> void:
 	shield = max_shield
 	walk_speed = data.walk
 	move_speed = data.run
+	_attack.attack_damage = data.attack
 	hp = max_hp
 
 

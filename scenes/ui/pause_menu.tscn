@@ -119,6 +119,15 @@ text = "返回主菜单"
 layout_mode = 2
 theme_override_constants/separation = 10
 
+[node name="ControlsGuideButton" type="Button" parent="Center/Card/Padding/Content/CommerceActions"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0,40)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 15
+text = "操作指南"
+
 [node name="SettingsButton" type="Button" parent="Center/Card/Padding/Content/CommerceActions"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0,40)

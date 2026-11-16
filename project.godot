@@ -14,6 +14,10 @@ config/name="未知之境"
 run/main_scene="res://Main.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
+[autoload]
+
+MusicManager="*res://scenes/audio/music_manager.gd"
+
 [display]
 
 window/size/viewport_width=720

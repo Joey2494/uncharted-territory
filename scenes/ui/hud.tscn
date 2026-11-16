@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3]
+[gd_scene load_steps=23 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/hud.gd" id="1_hud"]
 [ext_resource type="Texture2D" path="res://assets/ui/weapon_empty.svg" id="2_empty"]
@@ -16,6 +16,8 @@
 
 [ext_resource type="Script" path="res://scenes/ui/tutorial_prompt.gd" id="14_tutorial"]
 [ext_resource type="Script" path="res://scenes/ui/hotbar.gd" id="15_hotbar"]
+
+[ext_resource type="Script" path="res://scenes/ui/skill_cluster.gd" id="16_cluster"]
 
 [sub_resource type="StyleBoxFlat" id="Style_panel"]
 bg_color = Color(0.065, 0.07, 0.055, 0.97)
@@ -472,11 +474,11 @@ text = ""
 theme_override_colors/font_color = Color(0.64, 0.60, 0.51, 1)
 visible = false
 
-[node name="CooldownBar" type="HBoxContainer" parent="."]
+[node name="CooldownBar" type="Control" parent="."]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/separation = 6
+script = ExtResource("16_cluster")
 
 [node name="MeleeCooldown" parent="CooldownBar" instance=ExtResource("7_cooldown")]
 unique_name_in_owner = true
