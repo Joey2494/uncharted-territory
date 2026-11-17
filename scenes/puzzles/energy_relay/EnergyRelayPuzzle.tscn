@@ -118,6 +118,7 @@ position = Vector3(3.0, 0, 2.65)
 receiver_path = NodePath("..")
 control_id = &"rack"
 caption = "取放能源"
+short_caption = "能源"
 
 [node name="Core1" type="MeshInstance3D" parent="CoreRack"]
 position = Vector3(-0.28, 1.16, 0)
@@ -134,6 +135,7 @@ position = Vector3(-2.05, 0, -1.42)
 receiver_path = NodePath("..")
 control_id = &"bridge"
 caption = "桥台插槽"
+short_caption = "桥槽"
 
 [node name="Core" type="MeshInstance3D" parent="BridgeSocket"]
 position = Vector3(0, 1.18, 0)
@@ -144,6 +146,7 @@ position = Vector3(-6.48, 0, -3.54)
 receiver_path = NodePath("..")
 control_id = &"lever"
 caption = "检修手柄"
+short_caption = "手柄"
 accent = Color(0.9, 0.68, 0.32, 1)
 
 [node name="ReceiverA" parent="." instance=ExtResource("control")]
@@ -151,6 +154,7 @@ position = Vector3(-1.55, 0, -5.25)
 receiver_path = NodePath("..")
 control_id = &"a"
 caption = "接收器一"
+short_caption = "门锁Ⅰ"
 
 [node name="Core" type="MeshInstance3D" parent="ReceiverA"]
 position = Vector3(0, 1.18, 0)
@@ -161,6 +165,7 @@ position = Vector3(1.55, 0, -5.25)
 receiver_path = NodePath("..")
 control_id = &"b"
 caption = "接收器二"
+short_caption = "门锁Ⅱ"
 
 [node name="Core" type="MeshInstance3D" parent="ReceiverB"]
 position = Vector3(0, 1.18, 0)
@@ -171,6 +176,8 @@ position = Vector3(5.7, 0, -1.5)
 receiver_path = NodePath("..")
 control_id = &"inspect"
 caption = "查看供能铭牌"
+short_caption = "铭牌"
+auxiliary = true
 accent = Color(0.89, 0.78, 0.55, 1)
 
 [node name="Hints" parent="." instance=ExtResource("control")]
@@ -178,6 +185,8 @@ position = Vector3(5.75, 0, 2.45)
 receiver_path = NodePath("..")
 control_id = &"hints"
 caption = "查看解谜提示"
+short_caption = "提示"
+auxiliary = true
 accent = Color(0.89, 0.78, 0.55, 1)
 
 [node name="ResetConsole" parent="." instance=ExtResource("control")]
@@ -185,6 +194,8 @@ position = Vector3(4.5, 0, 5.05)
 receiver_path = NodePath("..")
 control_id = &"reset"
 caption = "复位档案室"
+short_caption = "复位"
+auxiliary = true
 accent = Color(0.9, 0.62, 0.48, 1)
 
 [node name="PassageLabels" type="Node3D" parent="."]
@@ -243,6 +254,7 @@ position = Vector3(-5.55, 0.23, 0.25)
 mesh = SubResource("LinkageShaft")
 
 [node name="LineState" type="Label3D" parent="Circuit"]
+visible = false
 position = Vector3(3.95, 1.2, -5.78)
 billboard = 1
 modulate = Color(0.95, 0.78, 0.53, 1)
@@ -255,4 +267,5 @@ outline_size = 9
 receiver_path = NodePath("..")
 control_id = &"reward"
 caption = "领取攻击强化符文"
+short_caption = "符文"
 accent = Color(0.94, 0.69, 0.37, 1)

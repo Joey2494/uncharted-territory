@@ -7,6 +7,8 @@ const MAX_HEIGHT_DIFFERENCE := 2.0
 @export var receiver_path: NodePath
 @export var control_id: StringName
 @export var caption := "机关"
+@export var short_caption := ""
+@export var auxiliary := false
 @export var accent := Color(0.38, 0.83, 0.8)
 
 @onready var _receiver := get_node_or_null(receiver_path)
@@ -20,12 +22,45 @@ func _ready() -> void:
 	_material = StandardMaterial3D.new()
 	_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_signal_mesh.material_override = _material
+	if not short_caption.is_empty():
+		_configure_archive_visual()
 	set_display(caption, false)
 
-## 保留设施名称；运行时可在第二行更新档位或锁定原因。
+## 档案室只在世界中显示短标识；完整状态由当前交互目标的 HUD 提示承担。
 func set_display(text: String, lit: bool) -> void:
-	_label.text = text
+	_label.text = short_caption if not short_caption.is_empty() else text
 	_material.albedo_color = accent if lit else accent.darkened(0.68)
+
+## 只替换装饰网格与标签，基座碰撞、位置、可达半径均保持原状。
+func _configure_archive_visual() -> void:
+	if control_id in [&"a", &"b"]:
+		var ring := TorusMesh.new()
+		ring.inner_radius = 0.22
+		ring.outer_radius = 0.42
+		_signal_mesh.mesh = ring
+		_signal_mesh.rotation_degrees = Vector3(90, 0, 0)
+		_signal_mesh.position.y = 1.12
+	elif control_id == &"lever":
+		var handle := CylinderMesh.new()
+		handle.top_radius = 0.10
+		handle.bottom_radius = 0.10
+		handle.height = 0.9
+		_signal_mesh.mesh = handle
+		_signal_mesh.rotation_degrees = Vector3(0, 0, -35)
+		_signal_mesh.position.y = 1.2
+	elif control_id == &"bridge":
+		var socket := BoxMesh.new()
+		socket.size = Vector3(0.9, 0.18, 0.6)
+		_signal_mesh.mesh = socket
+		_signal_mesh.rotation_degrees = Vector3.ZERO
+	elif control_id == &"rack":
+		var tray := BoxMesh.new()
+		tray.size = Vector3(1.05, 0.12, 0.55)
+		_signal_mesh.mesh = tray
+		_signal_mesh.rotation_degrees = Vector3.ZERO
+	if auxiliary:
+		_label.modulate = Color(0.72, 0.68, 0.56, 0.65)
+		_signal_mesh.scale = Vector3(0.7, 0.5, 0.7)
 
 ## 使用平面距离、垂直高度和实体遮挡过滤，不越墙、不跨层。
 func can_interact(player: CharacterBody3D) -> bool:
@@ -48,4 +83,6 @@ func try_interact(player: CharacterBody3D) -> bool:
 	return can_interact(player) and _receiver.perform_control(control_id, player)
 
 func get_interaction_prompt() -> String:
+	if is_instance_valid(_receiver) and _receiver.has_method("get_control_prompt"):
+		return _receiver.get_control_prompt(control_id)
 	return "[E] " + caption

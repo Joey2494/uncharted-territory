@@ -22,10 +22,13 @@ const MIN_SAFE_FRAME_SIZE := Vector2(0.25, 0.15)
 @onready var _camera: Camera3D = get_node_or_null(camera_path)
 
 var _layout_pending: bool = false
+var _puzzle_layout := false
 
 
 func _ready() -> void:
 	get_viewport().size_changed.connect(_queue_layout)
+	if is_instance_valid(_camera) and _camera.has_signal("framing_mode_changed"):
+		_camera.connect("framing_mode_changed", _queue_layout)
 	for control in [_stats, _resources, _feedback, _cooldowns, _hotbar, _boss_bar]:
 		control.minimum_size_changed.connect(_queue_layout)
 	_feedback.visibility_changed.connect(_queue_layout)
@@ -63,6 +66,11 @@ func _apply_layout() -> void:
 	var viewport_size := get_viewport().get_visible_rect().size
 	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
 		return
+	_puzzle_layout = is_instance_valid(_camera) and _camera.has_method("is_puzzle_framed") and _camera.is_puzzle_framed()
+	# 档案室是无敌人的安全支线，暂收战斗/道具栏，将空间留给机关关系。
+	# 离开或进入任何封场立即恢复；快捷键及背包功能不改变。
+	_hotbar.visible = not _puzzle_layout
+	_cooldowns.visible = not _puzzle_layout
 	var wide := viewport_size.x >= WIDE_WIDTH
 	var half_width := (viewport_size.x - MARGIN * 2.0 - GAP) * 0.5
 	var left_width := COLUMN_WIDTH if wide else minf(COLUMN_WIDTH, half_width)
@@ -131,10 +139,27 @@ func _apply_layout() -> void:
 		frame_start.y = maxf(frame_start.y, _objective.get_rect().end.y + MARGIN)
 	if not wide and _feedback.visible:
 		frame_end.y = minf(_feedback.position.y, _cooldowns.position.y) - MARGIN
+	if _puzzle_layout:
+		_apply_puzzle_frame(viewport_size, bottom_edge)
+		return
 	if is_instance_valid(_camera):
 		var clear := _largest_clear_rect(viewport_size)
 		if clear.has_area():
 			_camera.set_safe_frame(Rect2(clear.position / viewport_size, clear.size / viewport_size))
+
+
+## 固定预留双行交互提示与反馈空间，消息出现/消失不会推动相机。
+func _apply_puzzle_frame(viewport_size: Vector2, bottom_edge: float) -> void:
+	var width := minf(640.0, viewport_size.x - MARGIN * 2.0)
+	_place(_feedback, Vector2((viewport_size.x - width) * 0.5, bottom_edge - 104.0), Vector2(width, 104.0))
+	var top := maxf(_stats.get_rect().end.y, _resources.get_rect().end.y)
+	if _objective != null and _objective.visible:
+		top = maxf(top, _objective.get_rect().end.y)
+	if is_instance_valid(_shop_shortcut) and _shop_shortcut.is_visible_in_tree():
+		top = maxf(top, _shop_shortcut.get_global_rect().end.y)
+	var start := Vector2(MARGIN, top + GAP)
+	var end := Vector2(viewport_size.x - MARGIN, bottom_edge - 104.0 - GAP)
+	_camera.set_safe_frame(_bounded_safe_frame(start, end, viewport_size))
 
 
 func _bounded_safe_frame(start: Vector2, end: Vector2, viewport_size: Vector2) -> Rect2:

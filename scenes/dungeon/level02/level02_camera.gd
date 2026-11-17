@@ -1,12 +1,16 @@
 extends "res://scenes/dungeon/follow_camera.gd"
-## 第二关在战斗期间用房间边界取景，探索继续沿用缓动跟随。
+## 战斗和档案室按完整房间取景，普通探索继续缓动跟随。
+
+signal framing_mode_changed
 
 const Progress := preload("res://scenes/dungeon/components/room_progress_controller.gd")
 const COMBAT_PITCH := 44.0
 const FIGHTER_HEIGHT := 2.8
+const ARCHIVE := &"l2_archive"
 
 @onready var _progress: Progress = $"../RoomProgress"
 @onready var _boss: CharacterBody3D = $"../Boss"
+@onready var _archive: Node3D = $"../Regions/Archive"
 @onready var _combat_rooms := {
 	&"l2_hub": $"../Regions/Hub",
 	&"l2_relay": $"../Regions/Relay",
@@ -26,9 +30,9 @@ func _ready() -> void:
 
 func reset_follow() -> void:
 	_view_basis = Basis(Vector3.RIGHT, -deg_to_rad(COMBAT_PITCH))
-	var room := _get_combat_room()
+	var room := _get_fixed_room()
 	if room == &"":
-		_framed_room = &""
+		_clear_fixed_frame()
 		_ground_samples.clear()
 		super.reset_follow()
 	else:
@@ -46,9 +50,9 @@ func set_safe_frame(frame: Rect2) -> void:
 
 
 func _process(delta: float) -> void:
-	var room := _get_combat_room()
+	var room := _get_fixed_room()
 	if room == &"":
-		_framed_room = &""
+		_clear_fixed_frame()
 		_ground_samples.clear()
 		super._process(delta)
 		return
@@ -69,8 +73,26 @@ func _get_combat_room() -> StringName:
 	return &""
 
 
+## 档案室本身没有战斗；若存在有效封场，战斗构图始终优先。
+func is_puzzle_framed() -> bool:
+	return is_instance_valid(_target) and is_instance_valid(_archive) \
+		and get_parent().is_run_active() and _get_combat_room() == &"" \
+		and _archive.contains_point(_target.global_position)
+
+
+func _get_fixed_room() -> StringName:
+	var combat := _get_combat_room()
+	return combat if combat != &"" else (ARCHIVE if is_puzzle_framed() else &"")
+
+
+func _clear_fixed_frame() -> void:
+	if _framed_room != &"":
+		_framed_room = &""
+		framing_mode_changed.emit()
+
+
 func _frame_battle(room: StringName) -> void:
-	var region: Node3D = _combat_rooms[room]
+	var region: Node3D = _archive if room == ARCHIVE else _combat_rooms[room]
 	var bounds: Rect2 = region.get_world_bounds()
 	var height := FIGHTER_HEIGHT
 	var model_margin := 0.0
@@ -89,6 +111,7 @@ func _frame_battle(room: StringName) -> void:
 	var center := bounds.get_center()
 	_focus = Vector3(center.x, region.global_position.y + height * 0.33, center.y)
 	_distance = _fit_points(points, _focus) + 0.35
+	var changed := _framed_room != room
 	_framed_room = room
 	_framed_size = get_viewport().get_visible_rect().size
 	_ground_samples.clear()
@@ -100,3 +123,5 @@ func _frame_battle(room: StringName) -> void:
 			var point := inside.position + inside.size * (Vector2(x, z) / Vector2(steps))
 			_ground_samples.append(Vector3(point.x, region.global_position.y + 0.05, point.y))
 	_apply_view()
+	if changed:
+		framing_mode_changed.emit()
