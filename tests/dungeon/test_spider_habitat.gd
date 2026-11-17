@@ -62,6 +62,9 @@ func inspect_region(region: Node3D) -> void:
 	var cocoons := false
 	var nests := false
 	var half: Vector2 = region.dimensions*0.5
+	var lane_along_z: bool = region.dimensions.y >= region.dimensions.x
+	if (region.open_north or region.open_south) and not (region.open_east or region.open_west): lane_along_z = true
+	elif (region.open_east or region.open_west) and not (region.open_north or region.open_south): lane_along_z = false
 	for root_prop in roots:
 		clusters += 1
 		check(root_prop.get_parent().is_in_group("camera_occluders"), String(region.name)+": new dressing inherits existing wall occlusion")
@@ -87,7 +90,7 @@ func inspect_region(region: Node3D) -> void:
 				if region.exploration_room:
 					lane_clear = lane_clear and not (absf(p.x) < half.x*0.45 and absf(p.z) < half.y*0.45)
 				else:
-					var cross_lane := p.x if region.dimensions.y >= region.dimensions.x else p.z
+					var cross_lane := p.x if lane_along_z else p.z
 					lane_clear = lane_clear and absf(cross_lane) > 1.7
 				if region.open_north and absf(p.z+half.y) < 0.35: doors_clear = doors_clear and absf(p.x) > region.doorway_width*0.5+0.10
 				if region.open_south and absf(p.z-half.y) < 0.35: doors_clear = doors_clear and absf(p.x) > region.doorway_width*0.5+0.10

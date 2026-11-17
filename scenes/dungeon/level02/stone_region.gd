@@ -42,11 +42,19 @@ func _build_habitat(walls: Node3D, half: Vector2) -> void:
 	var maker = HABITAT.new()
 	if not exploration_room:
 		var vertical := dimensions.y >= dimensions.x
+		# Shortened passages can be wider than they are long; openings own the lane direction.
+		if (open_north or open_south) and not (open_east or open_west):
+			vertical = true
+		elif (open_east or open_west) and not (open_north or open_south):
+			vertical = false
 		for side in [-1.0,1.0]:
 			var opened: bool = (open_west if side < 0 else open_east) if vertical else (open_north if side < 0 else open_south)
 			if opened: continue
 			var opposite_open: bool = (open_east if side < 0 else open_west) if vertical else (open_south if side < 0 else open_north)
 			var at := Vector3(side*(half.x-0.12),0,-0.65) if vertical else Vector3(-0.65,0,side*(half.y-0.12))
+			# Tiny room connectors have no space for low hanging silk beside their door mouths.
+			if (dimensions.y if vertical else dimensions.x) < 3.0:
+				at.y = 0.6
 			_mount_habitat(walls,maker.corridor(String(name),half,vertical,side,not opposite_open),at)
 		return
 	var density: float = {"Arrival":0.18,"Hub":0.58,"Relay":0.70,"Antechamber":0.84,"Boss":1.0,"Archive":0.91,"Vault":0.95,"Exit":0.30}.get(String(name),0.55)

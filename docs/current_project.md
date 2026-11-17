@@ -4,7 +4,7 @@
 
 使用 Godot 4.7.2，根目录 `project.godot` 指定 `Main.tscn` 为启动场景。`main` 保存当前整合结果；队友继续开发前先拉取最新主分支，再创建各自的功能分支。
 
-第一关实际出口胜利后可进入第二关；第二关正式入口为 `scenes/dungeon/Level02Run.tscn`。需要单独调试第二关时直接运行该场景。正常关卡选择根据玩家存档中的通关进度解锁。
+第一关实际出口胜利后可进入第二关，正式入口为 `scenes/dungeon/Level02Run.tscn`。需要单独调试第二关时直接运行该场景。正常关卡选择根据玩家存档中的通关进度解锁。
 
 ## 角色与操作
 
@@ -27,11 +27,21 @@ WASD / 方向键移动，J 使用当前武器，K 法术，L 角色技能，Spac
 
 `Main.gd` 管理两关的菜单、运行、暂停、死亡和胜利；`scripts/integration/run_bindings.gd` 连接玩家、经济、教程、音效和 HUD；`menu_navigation.gd` 负责关卡选择和设置。`campaign_progress.gd` 负责跨关进度。
 
-第一关地图为 `scenes/dungeon/DungeonTest.tscn`。第二关地图在 `scenes/dungeon/level02/Level02.tscn`，通过 `Level02Campaign.tscn` 和 `campaign_level02.gd` 接入共享宿主。第二关 Boss 为灾厄巨蝎；清敌、导能、回环和档案室双阶段机关仍由原地图系统负责，击败 Boss 后必须实际进入出口才结算。
+第一关地图为 `scenes/dungeon/DungeonTest.tscn`。第二关地图在 `scenes/dungeon/level02/Level02.tscn`，通过 `Level02Campaign.tscn` 和 `campaign_level02.gd` 接入共享宿主。第二关 Boss 为灾厄巨蝎，击败后必须实际进入出口才结算。
+
+第二关档案室是可选路线。C 区清敌并启动导能后，G 区可以操作能源。两枚能源可以在托架、手持与插槽之间回收转移。临时桥需要一枚能源，检修手柄会展开无需持续供电的机械步道并接通断线。档案门要求两路接收器都供能且检修线接通。门完全开启后可在 H 领取一次强化符文，前台复位保留本局的领取记录。
+
+第二关主线仍从 A 经 B、C、D、E 到 F。D 清敌后可开启回 B 的双向捷径，方便回访 G。布局和门的前置见 [第二关布局图](level02-layout.png)。B、C、D、E 封场后采用 44° 固定房间构图，清场后恢复跟随。HUD 按实际控件边界安排目标卡、快捷栏和冷却，为战场和地面预警预留空间。
 
 第二关房间与通道使用天然岩壁、沉积岩地面、钟乳石、岩台与天然掩体；`stone_region.gd`、`stone_cover.gd` 通过 `cavern_geometry.gd` 更新可视外观。原有地图布局、碰撞、门洞、敌人和机关规则继续由团队实现负责，所有新增可视结构复用相机遮挡淡出。
 
 `spider_habitat.gd` 加入蛛网、悬丝、蛛茧和巢穴，避让中央战斗区与门洞。结构与验证见 [天然蜘蛛洞窟](spider_cavern.md) 和 [蜘蛛栖息地陈设](spider_habitat.md)。
+
+### 第三关白盒
+
+打开 `scenes/dungeon/level03/Level03Preview.tscn` 后按 F6 可独立试玩「潮汐回流工坊」。Tab 显示通路，Esc 暂停或重开。B 中央潮井控制水位。低水位开放西侧地沟，高水位开放东侧浮栈。把 C 的导体装到 D，东向为 F 充能，西向把储能送回 I。F 清场后可开启高架返程和维修井入口。I 泄压后开启 G，清除守卫后从 J 离开。H 是可选花园。
+
+第三关复用现有玩家和战斗组件。潮位切换由水面、栈道和实体挡板表达。B 的复位装置需要再次确认，保留同局清场与已领奖励。正式两关流程与第三关独立试玩使用各自的入口。
 
 ## UI 与后续接入
 

@@ -12,7 +12,7 @@ static func read(world: Node3D) -> Dictionary:
 		if progress.is_complete(id): completed.append(String(id))
 	if world.relay_activated: completed.append("relay")
 	if world.shortcut_unlocked: completed.append("shortcut")
-	if state >= PUZZLE.State.ROUTING: completed.append("calibration")
+	if puzzle.is_maintenance_connected(): completed.append("maintenance")
 	if state >= PUZZLE.State.OPENING: completed.append("routing")
 	if state == PUZZLE.State.CLAIMED: completed.append("reward")
 	var status := {"id":"", "title":"", "category":"当前任务",
@@ -21,13 +21,12 @@ static func read(world: Node3D) -> Dictionary:
 		status.category = "支线任务"
 		status.id = "puzzle:%d" % state
 		match state:
-			PUZZLE.State.CALIBRATION:
-				status.title = "校准碑文符文"
-				status.progress = "%d/%d" % [puzzle.get_rune_progress(),PUZZLE.RUNES.size()]
-			PUZZLE.State.ROUTING:
-				var settings: Vector2i = puzzle.get_settings()
-				status.title = "调谐分流 A%d / B%d" % [PUZZLE.TARGET_A,PUZZLE.TARGET_B]
-				status.progress = "%d/2" % [int(settings.x == PUZZLE.TARGET_A)+int(settings.y == PUZZLE.TARGET_B)]
+			PUZZLE.State.SUPPLY_OFF:
+				status.title = "启动回廊主供能"
+				status.progress = "未供电"
+			PUZZLE.State.READY:
+				status.title = "为双接收器供能" if puzzle.is_maintenance_connected() else "过桥接通检修线"
+				status.progress = "门锁 %d/2" % [puzzle.get_core_count(&"a") + puzzle.get_core_count(&"b")]
 			PUZZLE.State.OPENING:
 				status.title = "等待密室开启"
 				status.progress = "开启中"

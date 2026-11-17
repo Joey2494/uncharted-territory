@@ -120,6 +120,18 @@ func _actor_dimensions(actor: Node3D) -> Vector2:
 
 
 func _required_distance(actors: Array[Node3D], focus: Vector3) -> float:
+	var points := PackedVector3Array()
+	for actor in actors:
+		var dimensions := _actor_dimensions(actor)
+		var radius := dimensions.x + actor_padding
+		for x in [-radius, radius]:
+			for z in [-radius, radius]:
+				for y in [0.0, dimensions.y + actor_padding]:
+					points.append(actor.global_transform * Vector3(x, y, z))
+	return _fit_points(points, focus)
+
+
+func _fit_points(points: PackedVector3Array, focus: Vector3) -> float:
 	var viewport_size := get_viewport().get_visible_rect().size
 	var tan_y := tan(deg_to_rad(fov) * 0.5)
 	var tan_x := tan_y * viewport_size.x / maxf(viewport_size.y, 1.0)
@@ -130,19 +142,14 @@ func _required_distance(actors: Array[Node3D], focus: Vector3) -> float:
 	var aim_x := _safe_frame.get_center().x * 2.0 - 1.0
 	var aim_y := 1.0 - _safe_frame.get_center().y * 2.0
 	var required := minimum_distance
-	for actor in actors:
-		var dimensions := _actor_dimensions(actor)
-		var radius := dimensions.x + actor_padding
-		for x in [-radius, radius]:
-			for z in [-radius, radius]:
-				for y in [0.0, dimensions.y + actor_padding]:
-					var point := actor.global_transform * Vector3(x, y, z)
-					var local := _view_basis.transposed() * (point - focus)
-					required = maxf(required, local.z + near + 0.5)
-					required = maxf(required, (local.x / tan_x + right * local.z) / (right - aim_x))
-					required = maxf(required, (-local.x / tan_x - left * local.z) / (aim_x - left))
-					required = maxf(required, (local.y / tan_y + top * local.z) / (top - aim_y))
-					required = maxf(required, (-local.y / tan_y - bottom * local.z) / (aim_y - bottom))
+	var view_inverse := _view_basis.transposed()
+	for point in points:
+		var local := view_inverse * (point - focus)
+		required = maxf(required, local.z + near + 0.5)
+		required = maxf(required, (local.x / tan_x + right * local.z) / (right - aim_x))
+		required = maxf(required, (-local.x / tan_x - left * local.z) / (aim_x - left))
+		required = maxf(required, (local.y / tan_y + top * local.z) / (top - aim_y))
+		required = maxf(required, (-local.y / tan_y - bottom * local.z) / (aim_y - bottom))
 	return required
 
 
@@ -183,29 +190,40 @@ func _update_labels(actors: Array[Node3D]) -> void:
 
 
 func _update_occluders(actors: Array[Node3D], delta: float) -> void:
-	var blocked: Dictionary = {}
-	var start := get_camera_transform().origin
-	var space := get_world_3d().direct_space_state
+	_fade_occluders(_actor_visibility_points(actors), delta)
+
+
+func _actor_visibility_points(actors: Array[Node3D]) -> PackedVector3Array:
+	var points := PackedVector3Array()
 	for actor in actors:
 		var dimensions := _actor_dimensions(actor)
 		var chest := actor.global_position + Vector3.UP * dimensions.y * 0.5
-		var points := [actor.global_position + Vector3.UP * 0.1, chest, actor.global_position + Vector3.UP * dimensions.y, chest + _view_basis.x * dimensions.x * 0.8, chest - _view_basis.x * dimensions.x * 0.8]
-		for point in points:
-			var excluded: Array[RID] = []
-			for i in range(4):
-				var query := PhysicsRayQueryParameters3D.create(start, point, 1, excluded)
-				var hit := space.intersect_ray(query)
-				if hit.is_empty():
-					break
-				var body := hit.collider as CollisionObject3D
-				if body == null or not body.is_in_group("camera_occluders"):
-					break
-				excluded.append(body.get_rid())
-				for mesh in body.find_children("*", "MeshInstance3D", true, false):
-					var id: int = mesh.get_instance_id()
-					blocked[id] = true
-					if not _faded_meshes.has(id):
-						_remember_occluder(mesh)
+		points.append_array([actor.global_position + Vector3.UP * 0.1, chest,
+			actor.global_position + Vector3.UP * dimensions.y, chest + _view_basis.x * dimensions.x * 0.8,
+			chest - _view_basis.x * dimensions.x * 0.8])
+	return points
+
+
+func _fade_occluders(points: PackedVector3Array, delta: float) -> void:
+	var blocked: Dictionary = {}
+	var start := get_camera_transform().origin
+	var space := get_world_3d().direct_space_state
+	for point in points:
+		var excluded: Array[RID] = []
+		for i in range(4):
+			var query := PhysicsRayQueryParameters3D.create(start, point, 1, excluded)
+			var hit := space.intersect_ray(query)
+			if hit.is_empty():
+				break
+			var body := hit.collider as CollisionObject3D
+			if body == null or not body.is_in_group("camera_occluders"):
+				break
+			excluded.append(body.get_rid())
+			for mesh in body.find_children("*", "MeshInstance3D", true, false):
+				var id: int = mesh.get_instance_id()
+				blocked[id] = true
+				if not _faded_meshes.has(id):
+					_remember_occluder(mesh)
 	for id in _faded_meshes.keys():
 		var mesh = _faded_meshes[id].node.get_ref()
 		if not is_instance_valid(mesh):

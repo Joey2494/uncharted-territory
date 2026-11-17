@@ -2,105 +2,257 @@
 
 [ext_resource type="Script" path="res://scenes/puzzles/energy_relay/energy_relay_puzzle.gd" id="puzzle"]
 [ext_resource type="PackedScene" path="res://scenes/puzzles/energy_relay/RelayControl.tscn" id="control"]
+[ext_resource type="PackedScene" path="res://scenes/puzzles/energy_relay/ArchivePassage.tscn" id="passage"]
 [ext_resource type="Font" path="res://scenes/ui/dungeon_font.tres" id="font"]
 
-[sub_resource type="BoxMesh" id="FlowMesh"]
-size = Vector3(2.15, 0.035, 0.11)
+[sub_resource type="StandardMaterial3D" id="PartitionMaterial"]
+albedo_color = Color(0.26, 0.29, 0.32, 1)
+roughness = 0.88
+
+[sub_resource type="StandardMaterial3D" id="CoreMaterial"]
+albedo_color = Color(0.43, 0.96, 0.87, 1)
+emission_enabled = true
+emission = Color(0.13, 0.35, 0.28, 1)
+metallic = 0.22
+roughness = 0.24
+
+[sub_resource type="CylinderMesh" id="Core"]
+material = SubResource("CoreMaterial")
+top_radius = 0.05
+bottom_radius = 0.19
+height = 0.55
+radial_segments = 4
+
+[sub_resource type="StandardMaterial3D" id="LinkageMaterial"]
+albedo_color = Color(0.62, 0.43, 0.2, 1)
+metallic = 0.45
+roughness = 0.45
+
+[sub_resource type="BoxMesh" id="LinkageCrossbar"]
+material = SubResource("LinkageMaterial")
+size = Vector3(7.78, 0.12, 0.12)
+
+[sub_resource type="BoxMesh" id="LinkageShaft"]
+material = SubResource("LinkageMaterial")
+size = Vector3(0.12, 0.12, 7.76)
+
+[sub_resource type="BoxMesh" id="LinkageBracket"]
+material = SubResource("LinkageMaterial")
+size = Vector3(0.34, 1.66, 0.28)
+
+[sub_resource type="BoxMesh" id="Direct"]
+size = Vector3(0.12, 0.055, 1.7)
+
+[sub_resource type="BoxMesh" id="Conductor"]
+size = Vector3(0.1, 0.11, 0.73)
+
+[sub_resource type="BoxMesh" id="ReceiverLead"]
+size = Vector3(0.11, 0.055, 0.68)
+
+[sub_resource type="BoxMesh" id="GateLead"]
+size = Vector3(0.11, 0.055, 0.35)
+
+[sub_resource type="BoxMesh" id="NorthPartition"]
+material = SubResource("PartitionMaterial")
+size = Vector3(3.0, 1.6, 4.68)
+
+[sub_resource type="BoxShape3D" id="NorthPartitionShape"]
+size = Vector3(3.0, 1.6, 4.68)
+
+[sub_resource type="BoxMesh" id="CenterPartition"]
+material = SubResource("PartitionMaterial")
+size = Vector3(3.0, 1.6, 1.025)
+
+[sub_resource type="BoxShape3D" id="CenterPartitionShape"]
+size = Vector3(3.0, 1.6, 1.025)
+
+[sub_resource type="BoxMesh" id="SouthPartition"]
+material = SubResource("PartitionMaterial")
+size = Vector3(3.0, 1.6, 1.65)
+
+[sub_resource type="BoxShape3D" id="SouthPartitionShape"]
+size = Vector3(3.0, 1.6, 1.65)
 
 [node name="EnergyRelayPuzzle" type="Node3D"]
 script = ExtResource("puzzle")
 
-[node name="Reset" type="Timer" parent="."]
-wait_time = 0.7
-one_shot = true
+[node name="PoweredPassage" parent="." instance=ExtResource("passage")]
+position = Vector3(-4.15, 0, -0.375)
 
-[node name="Inscription" type="Label3D" parent="."]
-position = Vector3(0, 2.45, 0.2)
-billboard = 1
-modulate = Color(0.96, 0.87, 0.65, 1)
-text = "日沉、月升、星明"
-font = ExtResource("font")
-font_size = 48
-pixel_size = 0.009
-outline_size = 10
+[node name="MechanicalPassage" parent="." instance=ExtResource("passage")]
+position = Vector3(-4.15, 0, 4.15)
+scale = Vector3(1, 1, 0.7407407)
 
-[node name="Status" type="Label3D" parent="."]
-position = Vector3(0, 2.0, -5.7)
-billboard = 1
-modulate = Color(0.58, 0.88, 0.85, 1)
-font = ExtResource("font")
-font_size = 40
-pixel_size = 0.007
-outline_size = 10
+[node name="NorthPartition" type="StaticBody3D" parent="." groups=["camera_occluders"]]
+position = Vector3(-4.15, 0.8, -4.74)
+collision_mask = 0
 
-[node name="RuneSun" parent="." instance=ExtResource("control")]
-position = Vector3(-4, 0, 3)
+[node name="Mesh" type="MeshInstance3D" parent="NorthPartition"]
+mesh = SubResource("NorthPartition")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NorthPartition"]
+shape = SubResource("NorthPartitionShape")
+
+[node name="CenterPartition" type="StaticBody3D" parent="." groups=["camera_occluders"]]
+position = Vector3(-4.15, 0.8, 2.155)
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="CenterPartition"]
+mesh = SubResource("CenterPartition")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CenterPartition"]
+shape = SubResource("CenterPartitionShape")
+
+[node name="SouthPartition" type="StaticBody3D" parent="." groups=["camera_occluders"]]
+position = Vector3(-4.15, 0.8, 6.475)
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="SouthPartition"]
+mesh = SubResource("SouthPartition")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SouthPartition"]
+shape = SubResource("SouthPartitionShape")
+
+[node name="CoreRack" parent="." instance=ExtResource("control")]
+position = Vector3(3.0, 0, 2.65)
 receiver_path = NodePath("..")
-control_id = &"sun"
-caption = "日"
+control_id = &"rack"
+caption = "取放能源"
 
-[node name="RuneMoon" parent="." instance=ExtResource("control")]
-position = Vector3(0, 0, 3)
+[node name="Core1" type="MeshInstance3D" parent="CoreRack"]
+position = Vector3(-0.28, 1.16, 0)
+rotation_degrees = Vector3(0, 45, 0)
+mesh = SubResource("Core")
+
+[node name="Core2" type="MeshInstance3D" parent="CoreRack"]
+position = Vector3(0.28, 1.16, 0)
+rotation_degrees = Vector3(0, 45, 0)
+mesh = SubResource("Core")
+
+[node name="BridgeSocket" parent="." instance=ExtResource("control")]
+position = Vector3(-2.05, 0, -1.42)
 receiver_path = NodePath("..")
-control_id = &"moon"
-caption = "月"
+control_id = &"bridge"
+caption = "桥台插槽"
 
-[node name="RuneStar" parent="." instance=ExtResource("control")]
-position = Vector3(4, 0, 3)
+[node name="Core" type="MeshInstance3D" parent="BridgeSocket"]
+position = Vector3(0, 1.18, 0)
+mesh = SubResource("Core")
+
+[node name="Lever" parent="." instance=ExtResource("control")]
+position = Vector3(-6.48, 0, -3.54)
 receiver_path = NodePath("..")
-control_id = &"star"
-caption = "星"
+control_id = &"lever"
+caption = "检修手柄"
+accent = Color(0.9, 0.68, 0.32, 1)
 
-[node name="SwitchA" parent="." instance=ExtResource("control")]
-position = Vector3(-4, 0, -3)
+[node name="ReceiverA" parent="." instance=ExtResource("control")]
+position = Vector3(-1.55, 0, -5.25)
 receiver_path = NodePath("..")
 control_id = &"a"
-caption = "切换分流 A"
+caption = "接收器一"
 
-[node name="SwitchB" parent="." instance=ExtResource("control")]
-position = Vector3(4, 0, -3)
+[node name="Core" type="MeshInstance3D" parent="ReceiverA"]
+position = Vector3(0, 1.18, 0)
+mesh = SubResource("Core")
+
+[node name="ReceiverB" parent="." instance=ExtResource("control")]
+position = Vector3(1.55, 0, -5.25)
 receiver_path = NodePath("..")
 control_id = &"b"
-caption = "切换分流 B"
+caption = "接收器二"
 
-[node name="Confirm" parent="." instance=ExtResource("control")]
-position = Vector3(0, 0, -4)
+[node name="Core" type="MeshInstance3D" parent="ReceiverB"]
+position = Vector3(0, 1.18, 0)
+mesh = SubResource("Core")
+
+[node name="Inspect" parent="." instance=ExtResource("control")]
+position = Vector3(5.7, 0, -1.5)
 receiver_path = NodePath("..")
-control_id = &"confirm"
-caption = "确认流向"
+control_id = &"inspect"
+caption = "查看供能铭牌"
+accent = Color(0.89, 0.78, 0.55, 1)
+
+[node name="Hints" parent="." instance=ExtResource("control")]
+position = Vector3(5.75, 0, 2.45)
+receiver_path = NodePath("..")
+control_id = &"hints"
+caption = "查看解谜提示"
+accent = Color(0.89, 0.78, 0.55, 1)
+
+[node name="ResetConsole" parent="." instance=ExtResource("control")]
+position = Vector3(4.5, 0, 5.05)
+receiver_path = NodePath("..")
+control_id = &"reset"
+caption = "复位档案室"
+accent = Color(0.9, 0.62, 0.48, 1)
+
+[node name="PassageLabels" type="Node3D" parent="."]
+
+[node name="BridgeState" type="Label3D" parent="PassageLabels"]
+position = Vector3(-4.15, 1.48, 0.75)
+billboard = 1
+modulate = Color(0.62, 0.9, 0.87, 1)
+font = ExtResource("font")
+font_size = 34
+pixel_size = 0.007
+outline_size = 9
+
+[node name="WalkwayState" type="Label3D" parent="PassageLabels"]
+position = Vector3(-4.15, 1.48, 4.52)
+billboard = 1
+modulate = Color(0.95, 0.78, 0.53, 1)
+font = ExtResource("font")
+font_size = 34
+pixel_size = 0.007
+outline_size = 9
+
+[node name="Circuit" type="Node3D" parent="."]
+
+[node name="Direct" type="MeshInstance3D" parent="Circuit"]
+position = Vector3(-1.55, 0.045, -6.13)
+mesh = SubResource("Direct")
+
+[node name="ReceiverLead" type="MeshInstance3D" parent="Circuit"]
+position = Vector3(1.55, 0.045, -5.6)
+mesh = SubResource("ReceiverLead")
+
+[node name="MovableLink" type="MeshInstance3D" parent="Circuit"]
+position = Vector3(1.55, 0.075, -6.305)
+mesh = SubResource("Conductor")
+
+[node name="GateLead" type="MeshInstance3D" parent="Circuit"]
+position = Vector3(1.55, 0.045, -6.83)
+mesh = SubResource("GateLead")
+
+[node name="Linkage" type="Node3D" parent="Circuit"]
+
+[node name="Crossbar" type="MeshInstance3D" parent="Circuit/Linkage"]
+position = Vector3(-2.24, 1.67, -4.95)
+rotation_degrees = Vector3(0, 20, 0)
+mesh = SubResource("LinkageCrossbar")
+
+[node name="ConductorBracket" type="MeshInstance3D" parent="Circuit/Linkage"]
+position = Vector3(1.42, 0.86, -6.27)
+mesh = SubResource("LinkageBracket")
+
+[node name="WalkwayDrive" type="Node3D" parent="Circuit"]
+
+[node name="Shaft" type="MeshInstance3D" parent="Circuit/WalkwayDrive"]
+position = Vector3(-5.55, 0.23, 0.25)
+mesh = SubResource("LinkageShaft")
+
+[node name="LineState" type="Label3D" parent="Circuit"]
+position = Vector3(3.95, 1.2, -5.78)
+billboard = 1
+modulate = Color(0.95, 0.78, 0.53, 1)
+font = ExtResource("font")
+font_size = 35
+pixel_size = 0.007
+outline_size = 9
 
 [node name="Reward" parent="." instance=ExtResource("control")]
-position = Vector3(0, 0, 0)
 receiver_path = NodePath("..")
 control_id = &"reward"
 caption = "领取攻击强化符文"
-
-[node name="FlowA" type="Node3D" parent="."]
-position = Vector3(-2.1, 0.022, -3)
-
-[node name="Route0" type="MeshInstance3D" parent="FlowA"]
-position = Vector3(0, 0, -0.44)
-mesh = SubResource("FlowMesh")
-
-[node name="Route1" type="MeshInstance3D" parent="FlowA"]
-position = Vector3(0, 0, 0)
-mesh = SubResource("FlowMesh")
-
-[node name="Route2" type="MeshInstance3D" parent="FlowA"]
-position = Vector3(0, 0, 0.44)
-mesh = SubResource("FlowMesh")
-
-[node name="FlowB" type="Node3D" parent="."]
-position = Vector3(2.1, 0.022, -3)
-
-[node name="Route0" type="MeshInstance3D" parent="FlowB"]
-position = Vector3(0, 0, -0.44)
-mesh = SubResource("FlowMesh")
-
-[node name="Route1" type="MeshInstance3D" parent="FlowB"]
-position = Vector3(0, 0, 0)
-mesh = SubResource("FlowMesh")
-
-[node name="Route2" type="MeshInstance3D" parent="FlowB"]
-position = Vector3(0, 0, 0.44)
-mesh = SubResource("FlowMesh")
+accent = Color(0.94, 0.69, 0.37, 1)
