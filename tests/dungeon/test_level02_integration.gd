@@ -123,8 +123,10 @@ func run() -> void:
 	check(is_equal_approx(opening_mesh.position.y, height) and hub.position == hub_position, "暂停同时冻结关门动画与敌人")
 	action("pause")
 	check(host.get_run_state() == host.RunState.PLAYING and not paused, "ESC 恢复探索")
-	await go(player, Vector3(-7.9, 0.05, -22))
+	# 吐丝蛛在 9.5 米内会停下射击；追击回归应从其射程外建立场景。
+	await go(player, Vector3(-7.9, 0.05, -19.5))
 	var start_distance: float = hub.global_position.distance_to(player.global_position)
+	check(start_distance > 9.5, "追击检查从吐丝蛛射程外开始")
 	await create_timer(0.72).timeout
 	check(hub.global_position.distance_to(player.global_position) < start_distance - 0.7, "实体守卫沿掩体西侧向真实玩家追击")
 	check(host.open_guide(), "共享宿主打开探索指引")
