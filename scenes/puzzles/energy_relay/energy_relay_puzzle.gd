@@ -1,5 +1,5 @@
 extends Node3D
-## 断流档案室。两枚能源在托架、手持和三个插槽间转移，检修手柄改变两条通路。
+## 断流档案室。两枚能源在托架、手持和三个插槽间转移，步道开关改变两条通路。
 
 signal feedback(message: String)
 signal reward_claimed
@@ -17,7 +17,7 @@ const OFFLINE := "主供能中断 · 来自东侧回廊（C）"
 const HINTS := [
 	"看看对岸检修台旁折起的机械步道，留意它通向哪里。",
 	"临时桥上的能源可以撤回。机械步道卡合后不需要供能。",
-	"用一枚能源过桥，拉下检修手柄。走侧步道回来撤回能源，再填满两个接收器。",
+	"用一枚能源过桥，拉下步道开关。走侧步道回来撤回能源，再填满两个接收器。",
 ]
 
 @export var gate_path: NodePath
@@ -109,7 +109,7 @@ func get_control_prompt(id: StringName) -> String:
 			return "档案室复位 · " + ("等待确认\n[E] 再次确认复位" if _reset_pending else "能源归架、通路收起\n[E] 请求复位")
 		&"reward":
 			return "攻击强化符文 · 待领取\n[E] 领取符文"
-	var names := {&"rack": "能源托架", &"bridge": "桥台插槽", &"a": "接收器一", &"b": "接收器二", &"lever": "检修手柄"}
+	var names := {&"rack": "能源托架", &"bridge": "桥台插槽", &"a": "接收器一", &"b": "接收器二", &"lever": "步道开关"}
 	var name: String = names.get(id, "机关")
 	if _state == State.SUPPLY_OFF:
 		return name + " · 主供能中断\n[E] 检查供能来源"
@@ -117,7 +117,7 @@ func get_control_prompt(id: StringName) -> String:
 		var action := "取用 %d 枚能源" % _cores[&"rack"] if _cores[&"rack"] > 0 else ("存回手持能源" if _cores[&"carried"] > 0 else "检查能源去向")
 		return "%s · 存放 %d/2\n[E] %s" % [name, _cores[&"rack"], action]
 	if id == &"lever":
-		return name + (" · 检修线已接通\n[E] 检查已卡合手柄" if _maintenance_latched else " · 检修线断开\n[E] 拉下手柄、展开步道")
+		return name + (" · 检修线已接通\n[E] 检查已卡合开关" if _maintenance_latched else " · 检修线断开\n[E] 拉下开关，展开返回步道并接通门锁")
 	if id in SLOT_IDS:
 		var filled: bool = _cores[id] == 1
 		var action := "撤回能源" if filled else ("放入一枚能源" if _cores[&"carried"] > 0 else "检查空槽（手持为空）")
@@ -298,7 +298,7 @@ func _refresh_devices() -> void:
 	$CoreRack.set_display("能源托架 · %d/2" % _cores[&"rack"], _cores[&"rack"] > 0)
 	$CoreRack/Core1.visible = _cores[&"rack"] > 0
 	$CoreRack/Core2.visible = _cores[&"rack"] == 2
-	$Lever.set_display("检修手柄 · " + ("已卡合" if _maintenance_latched else "待操作"), _maintenance_latched)
+	$Lever.set_display("步道开关 · " + ("已卡合" if _maintenance_latched else "待操作"), _maintenance_latched)
 	$ResetConsole.set_display("再次按 E 确认" if _reset_pending else "前台复位", _reset_pending)
 	for id in SLOT_IDS:
 		var control := _slot_controls[id] as RelayControl

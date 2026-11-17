@@ -1,12 +1,13 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scenes/puzzles/energy_relay/energy_relay_puzzle.gd" id="puzzle"]
+[ext_resource type="Script" path="res://scenes/puzzles/energy_relay/archive_partition.gd" id="partition"]
 [ext_resource type="PackedScene" path="res://scenes/puzzles/energy_relay/RelayControl.tscn" id="control"]
 [ext_resource type="PackedScene" path="res://scenes/puzzles/energy_relay/ArchivePassage.tscn" id="passage"]
 [ext_resource type="Font" path="res://scenes/ui/dungeon_font.tres" id="font"]
 
 [sub_resource type="StandardMaterial3D" id="PartitionMaterial"]
-albedo_color = Color(0.26, 0.29, 0.32, 1)
+albedo_color = Color(0.16, 0.22, 0.24, 1)
 roughness = 0.88
 
 [sub_resource type="StandardMaterial3D" id="CoreMaterial"]
@@ -83,7 +84,8 @@ position = Vector3(-4.15, 0, -0.375)
 position = Vector3(-4.15, 0, 4.15)
 scale = Vector3(1, 1, 0.7407407)
 
-[node name="NorthPartition" type="StaticBody3D" parent="." groups=["camera_occluders"]]
+[node name="NorthPartition" type="StaticBody3D" parent="."]
+script = ExtResource("partition")
 position = Vector3(-4.15, 0.275, -4.74)
 collision_mask = 0
 
@@ -93,7 +95,8 @@ mesh = SubResource("NorthPartition")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="NorthPartition"]
 shape = SubResource("NorthPartitionShape")
 
-[node name="CenterPartition" type="StaticBody3D" parent="." groups=["camera_occluders"]]
+[node name="CenterPartition" type="StaticBody3D" parent="."]
+script = ExtResource("partition")
 position = Vector3(-4.15, 0.275, 2.155)
 collision_mask = 0
 
@@ -103,7 +106,8 @@ mesh = SubResource("CenterPartition")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CenterPartition"]
 shape = SubResource("CenterPartitionShape")
 
-[node name="SouthPartition" type="StaticBody3D" parent="." groups=["camera_occluders"]]
+[node name="SouthPartition" type="StaticBody3D" parent="."]
+script = ExtResource("partition")
 position = Vector3(-4.15, 0.275, 6.475)
 collision_mask = 0
 
@@ -145,8 +149,8 @@ mesh = SubResource("Core")
 position = Vector3(-6.48, 0, -3.54)
 receiver_path = NodePath("..")
 control_id = &"lever"
-caption = "检修手柄"
-short_caption = "手柄"
+caption = "步道开关"
+short_caption = "步道开关"
 accent = Color(0.9, 0.68, 0.32, 1)
 
 [node name="ReceiverA" parent="." instance=ExtResource("control")]
