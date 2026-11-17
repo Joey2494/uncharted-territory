@@ -31,6 +31,7 @@ const VAULT := &"l2_vault"
 
 var relay_activated := false
 var shortcut_unlocked := false
+var _demo_core_inserted := false
 var _encounters: Dictionary = {}
 var _visited: Dictionary = {}
 var _configured := false
@@ -150,17 +151,24 @@ func is_control_available(id: StringName, actor: CharacterBody3D) -> bool:
 	if not _active or not can_process() or actor != player or actor.is_dead():
 		return false
 	if id == &"relay":
-		return not relay_activated and progress.is_complete(RELAY)
+		return progress.is_complete(RELAY)
 	return id == &"shortcut" and not shortcut_unlocked and progress.is_complete(ANTECHAMBER)
 
 func perform_control(id: StringName, actor: CharacterBody3D) -> bool:
 	if not is_control_available(id, actor):
 		return false
 	if id == &"relay":
-		if not $Gates/RelayNorth.open_gate():
-			return false
-		relay_activated = true
-		feedback.emit("导能成功 · 前厅通道开启")
+		if not relay_activated:
+			if not $Gates/RelayNorth.open_gate():
+				return false
+			relay_activated = true
+			_demo_core_inserted = true
+			puzzle.enable_supply()
+			feedback.emit("前厅与档案室已供能 · 演示槽内能源可按 E 取回")
+		else:
+			# C 的演示插槽可以重复观察，主线导能授权与演示状态独立。
+			_demo_core_inserted = not _demo_core_inserted
+			feedback.emit("插入能源 · 槽位供能，能源仍在槽内" if _demo_core_inserted else "撤回能源 · 演示线路熄灭，能源可再次插入")
 	else:
 		var hub_gate: Gate = $Gates/HubNorth
 		var antechamber_gate: Gate = $Gates/AntechamberWest
@@ -176,10 +184,10 @@ func perform_control(id: StringName, actor: CharacterBody3D) -> bool:
 func _refresh_controls() -> void:
 	var relay_status := "清敌后可用"
 	if relay_activated:
-		relay_status = "已启动"
+		relay_status = "演示槽 %d/1" % int(_demo_core_inserted)
 	elif progress.is_complete(RELAY):
 		relay_status = "E 启动"
-	$Devices/Relay.set_display("导能核心 · " + relay_status, relay_activated or progress.is_complete(RELAY))
+	$Devices/Relay.set_display("导能核心 · " + relay_status, _demo_core_inserted or (not relay_activated and progress.is_complete(RELAY)))
 	var shortcut_status := "清敌后可用"
 	if shortcut_unlocked:
 		shortcut_status = "已开启"
@@ -200,7 +208,7 @@ func get_objective() -> String:
 		HUB:
 			return "清敌后向东继续 · 西侧是可选支线"
 		RELAY:
-			return "向北进入共鸣前厅" if relay_activated else "清敌后按 E 启动导能核心"
+			return "沿金线前往共鸣前厅 · 档案室已供电" if relay_activated else "清敌后按 E 启动导能核心"
 		ANTECHAMBER:
 			return "向北进入大厅 · 西侧可开启回环"
 		BOSS:

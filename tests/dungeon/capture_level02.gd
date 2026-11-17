@@ -3,6 +3,8 @@ extends SceneTree
 ## 用法：Godot --path . --windowed -s res://tests/dungeon/capture_level02.gd -- --output <绝对目录> [--full-hd]
 
 const PREVIEW := preload("res://tests/scenes/Level02Preview.tscn")
+const PROFILE := preload("res://scripts/integration/player_profile.gd")
+const PROGRESS := preload("res://scripts/integration/campaign_progress.gd")
 var _viewport: SubViewport
 var _preview: Node3D
 var _map: Node3D
@@ -30,6 +32,8 @@ func _run() -> void:
 		push_error("无法创建取证目录 " + _output)
 		quit(1)
 		return
+	PROFILE.override_path = _output.path_join("capture-profile.cfg")
+	PROGRESS.override_path = _output.path_join("capture-progress.cfg")
 	var sizes := [Vector2i(1920, 1080)] if args.has("--full-hd") else [Vector2i(1280, 720), Vector2i(1920, 1080)]
 	for size in sizes:
 		await _record(size)
@@ -47,49 +51,61 @@ func _record(size: Vector2i) -> void:
 	root.add_child(_viewport)
 	_preview = PREVIEW.instantiate()
 	_viewport.add_child(_preview)
-	_map = _preview.get_node("Level02")
+	_map = _preview.get_node("DungeonTest")
 	_player = _map.get_node("Player")
 	_camera = _map.get_node("Camera3D")
 	await _capture("01-menu")
-	_preview.get_node("%Primary").pressed.emit()
+	_preview._start_screen.start_button.pressed.emit()
 	await create_timer(1.02).timeout
 	_preview.open_guide()
+	var settings: Control = _preview.get_node("MenuNavigation").settings_screen
+	settings.get_node("%ControlsGuideButton").pressed.emit()
 	await _capture("02-guide")
-	_preview.close_guide()
-	await _go(Vector3(0, 0.05, -25))
+	settings.go_back()
+	settings.go_back()
+	await _go(_room("Hub") + Vector3(0, 0, 2))
 	await _capture("03-hub-battle")
 	_defeat(["Enemies/Hub1", "Enemies/Hub2"])
 	await create_timer(1.03).timeout
-	await _go(Vector3(34, 0.05, -24.5))
+	await _go(_room("Relay") + Vector3(0, 0, 1.5))
 	_defeat(["Enemies/Relay1", "Enemies/Relay2"])
 	await _use("Devices/Relay")
 	await _capture("04-relay")
-	for id in ["RuneSun", "RuneMoon", "RuneStar", "SwitchA", "SwitchB", "SwitchB"]:
-		await _use("EnergyRelayPuzzle/" + id)
-	await _go(Vector3(-34, 0.05, -28.55))
+	var archive := _map.get_node("EnergyRelayPuzzle") as Node3D
+	await _use("EnergyRelayPuzzle/CoreRack")
+	await _use("EnergyRelayPuzzle/BridgeSocket", Vector3(1.25, 0.05, 0))
+	await _go(archive.to_global(Vector3(1.0, 0.05, 0.0)))
 	await _capture("05-archive")
-	await _use("EnergyRelayPuzzle/Confirm")
+	await _use("EnergyRelayPuzzle/Lever")
+	await _use("EnergyRelayPuzzle/BridgeSocket", Vector3(1.25, 0.05, 0))
+	await _use("EnergyRelayPuzzle/ReceiverA")
+	await _use("EnergyRelayPuzzle/ReceiverB")
 	await create_timer(1.03).timeout
 	await _use("EnergyRelayPuzzle/Reward")
-	await _go(Vector3(34, 0.05, -54))
+	await _go(_room("Antechamber") + Vector3(0, 0, 2))
 	_defeat(["Enemies/Antechamber1", "Enemies/Antechamber2", "Enemies/Antechamber3"])
 	await _use("Devices/Shortcut")
 	await create_timer(1.03).timeout
-	await _go(Vector3(27, 0.05, -55.85))
+	await _go(_map.get_node("Gates/AntechamberWest").global_position + Vector3(1.6, 0.05, 0))
 	await _capture("06-shortcut")
 	await _capture_overview()
-	await _go(Vector3(34, 0.05, -84))
+	await _go(_room("Boss") + Vector3(0, 0, 4))
 	_defeat(["Boss"])
 	await create_timer(1.05).timeout
-	await _go(Vector3(34, 0.05, -111))
+	var exit_point: Vector3 = _map.get_node("ExitArea").global_position
+	exit_point.y = 0.05
+	await _go(exit_point)
 	await create_timer(0.22).timeout
-	if _preview.get_run_state() != _preview.State.VICTORY:
+	if _preview.get_run_state() != _preview.RunState.VICTORY:
 		push_error("未观察到实际出口结算")
 		_failed = true
 	else:
 		await _capture("08-victory")
 	_viewport.queue_free()
 	await process_frame
+
+func _room(name: String) -> Vector3:
+	return _map.get_node("Regions/" + name).global_position + Vector3.UP * 0.05
 
 func _go(point: Vector3) -> void:
 	_player.global_position = point
@@ -103,9 +119,9 @@ func _defeat(enemies: Array) -> void:
 			push_error("取证时未触发真实死亡 " + path)
 			_failed = true
 
-func _use(path: String) -> void:
+func _use(path: String, offset := Vector3(0, 0.05, 1.35)) -> void:
 	var control := _map.get_node(path) as Node3D
-	await _go(control.global_position + Vector3(0, 0.05, 1.35))
+	await _go(control.global_position + offset)
 	if not _player.get_node("ItemInventory").try_interact_nearest():
 		push_error("取证时机关交互失败 " + path)
 		_failed = true
@@ -118,10 +134,12 @@ func _capture_overview() -> void:
 	overview.rotation_degrees = Vector3(-90, 0, 0)
 	_map.add_child(overview)
 	overview.make_current()
-	_preview.get_node("UI/HUD").hide()
+	_preview.get_node("UILayer/HUD").hide()
+	_preview.get_node("UILayer/RunOverlay").hide()
 	await _capture("07-overview")
 	_camera.make_current()
-	_preview.get_node("UI/HUD").show()
+	_preview.get_node("UILayer/HUD").show()
+	_preview.get_node("UILayer/RunOverlay").show()
 	overview.queue_free()
 
 func _capture(suffix: String) -> void:

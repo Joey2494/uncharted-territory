@@ -2,9 +2,11 @@ extends SceneTree
 ## 双关主线回归。定位玩家以隔离移动距离，用真实伤害、交互与物理出口推进。
 
 const FIRST := "res://Main.tscn"
-const SECOND := "res://tests/scenes/Level02Preview.tscn"
+const SECOND := "res://scenes/dungeon/Level02Run.tscn"
 const START := "UILayer/StartScreen/Center/Card/Padding/Content/StartButton"
 const CORNER := "UILayer/RunOverlay/Corner/"
+const PROFILE := preload("res://scripts/integration/player_profile.gd")
+const PROGRESS := preload("res://scripts/integration/campaign_progress.gd")
 var checks := 0
 var failures := 0
 
@@ -52,6 +54,9 @@ func checkpoint(_label: String) -> void:
 	pass
 
 func run() -> void:
+	var run_id := str(OS.get_process_id()) + "-" + str(Time.get_ticks_usec())
+	PROFILE.override_path = "user://campaign-test-profile-" + run_id + ".cfg"
+	PROGRESS.override_path = "user://campaign-test-progress-" + run_id + ".cfg"
 	change_scene_to_file(FIRST)
 	await scene_ready()
 	var first := current_scene
@@ -116,46 +121,52 @@ func run() -> void:
 	if second.scene_file_path != SECOND:
 		finish()
 		return
-	var map := second.get_node("Level02")
+	var map := second.get_node("DungeonTest")
 	player = map.get_node("Player")
-	check(second.get_run_state() == second.State.MENU and not map.is_run_active(), "第二关等待开始")
+	check(second.get_run_state() == second.RunState.MENU and not map.is_run_active(), "第二关等待开始")
 	check(player.hp == player.max_hp and player.get_node("ItemInventory").potion_count == 0, "第二关重置生命和背包")
 	await checkpoint("06_second_menu")
-	press(second, "%Primary")
-	await go(player, Vector3(0, 0.05, -26))
+	press(second, START)
+	await go(player, map.get_node("Regions/Hub").global_position + Vector3.UP * 0.05)
 	defeat(map, ["Enemies/Hub1", "Enemies/Hub2"])
 	await create_timer(1.1).timeout
-	await go(player, Vector3(34, 0.05, -26))
+	await go(player, map.get_node("Regions/Relay").global_position + Vector3.UP * 0.05)
 	defeat(map, ["Enemies/Relay1", "Enemies/Relay2"])
-	await go(player, Vector3(34, 0.05, -27.65))
+	await go(player, map.get_node("Devices/Relay").global_position + Vector3(0, 0.05, 1.35))
 	action("interact")
 	check(map.relay_activated, "按 E 真正启动导能核心")
 	await create_timer(1.1).timeout
-	await go(player, Vector3(34, 0.05, -56))
+	await go(player, map.get_node("Regions/Antechamber").global_position + Vector3.UP * 0.05)
 	defeat(map, ["Enemies/Antechamber1", "Enemies/Antechamber2", "Enemies/Antechamber3"])
 	await create_timer(1.1).timeout
-	await go(player, Vector3(34, 0.05, -80))
+	await go(player, map.get_node("Regions/Boss").global_position + Vector3(0, 0.05, 4))
 	defeat(map, ["Boss"])
-	check(second.get_run_state() == second.State.PLAYING, "第二关击败 Boss 后仍需抵达出口")
+	check(second.get_run_state() == second.RunState.PLAYING, "第二关击败 Boss 后仍需抵达出口")
 	await create_timer(1.1).timeout
 	check(map.get_node("Gates/BossNorth").is_open(), "第二关真实出口门开放")
-	await go(player, Vector3(34, 0.05, -111))
-	check(second.get_run_state() == second.State.VICTORY, "第二关实际出口触发胜利")
+	var exit_point: Vector3 = map.get_node("ExitArea").global_position
+	exit_point.y = 0.05
+	await go(player, exit_point)
+	check(second.get_run_state() == second.RunState.VICTORY, "第二关实际出口触发胜利")
+	var second_result: Control = second._hud.get_result_screen()
+	check(is_instance_valid(second_result) and not second_result.next_level_button.visible, "第二关结束不显示尚未接入的第三关入口")
 	action("pause")
 	check(not second.open_guide() and not second.set_paused(false) and not paused, "第二关终局拒绝恢复")
 	await checkpoint("07_second_victory")
-	if press(second, "%ReturnToFirst"):
-		check(not second.return_to_first() and not second.restart_run(), "同帧返回或重开只接收一次")
+	if second_result != null and press(second_result, "%RestartButton"):
+		check(not second.restart_run(), "第二关结算同帧只接收一次重开")
 		await scene_ready()
-		check(current_scene.scene_file_path == FIRST and not paused, "返回第一关干净菜单")
+		check(current_scene.scene_file_path == SECOND and current_scene.get_run_state() == current_scene.RunState.MENU and not paused, "第二关重开回到干净菜单")
 	await verify_restarts()
 	finish()
 
 func verify_restarts() -> void:
+	change_scene_to_file(FIRST)
+	await scene_ready()
 	var first := current_scene
 	if first.scene_file_path != FIRST or not press(first, START):
 		return
-	if press(first, CORNER + "PauseButton") and press(first, "UILayer/RunOverlay/Modal/Center/Card/Content/RestartButton"):
+	if press(first, CORNER + "PauseButton") and press(first._commerce.pause_menu, "%RestartButton"):
 		await scene_ready()
 		check(not paused and current_scene._run_state == current_scene.RunState.MENU, "第一关暂停中重开清除树暂停")
 	first = current_scene
@@ -170,26 +181,29 @@ func verify_restarts() -> void:
 	change_scene_to_file(SECOND)
 	await scene_ready()
 	var second := current_scene
-	check(not second.return_to_first(), "第二关菜单拒绝无效返回请求")
-	press(second, "%Primary")
-	press(second, "%PauseButton")
-	if press(second, "%Restart"):
+	check(not second.restart_run(), "第二关菜单拒绝无效重开")
+	press(second, START)
+	press(second, CORNER + "PauseButton")
+	if press(second._commerce.pause_menu, "%RestartButton"):
 		await scene_ready()
-		check(not paused and current_scene.get_run_state() == current_scene.State.MENU, "第二关暂停中重开清除树暂停")
+		check(not paused and current_scene.get_run_state() == current_scene.RunState.MENU, "第二关暂停中重开清除树暂停")
 	second = current_scene
-	press(second, "%Primary")
-	press(second, "%PauseButton")
-	if press(second, "%ReturnToFirst"):
+	press(second, START)
+	press(second, CORNER + "PauseButton")
+	if press(second._commerce.pause_menu, "%MainMenuButton"):
 		await scene_ready()
 		check(current_scene.scene_file_path == FIRST and not paused, "第二关暂停中返回第一关并恢复树")
 	change_scene_to_file(SECOND)
 	await scene_ready()
 	second = current_scene
-	press(second, "%Primary")
-	check(second.get_node("Level02/Player").take_damage(999), "第二关真实死亡")
-	if press(second, "%ReturnToFirst"):
+	press(second, START)
+	check(second.get_node("DungeonTest/Player").take_damage(999), "第二关真实死亡")
+	await create_timer(2.0).timeout
+	check(second.get_run_state() == second.RunState.DEAD, "第二关死亡动画后进入结算")
+	var death_result: Control = second._hud.get_result_screen()
+	if death_result != null and press(death_result, "%RestartButton"):
 		await scene_ready()
-		check(current_scene.scene_file_path == FIRST and not paused, "第二关死亡后返回第一关")
+		check(current_scene.scene_file_path == SECOND and not paused, "第二关死亡后重开本关")
 
 func finish() -> void:
 	print("CAMPAIGN_FLOW: ", checks, " checks, ", failures, " failures")
