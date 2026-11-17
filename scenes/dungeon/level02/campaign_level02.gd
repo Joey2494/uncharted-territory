@@ -22,7 +22,7 @@ func _physics_process(delta: float) -> void:
 
 func get_objective() -> String:
 	if get_current_room_id() == BOSS and not progress.is_complete(BOSS):
-		return "击败灾厄巨蝎 · 留意范围和直线预警"
+		return "击败灾厄巨蝎 · 侧移躲毒刺，撤出甩尾扇区"
 	return super.get_objective().replace("遗迹守门者", "灾厄巨蝎")
 
 func unlock_exit() -> bool:

@@ -1,0 +1,48 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS four enemy types and one boss registered
+PASS damage increases at bone_axe
+PASS bone_axe exposes merge contract
+PASS bone_axe starts dormant
+PASS damage increases at bone_spike
+PASS bone_spike exposes merge contract
+PASS bone_spike starts dormant
+PASS damage increases at tomb_sword
+PASS tomb_sword exposes merge contract
+PASS tomb_sword starts dormant
+PASS damage increases at chain_jailer
+PASS chain_jailer exposes merge contract
+PASS chain_jailer starts dormant
+PASS damage increases at sand_king
+PASS sand_king exposes merge contract
+PASS sand_king starts dormant
+PASS axe windup accepted
+PASS telegraph does not apply damage
+PASS axe cleave deals one actual damage
+PASS one axe strike cannot hit twice
+PASS roll blocks direct strike
+PASS control interrupts ordinary attack
+PASS control duration does not run a second hurt countdown
+PASS front sword armor halves direct damage
+PASS rear strike bypasses armor
+PASS sword recovery doubles received damage
+PASS sword physical thrust deals three damage
+PASS chain inner pocket is safe
+PASS chain outer ring deals four damage
+PASS bone hunter fires three real projectiles
+PASS bone projectile swept collision deals two damage
+PASS dormant source cleans its projectiles
+PASS stone pillar blocks the central bone projectile
+PASS mummy bandage cone deals six damage
+PASS leaving committed curse circles avoids damage
+PASS curse circle deals eight damage and slow on accepted hit
+PASS boss half-health transition summons exactly two helpers once
+PASS death and reward request are idempotent
+PASS death animation releases boss actor
+PASS gallery contains all five silhouettes
+PASS returning from gallery resets a real encounter
+PASS pause freezes player and enemies
+PASS stale summon request cannot enter another encounter
+PASS player death stops enemy combat immediately
+PASS retry after death recreates the requested encounter
+LEVEL03_TEST_RESULT passed=45 failed=0

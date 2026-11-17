@@ -1,6 +1,6 @@
 [gd_scene load_steps=7 format=3]
 
-[ext_resource type="Script" path="res://scenes/enemies/ruin_sentinel.gd" id="1"]
+[ext_resource type="Script" path="res://scenes/enemies/spider_combat.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player/MeleeAttack.tscn" id="2"]
 [ext_resource type="Script" path="res://scenes/ui/hit_flash_3d.gd" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/ui/enemy_health_label_3d.tscn" id="4"]
@@ -14,7 +14,8 @@ height = 1.6
 collision_layer = 4
 collision_mask = 7
 script = ExtResource("1")
-max_hp = 4
+max_hp = 5
+attack_kind = 1
 detection_range = 10.0
 lose_range = 18.0
 move_speed = 1.8
@@ -43,4 +44,4 @@ visual_root = NodePath("../Visuals")
 position = Vector3(0, 1.9, 0)
 font_size = 40
 pixel_size = 0.004
-text = "HP 4/4"
+text = ""

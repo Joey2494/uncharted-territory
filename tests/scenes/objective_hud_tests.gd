@@ -65,12 +65,15 @@ func run() -> void:
 	await frames(5)
 	check(not panel.visible and host._boss_bar.visible, "compact combat retains the existing Boss-bar priority")
 	check(map.get_node("Boss").take_damage(999), "actual Boss defeat advances the real room state")
+	check(not host._boss_bar.visible and host._boss_bar.is_defeated(), "Boss death immediately hides the defeated health bar")
 	await frames(2)
+	check(panel.visible and panel.get_node("%ObjectiveCategory").text == "目标完成", "tracker returns with completion acknowledgement immediately after Boss death")
+	verify("前往遗迹出口","通路开启中")
 	remaining = panel._feedback_remaining
 	await create_timer(0.25).timeout
-	check(remaining > 0 and is_equal_approx(panel._feedback_remaining,remaining), "hidden Boss tracker retains its completion acknowledgement for the next visible frame")
+	check(panel.visible and panel._feedback_remaining > 0 and panel._feedback_remaining < remaining, "visible post-Boss tracker advances its completion acknowledgement normally")
 	await create_timer(1.9).timeout
-	check(panel.visible and panel.get_node("%ObjectiveCategory").text == "目标完成", "tracker returns automatically after the defeated Boss bar fades")
+	check(panel.visible and not host._boss_bar.visible and panel.get_node("%ObjectiveCategory").text == "当前任务", "completion acknowledgement expires while the exit task stays visible and the Boss bar stays hidden")
 	verify("前往遗迹出口","出口已开启")
 	root.size = Vector2i(1280,720)
 	await frames(4)

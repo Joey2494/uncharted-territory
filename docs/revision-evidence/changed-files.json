@@ -1,0 +1,332 @@
+[
+  {
+    "path": "docs/level02-layout.png.import",
+    "status": "added",
+    "sha256": "314abddf45670908b34555ba70e41288c956d076189f761b3a79853d7614f450"
+  },
+  {
+    "path": "docs/revision-boss.png",
+    "status": "added",
+    "sha256": "aec6e4b3149afb2d4fffe4e77f262a7dc73a9eb99706adaef19573258e37f896"
+  },
+  {
+    "path": "docs/revision-boss.png.import",
+    "status": "added",
+    "sha256": "afc24d536c4c02db61b2d8d18af119130586aafdde41c517c73462c12d5b6016"
+  },
+  {
+    "path": "docs/revision-burrows.png",
+    "status": "added",
+    "sha256": "1d29421cf80ccae7b1ebd0326f2e19b794f65fcdd0ea0baf94a724e0d54d1287"
+  },
+  {
+    "path": "docs/revision-burrows.png.import",
+    "status": "added",
+    "sha256": "4ac79f0f2a414a43a4e16aeec384b0fc622ff083024be2321ed26928dc5c33ca"
+  },
+  {
+    "path": "docs/revision-dense-swarm.png",
+    "status": "added",
+    "sha256": "c4d682583cae87c8f2a951d9b596c9f42236c4c964fe00a34c765e1778c5a965"
+  },
+  {
+    "path": "docs/revision-dense-swarm.png.import",
+    "status": "added",
+    "sha256": "69211ea22110dea5007fb41cea112d34a5a98e024844d698d421d620f70b4079"
+  },
+  {
+    "path": "docs/revision-evidence/capture.log",
+    "status": "added",
+    "sha256": "7b97ae1a68b58fe7f8b1ddd85a50700219ead814ffe03fd64a812c2caf918f94"
+  },
+  {
+    "path": "docs/revision-evidence/commerce.log",
+    "status": "added",
+    "sha256": "ec643ccb5aefd277cc6673c4249ea7e9814c6a67c7d3b0e8689f4e7a7b1d435f"
+  },
+  {
+    "path": "docs/revision-evidence/export.log",
+    "status": "added",
+    "sha256": "0e5fab549dfb004021698b7840082459ceeaaa6e7cd543148714a0c6be6d5ab6"
+  },
+  {
+    "path": "docs/revision-evidence/flow.log",
+    "status": "added",
+    "sha256": "837a811f97bd351c015fe9937178ecae9c637062f8af6544630abf06768cc1f1"
+  },
+  {
+    "path": "docs/revision-evidence/import.log",
+    "status": "added",
+    "sha256": "41ca9ab42a5efa1479d3b4ded32e4905565fa3abbdd42f3f10c52d93d7b4a519"
+  },
+  {
+    "path": "docs/revision-evidence/package-runtime.log",
+    "status": "added",
+    "sha256": "cf6b4bda549dccd11967ca8b845a9dff340ba6c81b74dcc6424fc59fdabcf6b0"
+  },
+  {
+    "path": "docs/revision-evidence/revision.log",
+    "status": "added",
+    "sha256": "de39eba1003262162f291658ada9d4003298ea6e33b398a535b77ef0d486438d"
+  },
+  {
+    "path": "docs/revision-evidence/swarm-capture.log",
+    "status": "added",
+    "sha256": "fb47bc872c7efbe2335c4ecaef6710190d0bd264bab7d04d6fd8dedcc57af327"
+  },
+  {
+    "path": "docs/revision-evidence/v5-capture.log",
+    "status": "added",
+    "sha256": "7b97ae1a68b58fe7f8b1ddd85a50700219ead814ffe03fd64a812c2caf918f94"
+  },
+  {
+    "path": "docs/revision-silk-thread.png",
+    "status": "added",
+    "sha256": "14ae687c58b7f80ec046d6458410abf79d48a8ca0789bdb362a72311ca4ab998"
+  },
+  {
+    "path": "docs/revision-silk-thread.png.import",
+    "status": "added",
+    "sha256": "fe8e6e1f6e89b382cf3a059591601b0a139e358ad9b2600d39b022c34a593a50"
+  },
+  {
+    "path": "docs/revision-spiders.png",
+    "status": "added",
+    "sha256": "e0c339117b5ee2d5f03793da30569abfe314c0beda401dae9def3ee8e18c0422"
+  },
+  {
+    "path": "docs/revision-spiders.png.import",
+    "status": "added",
+    "sha256": "c4ec11d8e8dae0696b5796e9d851a451f998d7af9259007cdbfd066cb734f959"
+  },
+  {
+    "path": "docs/revision-web-wrap.png",
+    "status": "added",
+    "sha256": "f68bcda96d4b1989b70079948012f337248727afdee58ee6621c54dca3f496b1"
+  },
+  {
+    "path": "docs/revision-web-wrap.png.import",
+    "status": "added",
+    "sha256": "26fc5b38a8d59c27b64461978cb55a30977b67aa6f6f9f6b7d07465c0ef468f2"
+  },
+  {
+    "path": "docs/字远第二关修改说明.md",
+    "status": "added",
+    "sha256": "60561d858b567c3c1f1e615fb348cc64f28b69c57d50581c61f20b53ba68b6e9"
+  },
+  {
+    "path": "export_presets.cfg",
+    "status": "added",
+    "sha256": "fd8c44a3b9f007dcd5bebc1142c12ab2edab46ebd00ec7a7532614de5a293a71"
+  },
+  {
+    "path": "Main.gd",
+    "status": "modified",
+    "sha256": "b246073300b85b0938bd05b1a08e36b3f903dad823c052c11f55f4243a8181d4"
+  },
+  {
+    "path": "PLAY_LEVEL02.cmd",
+    "status": "modified",
+    "sha256": "181a70bd8856ef232aeff4a8fd8335fa216311081ddd2b9afc8bb586ccbd9a61"
+  },
+  {
+    "path": "scenes/bosses/ruin_colossus.gd",
+    "status": "modified",
+    "sha256": "258f80c65328c4c024fab2d6b2a9ccf9b2ca9cfd093a3de5b7f35f44ea75ab52"
+  },
+  {
+    "path": "scenes/bosses/RuinColossus.tscn",
+    "status": "modified",
+    "sha256": "86da19374fab4e89ea0976309f168cabf7fcbcfdd91575af607c2ffdda524f3f"
+  },
+  {
+    "path": "scenes/dungeon/level02/campaign_level02.gd",
+    "status": "modified",
+    "sha256": "4008a86593f525e635ef9f8cfe1da1d2111a9657152093337575dfd15e617539"
+  },
+  {
+    "path": "scenes/dungeon/level02/level02.gd",
+    "status": "modified",
+    "sha256": "8f0f90689d0bc4c3ca6d76157c79edb83c75536819413d527b213079045175c4"
+  },
+  {
+    "path": "scenes/dungeon/level02/Level02.tscn",
+    "status": "modified",
+    "sha256": "47347ac89ce65bd4d1787329b73eb5cfbbe0c73c363e0b57e87e408cbab5ffc1"
+  },
+  {
+    "path": "scenes/enemies/broodling_field.gd",
+    "status": "added",
+    "sha256": "0cdcbed94897168adb7182b2a100673951692af6fbc50588b781787a655ec1c1"
+  },
+  {
+    "path": "scenes/enemies/broodling_field.gd.uid",
+    "status": "added",
+    "sha256": "cd1cb9491c18be11d75d10edd212c67214575c9317cc1f6fc2ebf8ff79715cfa"
+  },
+  {
+    "path": "scenes/enemies/broodling_visual.gd",
+    "status": "added",
+    "sha256": "f617e132870b9a0d3effb21d616f8145f6cf8bf947c34cb150d1bd18888af10f"
+  },
+  {
+    "path": "scenes/enemies/broodling_visual.gd.uid",
+    "status": "added",
+    "sha256": "40abf4d4c0a165d7fffcd2c341bf31e4c3e0609ef45feb50ef7fe805e870efe0"
+  },
+  {
+    "path": "scenes/enemies/creature_fx.gd",
+    "status": "added",
+    "sha256": "5326b0ee5b694c8b0c04bb4d6edfa4ea6396581ae7b841048f2dfeca8647b803"
+  },
+  {
+    "path": "scenes/enemies/creature_fx.gd.uid",
+    "status": "added",
+    "sha256": "af615b51f4d87c638cceb23da763c8c351139a50fb5c5f3881b1430ff4fc192b"
+  },
+  {
+    "path": "scenes/enemies/creature_visual.gd",
+    "status": "modified",
+    "sha256": "bb4142d41f4ba4ef13f5ee85b5a769d39111c0d51b05c0cc0d6a70c641ec41e9"
+  },
+  {
+    "path": "scenes/enemies/RuinCrawler.tscn",
+    "status": "modified",
+    "sha256": "d5221abf3869b90b9930e7329844a4fd820e26934fcd564faef28d4cf2d06a3c"
+  },
+  {
+    "path": "scenes/enemies/RuinSentinel.tscn",
+    "status": "modified",
+    "sha256": "1eed47f4f6e6789d3012550c0c9b0b80368712c481e17ce6b89870e8c9f5a8bc"
+  },
+  {
+    "path": "scenes/enemies/spider_combat.gd",
+    "status": "added",
+    "sha256": "cf1dc3dd3d015015d9e2c6a0b058548503591027c22ddd3adc875f84089b1902"
+  },
+  {
+    "path": "scenes/enemies/spider_combat.gd.uid",
+    "status": "added",
+    "sha256": "c9724b2acd42059efb1ec6106ee06e592037c7da7dbf05a56452a80d395d8b4f"
+  },
+  {
+    "path": "scenes/player/Player.gd",
+    "status": "modified",
+    "sha256": "47ba6438f945b07960438b40654339b6e0d4f342948fd79bd0fa46146f64f2a9"
+  },
+  {
+    "path": "scenes/skills/creature_projectile.gd",
+    "status": "added",
+    "sha256": "566b7e17614bc0ac0877b6900a4bcde1ebb427bd855818387b05b358594f388e"
+  },
+  {
+    "path": "scenes/skills/creature_projectile.gd.uid",
+    "status": "added",
+    "sha256": "6d68282d7a1b8ba00a59c3ceea390c01ae874407d281165e3fd9b813509cb1f0"
+  },
+  {
+    "path": "scenes/skills/web_wrap.gd",
+    "status": "added",
+    "sha256": "3fead4663612de8a26be76a4422f5b8d7004e815b5239631beb3981ba7b204bf"
+  },
+  {
+    "path": "scenes/skills/web_wrap.gd.uid",
+    "status": "added",
+    "sha256": "c8391e4c53383d8c37464b0908187a8b9557ccd69b231adaa6a40dda6e11ab9c"
+  },
+  {
+    "path": "scenes/ui/boss_health_bar.gd",
+    "status": "modified",
+    "sha256": "9754ceabaedcc4cc374134b55185d93192a179a735500599d790585986418df4"
+  },
+  {
+    "path": "scenes/ui/BossHealthBar.tscn",
+    "status": "modified",
+    "sha256": "5e94d95eb15a98650c56afb9a4b3a49cbe3abedc7837d58ca673f46a6ecbbba4"
+  },
+  {
+    "path": "scenes/ui/enemy_health_label_3d.gd",
+    "status": "modified",
+    "sha256": "5c102c670dee0ed0bfe87d6095903579f417684f6b40989dde05a7bc269b47ae"
+  },
+  {
+    "path": "scenes/ui/enemy_health_label_3d.tscn",
+    "status": "modified",
+    "sha256": "ce47fe48ad2dd7fa4e57286d08719a993c89ae36ddda1dff1b4b99db696ea54b"
+  },
+  {
+    "path": "scenes/ui/win_screen.gd",
+    "status": "modified",
+    "sha256": "a240b5abb93276b78ad005732708c5fe128105ee7ec85abf45d6ebda775ae07e"
+  },
+  {
+    "path": "scripts/integration/player_profile.gd",
+    "status": "modified",
+    "sha256": "450110ed1e3b546ea8e7b53392d8072b0d6b81bed08d7e3c4fd5b03e38ac5a9c"
+  },
+  {
+    "path": "scripts/integration/run_bindings.gd",
+    "status": "modified",
+    "sha256": "2f42ab0b757a61bc3d682b33c1e0e33bd2c732ce3155a05642b1911928751147"
+  },
+  {
+    "path": "tests/dungeon/test_export_presentation.gd.uid",
+    "status": "added",
+    "sha256": "bed8582fe839d7e4b4722de996cc9d262994d35ed3644240da11672d8b1d66ae"
+  },
+  {
+    "path": "tests/scenes/capture_revision.gd",
+    "status": "added",
+    "sha256": "c4efd25fb60d1e90e4d3c5b7405e7b95ec83cf0ad7d68577f607048312e370c5"
+  },
+  {
+    "path": "tests/scenes/capture_revision.gd.uid",
+    "status": "added",
+    "sha256": "72468d54914d518ad4aca92eaf53f1cf3b74b29279f512761e87bf2e0f73522e"
+  },
+  {
+    "path": "tests/scenes/capture_swarm_revision.gd",
+    "status": "added",
+    "sha256": "3b47edfc3833c8a0daaa08df2d563c5bd998583f830f5b7193949700922ec7ec"
+  },
+  {
+    "path": "tests/scenes/capture_swarm_revision.gd.uid",
+    "status": "added",
+    "sha256": "c24030d326cb55f44989225c6f875f8946f15f4af5db67112699560f2350e6fc"
+  },
+  {
+    "path": "tests/scenes/level02_revision_flow.gd",
+    "status": "added",
+    "sha256": "bd11d439f4c51b980b544aedfecd2a7e227d56c3c9c8e5ea57c85ada363c0c41"
+  },
+  {
+    "path": "tests/scenes/level02_revision_flow.gd.uid",
+    "status": "added",
+    "sha256": "89e856ea5d8d3b227d717bdf6835dfef6bfb61b02372c6ed9543c4f5df243c70"
+  },
+  {
+    "path": "tests/scenes/level02_revision_tests.gd",
+    "status": "added",
+    "sha256": "e8ac5d76b603a295e6da38fd84d5e5169a8ad63ba657a8d27bcb612f1cc9f46c"
+  },
+  {
+    "path": "tests/scenes/level02_revision_tests.gd.uid",
+    "status": "added",
+    "sha256": "573ba87e39dd7de72575324ef116e8c2ac0cbd30584002211d2459d428b06724"
+  },
+  {
+    "path": "tools/export/revision_entry.gd",
+    "status": "added",
+    "sha256": "d1e2ea3d5842d2b90f1b3b0a2025459bbf8488ebf27f04e5b588656ee74b0337"
+  },
+  {
+    "path": "tools/export/revision_entry.gd.uid",
+    "status": "added",
+    "sha256": "fb6712a36ddbaec0b222c77eadb16d669339921688d2bb3f1d064715648bf72e"
+  },
+  {
+    "path": "tools/export/RevisionEntry.tscn",
+    "status": "added",
+    "sha256": "3d2ae371f811105234e7f9fa6dbd7720829ff5e76a514c23cfb8894cb6a6495f"
+  }
+]

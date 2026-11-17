@@ -1,0 +1,1120 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started 项目初始化 (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | 正在扫描文件结构……[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | 正在加载全局类名……[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | 正在校验 GDExtension……[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | 正在创建自动加载脚本……[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | 正在初始化插件……[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | 正在启动文件扫描……[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1m_update_scan_actions[22m | Started 正在扫描动作…… (75 steps)[39m[0m
+[   0% ] [90m[1m_update_scan_actions[22m | freesound_community-item-pick-up-38258.mp3[39m[0m
+[   1% ] [90m[1m_update_scan_actions[22m | item_use_0-2s.wav[39m[0m
+[   2% ] [90m[1m_update_scan_actions[22m | mixkit-magic-sparkle-whoosh-2350.wav[39m[0m
+[   3% ] [90m[1m_update_scan_actions[22m | mixkit-short-laser-gun-shot-1670.wav[39m[0m
+[   5% ] [90m[1m_update_scan_actions[22m | stepir44-hurt-sound-435314.mp3[39m[0m
+[   6% ] [90m[1m_update_scan_actions[22m | stone_door_open_3-4s.wav[39m[0m
+[   7% ] [90m[1m_update_scan_actions[22m | universfield-combat-impact-352458.mp3[39m[0m
+[   9% ] [90m[1m_update_scan_actions[22m | u_i15wxund59-stone-slide-sound-effects-322794.mp3[39m[0m
+[  10% ] [90m[1m_update_scan_actions[22m | axe_2handed.gltf[39m[0m
+[  11% ] [90m[1m_update_scan_actions[22m | barbarian_texture.png[39m[0m
+[  13% ] [90m[1m_update_scan_actions[22m | Barbarian.glb[39m[0m
+[  14% ] [90m[1m_update_scan_actions[22m | Barbarian_barbarian_texture.png[39m[0m
+[  15% ] [90m[1m_update_scan_actions[22m | Skeleton_Warrior.glb[39m[0m
+[  17% ] [90m[1m_update_scan_actions[22m | Skeleton_Warrior_skeleton_texture.png[39m[0m
+[  18% ] [90m[1m_update_scan_actions[22m | knight_texture.png[39m[0m
+[  19% ] [90m[1m_update_scan_actions[22m | sword_1handed.gltf[39m[0m
+[  21% ] [90m[1m_update_scan_actions[22m | Knight.glb[39m[0m
+[  22% ] [90m[1m_update_scan_actions[22m | Knight_knight_texture.png[39m[0m
+[  23% ] [90m[1m_update_scan_actions[22m | Mage.glb[39m[0m
+[  25% ] [90m[1m_update_scan_actions[22m | Mage_mage_texture.png[39m[0m
+[  26% ] [90m[1m_update_scan_actions[22m | Rogue.glb[39m[0m
+[  27% ] [90m[1m_update_scan_actions[22m | Rogue_rogue_texture.png[39m[0m
+[  28% ] [90m[1m_update_scan_actions[22m | SM_Altar.glb[39m[0m
+[  30% ] [90m[1m_update_scan_actions[22m | SM_Banner_Blue.glb[39m[0m
+[  31% ] [90m[1m_update_scan_actions[22m | SM_Banner_Red.glb[39m[0m
+[  32% ] [90m[1m_update_scan_actions[22m | SM_Barrel.glb[39m[0m
+[  34% ] [90m[1m_update_scan_actions[22m | SM_Barrel_Broken.glb[39m[0m
+[  35% ] [90m[1m_update_scan_actions[22m | SM_Bench.glb[39m[0m
+[  36% ] [90m[1m_update_scan_actions[22m | SM_Bones_Pile.glb[39m[0m
+[  38% ] [90m[1m_update_scan_actions[22m | SM_Bookshelf.glb[39m[0m
+[  39% ] [90m[1m_update_scan_actions[22m | SM_Book_Open.glb[39m[0m
+[  40% ] [90m[1m_update_scan_actions[22m | SM_Brazier.glb[39m[0m
+[  42% ] [90m[1m_update_scan_actions[22m | SM_Cage.glb[39m[0m
+[  43% ] [90m[1m_update_scan_actions[22m | SM_Candelabra.glb[39m[0m
+[  44% ] [90m[1m_update_scan_actions[22m | SM_Candles.glb[39m[0m
+[  46% ] [90m[1m_update_scan_actions[22m | SM_Crate.glb[39m[0m
+[  47% ] [90m[1m_update_scan_actions[22m | SM_Crate_Small.glb[39m[0m
+[  48% ] [90m[1m_update_scan_actions[22m | SM_Crystals_Blue.glb[39m[0m
+[  50% ] [90m[1m_update_scan_actions[22m | SM_Crystals_Purple.glb[39m[0m
+[  51% ] [90m[1m_update_scan_actions[22m | SM_Floor_Stone.glb[39m[0m
+[  52% ] [90m[1m_update_scan_actions[22m | SM_Floor_Stone_Cracked.glb[39m[0m
+[  53% ] [90m[1m_update_scan_actions[22m | SM_Floor_Stone_Mossy.glb[39m[0m
+[  55% ] [90m[1m_update_scan_actions[22m | SM_Pillar.glb[39m[0m
+[  56% ] [90m[1m_update_scan_actions[22m | SM_Pillar_Broken.glb[39m[0m
+[  57% ] [90m[1m_update_scan_actions[22m | SM_Portcullis.glb[39m[0m
+[  59% ] [90m[1m_update_scan_actions[22m | SM_Rubble.glb[39m[0m
+[  60% ] [90m[1m_update_scan_actions[22m | SM_Rug.glb[39m[0m
+[  61% ] [90m[1m_update_scan_actions[22m | SM_Scroll.glb[39m[0m
+[  63% ] [90m[1m_update_scan_actions[22m | SM_Statue_Knight.glb[39m[0m
+[  64% ] [90m[1m_update_scan_actions[22m | SM_Throne.glb[39m[0m
+[  65% ] [90m[1m_update_scan_actions[22m | SM_Torch_Standing.glb[39m[0m
+[  67% ] [90m[1m_update_scan_actions[22m | SM_Torch_Wall.glb[39m[0m
+[  68% ] [90m[1m_update_scan_actions[22m | SM_Wall.glb[39m[0m
+[  69% ] [90m[1m_update_scan_actions[22m | SM_Wall_CellBars.glb[39m[0m
+[  71% ] [90m[1m_update_scan_actions[22m | SM_Wall_Corner.glb[39m[0m
+[  72% ] [90m[1m_update_scan_actions[22m | SM_Wall_Cracked.glb[39m[0m
+[  73% ] [90m[1m_update_scan_actions[22m | SM_Wall_Mossy.glb[39m[0m
+[  75% ] [90m[1m_update_scan_actions[22m | SM_WeaponRack.glb[39m[0m
+[  76% ] [90m[1m_update_scan_actions[22m | ammo.svg[39m[0m
+[  77% ] [90m[1m_update_scan_actions[22m | attack_rune.svg[39m[0m
+[  78% ] [90m[1m_update_scan_actions[22m | coin.svg[39m[0m
+[  80% ] [90m[1m_update_scan_actions[22m | dodge.svg[39m[0m
+[  81% ] [90m[1m_update_scan_actions[22m | energy.svg[39m[0m
+[  82% ] [90m[1m_update_scan_actions[22m | energy_shock.svg[39m[0m
+[  84% ] [90m[1m_update_scan_actions[22m | guard_rune.svg[39m[0m
+[  85% ] [90m[1m_update_scan_actions[22m | gun.svg[39m[0m
+[  86% ] [90m[1m_update_scan_actions[22m | heart.svg[39m[0m
+[  88% ] [90m[1m_update_scan_actions[22m | level_lock.svg[39m[0m
+[  89% ] [90m[1m_update_scan_actions[22m | potion.svg[39m[0m
+[  90% ] [90m[1m_update_scan_actions[22m | room.svg[39m[0m
+[  92% ] [90m[1m_update_scan_actions[22m | stone_corner.svg[39m[0m
+[  93% ] [90m[1m_update_scan_actions[22m | weapon_empty.svg[39m[0m
+[  94% ] [90m[1m_update_scan_actions[22m | weapon_equipped.svg[39m[0m
+[  96% ] [90m[1m_update_scan_actions[22m | revision-boss.png[39m[0m
+[  97% ] [90m[1m_update_scan_actions[22m | revision-spiders.png[39m[0m
+[92m[ DONE ][39m [1m_update_scan_actions[22m
+[0m
+[   0% ] [90m[1mreimport[22m | Started 正在导入或重新导入资产 (82 steps)[39m[0m
+[   0% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[   1% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[   2% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[   3% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[   4% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[   6% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[   7% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[   8% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[   9% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  10% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  12% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  13% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  14% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  15% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  16% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  18% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  19% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  20% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  21% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  22% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  24% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  25% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  26% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  27% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  28% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  30% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  31% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  32% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  33% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  34% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  36% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  37% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  38% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  39% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  40% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  42% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  43% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  44% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  45% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  46% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  48% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  49% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  50% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  51% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  53% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  54% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  55% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  56% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  57% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  59% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  60% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  61% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  62% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  63% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  65% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  66% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  67% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  68% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  69% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  71% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  72% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  73% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  74% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  75% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  77% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  78% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  79% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  80% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  81% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  83% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  84% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  85% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  86% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  87% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  89% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  90% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  91% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  92% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  93% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  95% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  96% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[  97% ] [90m[1mreimport[22m | 正在准备重新导入文件……[39m[0m
+[   0% ] [90m[1mreimport[22m | 正在执行重新导入的前置操作……[39m[0m
+[   0% ] [90m[1mpreload_reimporting_scene[22m | Started 正在准备重新加载场景 (1 steps)[39m[0m
+[   0% ] [90m[1mpreload_reimporting_scene[22m | 正在分析场景 [空][39m[0m
+[  50% ] [90m[1mpreload_reimporting_scene[22m | 准备完成。[39m[0m
+[92m[ DONE ][39m [1mpreload_reimporting_scene[22m
+[0m
+[   0% ] [90m[1mreimport[22m | freesound_community-item-pick-up-38258.mp3[39m[0m
+[   1% ] [90m[1mreimport[22m | stepir44-hurt-sound-435314.mp3[39m[0m
+[   2% ] [90m[1mreimport[22m | universfield-combat-impact-352458.mp3[39m[0m
+[   3% ] [90m[1mreimport[22m | u_i15wxund59-stone-slide-sound-effects-322794.mp3[39m[0m
+[   4% ] [90m[1mreimport[22m | freesound_community-item-pick-up-38258.mp3[39m[0m
+[   6% ] [90m[1mreimport[22m | stepir44-hurt-sound-435314.mp3[39m[0m
+[   7% ] [90m[1mreimport[22m | universfield-combat-impact-352458.mp3[39m[0m
+[   8% ] [90m[1mreimport[22m | u_i15wxund59-stone-slide-sound-effects-322794.mp3[39m[0m
+[   9% ] [90m[1mreimport[22m | Mage_mage_texture.png[39m[0m
+[  10% ] [90m[1mreimport[22m | Rogue_rogue_texture.png[39m[0m
+[  12% ] [90m[1mreimport[22m | Rogue_rogue_texture.png[39m[0m
+[  13% ] [90m[1mreimport[22m | ammo.svg[39m[0m
+[  14% ] [90m[1mreimport[22m | attack_rune.svg[39m[0m
+[  15% ] [90m[1mreimport[22m | coin.svg[39m[0m
+[  16% ] [90m[1mreimport[22m | dodge.svg[39m[0m
+[  18% ] [90m[1mreimport[22m | energy.svg[39m[0m
+[  19% ] [90m[1mreimport[22m | energy_shock.svg[39m[0m
+[  20% ] [90m[1mreimport[22m | guard_rune.svg[39m[0m
+[  21% ] [90m[1mreimport[22m | gun.svg[39m[0m
+[  22% ] [90m[1mreimport[22m | heart.svg[39m[0m
+[  24% ] [90m[1mreimport[22m | level_lock.svg[39m[0m
+[  25% ] [90m[1mreimport[22m | potion.svg[39m[0m
+[  26% ] [90m[1mreimport[22m | room.svg[39m[0m
+[  27% ] [90m[1mreimport[22m | stone_corner.svg[39m[0m
+[  28% ] [90m[1mreimport[22m | weapon_empty.svg[39m[0m
+[  30% ] [90m[1mreimport[22m | weapon_equipped.svg[39m[0m
+[  31% ] [90m[1mreimport[22m | revision-boss.png[39m[0m
+[  32% ] [90m[1mreimport[22m | revision-spiders.png[39m[0m
+[  33% ] [90m[1mreimport[22m | Mage_mage_texture.png[39m[0m
+[  34% ] [90m[1mreimport[22m | Knight_knight_texture.png[39m[0m
+[  36% ] [90m[1mreimport[22m | Knight_knight_texture.png[39m[0m
+[  37% ] [90m[1mreimport[22m | barbarian_texture.png[39m[0m
+[  38% ] [90m[1mreimport[22m | barbarian_texture.png[39m[0m
+[  39% ] [90m[1mreimport[22m | Barbarian_barbarian_texture.png[39m[0m
+[  40% ] [90m[1mreimport[22m | Barbarian_barbarian_texture.png[39m[0m
+[  42% ] [90m[1mreimport[22m | freesound_community-item-pick-up-38258.mp3[39m[0m
+[  43% ] [90m[1mreimport[22m | stepir44-hurt-sound-435314.mp3[39m[0m
+[  44% ] [90m[1mreimport[22m | universfield-combat-impact-352458.mp3[39m[0m
+[  45% ] [90m[1mreimport[22m | u_i15wxund59-stone-slide-sound-effects-322794.mp3[39m[0m
+[  46% ] [90m[1mreimport[22m | SM_Wall_Corner.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  48% ] [90m[1mreimport[22m | SM_Wall_Cracked.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  49% ] [90m[1mreimport[22m | SM_Wall_Mossy.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  50% ] [90m[1mreimport[22m | SM_WeaponRack.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  51% ] [90m[1mreimport[22m | Knight.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  53% ] [90m[1mreimport[22m | SM_Brazier.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  54% ] [90m[1mreimport[22m | sword_1handed.gltf[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  55% ] [90m[1mreimport[22m | SM_Book_Open.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  56% ] [90m[1mreimport[22m | SM_Bookshelf.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  57% ] [90m[1mreimport[22m | SM_Bones_Pile.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  59% ] [90m[1mreimport[22m | Skeleton_Warrior.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  60% ] [90m[1mreimport[22m | SM_Bench.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  61% ] [90m[1mreimport[22m | SM_Barrel_Broken.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  62% ] [90m[1mreimport[22m | Barbarian.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  63% ] [90m[1mreimport[22m | SM_Barrel.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  65% ] [90m[1mreimport[22m | SM_Banner_Red.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  66% ] [90m[1mreimport[22m | axe_2handed.gltf[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  67% ] [90m[1mreimport[22m | SM_Banner_Blue.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  68% ] [90m[1mreimport[22m | SM_Altar.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  69% ] [90m[1mreimport[22m | Rogue.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  71% ] [90m[1mreimport[22m | Mage.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  72% ] [90m[1mreimport[22m | SM_Cage.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  73% ] [90m[1mreimport[22m | SM_Candelabra.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  74% ] [90m[1mreimport[22m | SM_Candles.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  75% ] [90m[1mreimport[22m | SM_Crate.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  77% ] [90m[1mreimport[22m | SM_Crate_Small.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  78% ] [90m[1mreimport[22m | SM_Crystals_Blue.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  79% ] [90m[1mreimport[22m | SM_Crystals_Purple.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  80% ] [90m[1mreimport[22m | SM_Floor_Stone.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  81% ] [90m[1mreimport[22m | SM_Floor_Stone_Cracked.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  83% ] [90m[1mreimport[22m | SM_Floor_Stone_Mossy.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  84% ] [90m[1mreimport[22m | SM_Pillar.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  85% ] [90m[1mreimport[22m | SM_Pillar_Broken.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  86% ] [90m[1mreimport[22m | SM_Portcullis.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  87% ] [90m[1mreimport[22m | SM_Rubble.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  89% ] [90m[1mreimport[22m | SM_Rug.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  90% ] [90m[1mreimport[22m | SM_Scroll.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  91% ] [90m[1mreimport[22m | SM_Statue_Knight.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  92% ] [90m[1mreimport[22m | SM_Throne.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  93% ] [90m[1mreimport[22m | SM_Torch_Standing.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  95% ] [90m[1mreimport[22m | SM_Torch_Wall.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  96% ] [90m[1mreimport[22m | SM_Wall.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  97% ] [90m[1mreimport[22m | SM_Wall_CellBars.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started 导入场景 (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | 导入场景中...[39m[0m
+[   1% ] [90m[1mimport[22m | 执行自定义脚本...[39m[0m
+[  99% ] [90m[1mimport[22m | 保存中...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  98% ] [90m[1mreimport[22m | 正在结束资产导入……[39m[0m
+[92m[ DONE ][39m [1mreimport[22m
+[0m
+[   0% ] [90m[1mreimport[22m | Started 正在导入或重新导入资产 (82 steps)[39m[0m
+[   0% ] [90m[1mreimport[22m | 正在执行重新导入的后置操作……[39m[0m
+[92m[ DONE ][39m [1mreimport[22m
+[0m
+[   0% ] [90m[1msavepack[22m | Started 打包中 (102 steps)[39m[0m
+[   1% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/freesound_community-item-pick-up-38258.mp3-13cf7994304773f8ad91e818ef1bce2a.mp3str[39m[0m
+[   1% ] [90m[1msavepack[22m | 正在保存文件：res://assets/audio/sfx/freesound_community-item-pick-up-38258.mp3.import[39m[0m
+[   1% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/item_use_0-2s.wav-e4a108fe90840af481e6d3715fe3e763.sample[39m[0m
+[   1% ] [90m[1msavepack[22m | 正在保存文件：res://assets/audio/sfx/item_use_0-2s.wav.import[39m[0m
+[   1% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/mixkit-magic-sparkle-whoosh-2350.wav-3d00f9eb257546948fb5d86cfbdcf00d.sample[39m[0m
+[   1% ] [90m[1msavepack[22m | 正在保存文件：res://assets/audio/sfx/mixkit-magic-sparkle-whoosh-2350.wav.import[39m[0m
+[   2% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/mixkit-short-laser-gun-shot-1670.wav-c08e6b653e84e58b620d0c6ea5527131.sample[39m[0m
+[   2% ] [90m[1msavepack[22m | 正在保存文件：res://assets/audio/sfx/mixkit-short-laser-gun-shot-1670.wav.import[39m[0m
+[   2% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/stepir44-hurt-sound-435314.mp3-9a9d893cd1c28e5a00034d6ddb41ff86.mp3str[39m[0m
+[   2% ] [90m[1msavepack[22m | 正在保存文件：res://assets/audio/sfx/stepir44-hurt-sound-435314.mp3.import[39m[0m
+[   2% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/stone_door_open_3-4s.wav-1b7bcc15ea9df4b2d3d606ef74215dcf.sample[39m[0m
+[   2% ] [90m[1msavepack[22m | 正在保存文件：res://assets/audio/sfx/stone_door_open_3-4s.wav.import[39m[0m
+[   3% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/universfield-combat-impact-352458.mp3-e261719c4fd411077c9c2c9c378f70ad.mp3str[39m[0m
+[   3% ] [90m[1msavepack[22m | 正在保存文件：res://assets/audio/sfx/universfield-combat-impact-352458.mp3.import[39m[0m
+[   3% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/u_i15wxund59-stone-slide-sound-effects-322794.mp3-adb24a8d627bbc639934fc43d774faf4.mp3str[39m[0m
+[   3% ] [90m[1msavepack[22m | 正在保存文件：res://assets/audio/sfx/u_i15wxund59-stone-slide-sound-effects-322794.mp3.import[39m[0m
+[   3% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-9282750d755d805994dcd3787444b953-death.res[39m[0m
+[   4% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-6c8a8d2f0c5fa6851732b3dfc1b2aac8-dodge.res[39m[0m
+[   4% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-0b0e3b8c3406d2e6d6f67e12d2f1004d-hit.res[39m[0m
+[   4% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-fbd4d947248691f9d6db8145d4f416b6-locomotion.res[39m[0m
+[   5% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-6cfb4c0230882f7e07b47c8f35f67cbb-magic.res[39m[0m
+[   5% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-807e51b1400d907cb964e03c032ad5d9-melee.res[39m[0m
+[   5% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-848a1dfe99bfb64840073c9c27aa9b3f-melee.res[39m[0m
+[   6% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/axe_2handed.gltf-d82a8949b020b5b4db90622bf23b1ba0.scn[39m[0m
+[   6% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/barbarian/weapons/axe_2handed.gltf.import[39m[0m
+[   6% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/barbarian_texture.png-5ae39a5ce636b9702f28f8f5f2876b33.s3tc.ctex[39m[0m
+[   6% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/barbarian/weapons/barbarian_texture.png.import[39m[0m
+[   6% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/Barbarian.glb-37f92567712a8161ce2b7f87db8703c1.scn[39m[0m
+[   6% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/barbarian/Barbarian.glb.import[39m[0m
+[   7% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/Barbarian_barbarian_texture.png-9c5b2ae59b87ff7cd97d397f9cb657ad.s3tc.ctex[39m[0m
+[   7% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/barbarian/Barbarian_barbarian_texture.png.import[39m[0m
+[   7% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-eb3cf572513c3de3b4b1a431aa0035a6-warrior.res[39m[0m
+[   7% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/Skeleton_Warrior.glb-3524d278ac5605fbc4e2d35d974d7977.scn[39m[0m
+[   7% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/skeletons/Skeleton_Warrior.glb.import[39m[0m
+[   8% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/Skeleton_Warrior_skeleton_texture.png-35a8a66b45b02dea60a95a31891a415c.s3tc.ctex[39m[0m
+[   8% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/skeletons/Skeleton_Warrior_skeleton_texture.png.import[39m[0m
+[   8% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/knight_texture.png-29bb37e0bc0016eb0c735afdb728fc56.s3tc.ctex[39m[0m
+[   8% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/weapons/knight_texture.png.import[39m[0m
+[   8% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/sword_1handed.gltf-2da043575eb9d68bd98274300137d83a.scn[39m[0m
+[   8% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/weapons/sword_1handed.gltf.import[39m[0m
+[   9% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-2631c7e3ce73595b9bb71caf72193370-BronzeGatekeeper.scn[39m[0m
+[   9% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/bronze_gatekeeper_visual.gdc[39m[0m
+[   9% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-e71026631b60868125ac580f5c1d7b26-IronGuard.scn[39m[0m
+[  10% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-ac08ebbfd673160354180a7ce6d8e0cd-iron_guard_rig.scn[39m[0m
+[  10% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/iron_guard_visual.gdc[39m[0m
+[  10% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/Knight.glb-efb07bef8d87663092bb79af537644ef.scn[39m[0m
+[  10% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/Knight.glb.import[39m[0m
+[  11% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/Knight_knight_texture.png-aab4b97cf27690fe147f8d95f014f06f.s3tc.ctex[39m[0m
+[  11% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/Knight_knight_texture.png.import[39m[0m
+[  11% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/Mage.glb-0789c0583effe9900ea3381bb16e1be4.scn[39m[0m
+[  11% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/Mage.glb.import[39m[0m
+[  11% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/Mage_mage_texture.png-b6686aab8f38cedd7a89e3c9f4334563.s3tc.ctex[39m[0m
+[  11% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/Mage_mage_texture.png.import[39m[0m
+[  12% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/Rogue.glb-7e27dc54f54936db2b8256ccc0914cff.scn[39m[0m
+[  12% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/Rogue.glb.import[39m[0m
+[  12% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/Rogue_rogue_texture.png-efec9f81cc808f2ae66205771a752395.s3tc.ctex[39m[0m
+[  12% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/Rogue_rogue_texture.png.import[39m[0m
+[  12% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Altar.glb-e81db21994279d3f45d80fcdf0822f17.scn[39m[0m
+[  12% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Altar.glb.import[39m[0m
+[  13% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Banner_Blue.glb-1d5ad963b0b5614d81056e4d1c1265c3.scn[39m[0m
+[  13% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Banner_Blue.glb.import[39m[0m
+[  13% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Banner_Red.glb-54b95a7a0c3e4563c758087295972f78.scn[39m[0m
+[  13% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Banner_Red.glb.import[39m[0m
+[  14% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Barrel.glb-345ef5792393c20cf1b6bddb8fa1f4fe.scn[39m[0m
+[  14% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Barrel.glb.import[39m[0m
+[  14% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Barrel_Broken.glb-93ffd7955d453c65a598a9c982ca28f1.scn[39m[0m
+[  14% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Barrel_Broken.glb.import[39m[0m
+[  14% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Bench.glb-a65560d36af704d4901244245576117f.scn[39m[0m
+[  14% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Bench.glb.import[39m[0m
+[  15% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Bones_Pile.glb-210d42d8dfca6e27b3d5d3270e5bacb6.scn[39m[0m
+[  15% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Bones_Pile.glb.import[39m[0m
+[  15% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Bookshelf.glb-9174b958345dd29464f681ad7a47735d.scn[39m[0m
+[  15% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Bookshelf.glb.import[39m[0m
+[  15% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Book_Open.glb-940cb519ff186a26f4957301c86dbb7b.scn[39m[0m
+[  15% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Book_Open.glb.import[39m[0m
+[  16% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Brazier.glb-a5cac2ce0da6b0075f86509c0ef944e4.scn[39m[0m
+[  16% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Brazier.glb.import[39m[0m
+[  16% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Cage.glb-df8b20df23453aab903ded6190e993fd.scn[39m[0m
+[  16% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Cage.glb.import[39m[0m
+[  16% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Candelabra.glb-1d27eaa86bf898a83e49298a7ec36406.scn[39m[0m
+[  16% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Candelabra.glb.import[39m[0m
+[  17% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Candles.glb-844fe4f0cfc2800c3fe4bc5fcec91410.scn[39m[0m
+[  17% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Candles.glb.import[39m[0m
+[  17% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Crate.glb-c6d26a2974c1c8a6c62e5b7fa7a878e7.scn[39m[0m
+[  17% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Crate.glb.import[39m[0m
+[  17% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Crate_Small.glb-059487526988e66cc703a21e21fd5d29.scn[39m[0m
+[  17% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Crate_Small.glb.import[39m[0m
+[  18% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Crystals_Blue.glb-31ad64b0a22b9a14c9774ea592fe80c9.scn[39m[0m
+[  18% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Crystals_Blue.glb.import[39m[0m
+[  18% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Crystals_Purple.glb-c49939a60ad964e87fa8439447f207b3.scn[39m[0m
+[  18% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Crystals_Purple.glb.import[39m[0m
+[  18% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Floor_Stone.glb-29757554cd711d5ab2b3b5e22acaf74f.scn[39m[0m
+[  18% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Floor_Stone.glb.import[39m[0m
+[  19% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Floor_Stone_Cracked.glb-265cf896f107309f76ac61b03a4a206e.scn[39m[0m
+[  19% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Floor_Stone_Cracked.glb.import[39m[0m
+[  19% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Floor_Stone_Mossy.glb-c483262bc9d3612d562a909113d954d7.scn[39m[0m
+[  19% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Floor_Stone_Mossy.glb.import[39m[0m
+[  19% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Pillar.glb-af418b1419faad6d2d9130ec0304eea4.scn[39m[0m
+[  19% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Pillar.glb.import[39m[0m
+[  20% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Pillar_Broken.glb-4a3521fc623492efb849f15c654be8d9.scn[39m[0m
+[  20% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Pillar_Broken.glb.import[39m[0m
+[  20% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Portcullis.glb-d83e17e8a85f8900d44c53735b9742c0.scn[39m[0m
+[  20% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Portcullis.glb.import[39m[0m
+[  20% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Rubble.glb-e3dd1a53c0904691e794e8130c00b4bd.scn[39m[0m
+[  20% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Rubble.glb.import[39m[0m
+[  21% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Rug.glb-f05407fe27fa3796f2651060bf55814d.scn[39m[0m
+[  21% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Rug.glb.import[39m[0m
+[  21% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Scroll.glb-56c4497de9a05b5a611f8c9e91a97d43.scn[39m[0m
+[  21% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Scroll.glb.import[39m[0m
+[  21% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Statue_Knight.glb-0c6fdd2e48568217823c9fd0fe9b1eda.scn[39m[0m
+[  21% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Statue_Knight.glb.import[39m[0m
+[  22% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Throne.glb-9f7cfc5cec849e8730c1921c06b8220a.scn[39m[0m
+[  22% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Throne.glb.import[39m[0m
+[  22% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Torch_Standing.glb-25db80a11650a8cc4aefa125d71a9bba.scn[39m[0m
+[  22% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Torch_Standing.glb.import[39m[0m
+[  22% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Torch_Wall.glb-137951c50a58ba124d18654bed4aed38.scn[39m[0m
+[  22% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Torch_Wall.glb.import[39m[0m
+[  23% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Wall.glb-d93a4cd15ebc9ef7c447b3276f5d2d9b.scn[39m[0m
+[  23% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Wall.glb.import[39m[0m
+[  23% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Wall_CellBars.glb-8e987c6413f1543c85f511fe8acaaa9e.scn[39m[0m
+[  23% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Wall_CellBars.glb.import[39m[0m
+[  23% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Wall_Corner.glb-ae45ae7ebbb41e82115841d099ea45d6.scn[39m[0m
+[  23% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Wall_Corner.glb.import[39m[0m
+[  24% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Wall_Cracked.glb-34a7fbf2d54254b5aded619729e940c0.scn[39m[0m
+[  24% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Wall_Cracked.glb.import[39m[0m
+[  24% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_Wall_Mossy.glb-c89b20816208f82b242808a93edecae8.scn[39m[0m
+[  24% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_Wall_Mossy.glb.import[39m[0m
+[  24% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/SM_WeaponRack.glb-c5688d7dd0554982153e004760f6ca2f.scn[39m[0m
+[  24% ] [90m[1msavepack[22m | 正在保存文件：res://assets/dungeon/almsyone/SM_WeaponRack.glb.import[39m[0m
+[  25% ] [90m[1msavepack[22m | 正在保存文件：res://assets/shaders/hit_flash_3d.gdshader[39m[0m
+[  25% ] [90m[1msavepack[22m | 正在保存文件：res://assets/shaders/stone_surface.gdshader[39m[0m
+[  26% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/ammo.svg-161ab5acf3c0f884920a39a37b78cdb3.ctex[39m[0m
+[  26% ] [90m[1msavepack[22m | 正在保存文件：res://assets/ui/ammo.svg.import[39m[0m
+[  26% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/attack_rune.svg-0e9d781471de4a2e18b41dc4b9e82bc2.ctex[39m[0m
+[  26% ] [90m[1msavepack[22m | 正在保存文件：res://assets/ui/attack_rune.svg.import[39m[0m
+[  26% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/coin.svg-0cdad45dc9ce567058629f1e95fd4879.ctex[39m[0m
+[  26% ] [90m[1msavepack[22m | 正在保存文件：res://assets/ui/coin.svg.import[39m[0m
+[  27% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/dodge.svg-39dffe344fabfc6ec7ad67c41924846e.ctex[39m[0m
+[  27% ] [90m[1msavepack[22m | 正在保存文件：res://assets/ui/dodge.svg.import[39m[0m
+[  27% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/energy.svg-7bc025b6921ed14f9a2dad3fa27fac85.ctex[39m[0m
+[  27% ] [90m[1msavepack[22m | 正在保存文件：res://assets/ui/energy.svg.import[39m[0m
+[  27% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/energy_shock.svg-efc3b7a2716ec3b2974228fea120e67c.ctex[39m[0m
+[  27% ] [90m[1msavepack[22m | 正在保存文件：res://assets/ui/energy_shock.svg.import[39m[0m
+[  28% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/guard_rune.svg-f049938362d3cfd061614af100b5b8c8.ctex[39m[0m
+[  28% ] [90m[1msavepack[22m | 正在保存文件：res://assets/ui/guard_rune.svg.import[39m[0m
+[  28% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/gun.svg-40628f5165f2a642c5b048f4ec7375f3.ctex[39m[0m
+[  28% ] [90m[1msavepack[22m | 正在保存文件：res://assets/ui/gun.svg.import[39m[0m
+[  28% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/heart.svg-868478f36e3b083b60aeb03e93785b2d.ctex[39m[0m
+[  28% ] [90m[1msavepack[22m | 正在保存文件：res://assets/ui/heart.svg.import[39m[0m
+[  29% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/level_lock.svg-2a31112357797e3cab8c79a5ed581e61.ctex[39m[0m
+[  29% ] [90m[1msavepack[22m | 正在保存文件：res://assets/ui/level_lock.svg.import[39m[0m
+[  29% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/potion.svg-6ff6b43e2d1f37df8ae4a26c8e5d33e6.ctex[39m[0m
+[  29% ] [90m[1msavepack[22m | 正在保存文件：res://assets/ui/potion.svg.import[39m[0m
+[  29% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/room.svg-56386c91ae88585087128a8dbdfec1a1.ctex[39m[0m
+[  29% ] [90m[1msavepack[22m | 正在保存文件：res://assets/ui/room.svg.import[39m[0m
+[  30% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/stone_corner.svg-75c7c22a7e5968457bb40ed73cc3fd2c.ctex[39m[0m
+[  30% ] [90m[1msavepack[22m | 正在保存文件：res://assets/ui/stone_corner.svg.import[39m[0m
+[  30% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/weapon_empty.svg-9dbc77c9aa34f2eca6eed4c0b7c6fcb4.ctex[39m[0m
+[  30% ] [90m[1msavepack[22m | 正在保存文件：res://assets/ui/weapon_empty.svg.import[39m[0m
+[  30% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/weapon_equipped.svg-46e5a5200e3649f62ef30695c3c0b788.ctex[39m[0m
+[  30% ] [90m[1msavepack[22m | 正在保存文件：res://assets/ui/weapon_equipped.svg.import[39m[0m
+[  31% ] [90m[1msavepack[22m | 正在保存文件：res://data/item_catalog.gdc[39m[0m
+[  31% ] [90m[1msavepack[22m | 正在保存文件：res://docs/revision-evidence/changed-files.json[39m[0m
+[  31% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/level02-layout.png-b6f1e95a116f3bbe25dc7b0c790d791c.ctex[39m[0m
+[  31% ] [90m[1msavepack[22m | 正在保存文件：res://docs/level02-layout.png.import[39m[0m
+[  32% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/revision-boss.png-a8c6690a14f80b305420097fc53c0a02.ctex[39m[0m
+[  32% ] [90m[1msavepack[22m | 正在保存文件：res://docs/revision-boss.png.import[39m[0m
+[  32% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/revision-burrows.png-397bd7800cba1f01810e32ac91999a6d.ctex[39m[0m
+[  32% ] [90m[1msavepack[22m | 正在保存文件：res://docs/revision-burrows.png.import[39m[0m
+[  32% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/revision-dense-swarm.png-38af8eae555556d238625db64621938d.ctex[39m[0m
+[  32% ] [90m[1msavepack[22m | 正在保存文件：res://docs/revision-dense-swarm.png.import[39m[0m
+[  33% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/revision-silk-thread.png-77fcb3459bd3b7825f16fb5d2898ca31.ctex[39m[0m
+[  33% ] [90m[1msavepack[22m | 正在保存文件：res://docs/revision-silk-thread.png.import[39m[0m
+[  33% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/revision-spiders.png-ae0468ef48baf40e212a5dadd53ee78c.ctex[39m[0m
+[  33% ] [90m[1msavepack[22m | 正在保存文件：res://docs/revision-spiders.png.import[39m[0m
+[  33% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/imported/revision-web-wrap.png-ca10640535d859f595aa3878d16cdfcb.ctex[39m[0m
+[  33% ] [90m[1msavepack[22m | 正在保存文件：res://docs/revision-web-wrap.png.import[39m[0m
+[  33% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/audio/game_sfx.gdc[39m[0m
+[  33% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/bosses/boss_charge_animation.gdc[39m[0m
+[  33% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/bosses/boss_death_animation.gdc[39m[0m
+[  34% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/bosses/boss_hit_animation.gdc[39m[0m
+[  34% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/bosses/boss_melee_animation.gdc[39m[0m
+[  34% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-39e30dd8078df8eb11b7511ac0b4ea88-DreadScorpionModel.scn[39m[0m
+[  35% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-feec5a0a7a1c990640dcc362ecadce31-RuinColossus.scn[39m[0m
+[  35% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-68338528b5b37608eca4c95ddaec5adb-RuinColossusPreview.scn[39m[0m
+[  35% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/bosses/RuinGatekeeper.gdc[39m[0m
+[  36% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-07be3269c7f5eadadc2ed8914e4d2efe-RuinGatekeeper.scn[39m[0m
+[  36% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/bosses/ruin_colossus.gdc[39m[0m
+[  36% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/components/combat_room_encounter.gdc[39m[0m
+[  37% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-3cc573977ba3f0e8d0a493c145c9e1d8-ProgressionGate.scn[39m[0m
+[  37% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/components/progression_gate.gdc[39m[0m
+[  38% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/components/room_progress_controller.gdc[39m[0m
+[  38% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/level02/campaign_level02.gdc[39m[0m
+[  38% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/level02/hub_guard.gdc[39m[0m
+[  39% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/level02/level02.gdc[39m[0m
+[  39% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-af975aca80604f1aa397b865b0700bbe-Level02.scn[39m[0m
+[  39% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-76f35a59e968ab87dbdc2efe79a9a413-Level02Campaign.scn[39m[0m
+[  40% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/level02/stone_cover.gdc[39m[0m
+[  40% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/level02/stone_region.gdc[39m[0m
+[  40% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/almsyone_visuals.gdc[39m[0m
+[  41% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-0c551cc404e2b2dc8ed15a02b2108416-BossHall.scn[39m[0m
+[  41% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/boss_hall.gdc[39m[0m
+[  41% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-77166460ab9a70884c42eb6b0203385b-CreaturePreviewStage.scn[39m[0m
+[  42% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/creature_preview.gdc[39m[0m
+[  42% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/crossroads.gdc[39m[0m
+[  42% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-f77dc81fc6292919fb51d08bfd088eed-Crossroads.scn[39m[0m
+[  43% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-3a0ed15ffcb11f4430e3d40cc02d2f33-DungeonDoorway.scn[39m[0m
+[  43% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-89d1b934dd03c892ac36174749dfec79-DungeonRegion.scn[39m[0m
+[  43% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-5abaea1ed992f7d60f1c0fee7995ef80-DungeonTest.scn[39m[0m
+[  44% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/dungeon_map.gdc[39m[0m
+[  44% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/dungeon_region.gdc[39m[0m
+[  44% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-91b270423eeabf836b20f3969219a9f7-EntranceHall.scn[39m[0m
+[  45% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/entrance_hall.gdc[39m[0m
+[  45% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-b1111bea7786f1a91f923e56efa16bed-ExitChamber.scn[39m[0m
+[  45% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-9cc4e455c56621f009a2e478b14da65d-ExitDoorway.scn[39m[0m
+[  46% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-aa91ecc6c4a0545b3df809ace5571457-ExitFrame.scn[39m[0m
+[  46% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-565a56928dc2d213513ca38c2b420e1e-ExitPortcullis.scn[39m[0m
+[  46% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/exit_chamber.gdc[39m[0m
+[  47% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/exit_frame.gdc[39m[0m
+[  47% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/exit_portcullis.gdc[39m[0m
+[  47% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/follow_camera.gdc[39m[0m
+[  48% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-f11e8123becf060f45631e29d2cd534e-Level02Run.scn[39m[0m
+[  48% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-3dc298302156ed3c23d87d32ce0093b5-LevelTwoCombat.scn[39m[0m
+[  48% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/level_two_combat.gdc[39m[0m
+[  49% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-172af9902c4cd5039cf1e5a5930905be-PuzzleChamber.scn[39m[0m
+[  49% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/puzzle_chamber.gdc[39m[0m
+[  50% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/enemies/broodling_field.gdc[39m[0m
+[  50% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/enemies/broodling_visual.gdc[39m[0m
+[  50% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/enemies/creature_fx.gdc[39m[0m
+[  51% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/enemies/creature_visual.gdc[39m[0m
+[  51% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-773a10bc4d6f9e3ef88bf39d73ab215e-CryptSpiderModel.scn[39m[0m
+[  51% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/enemies/MeleeEnemy.gdc[39m[0m
+[  52% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-daeae4c993617cf20df082d9884d9998-MeleeEnemy.scn[39m[0m
+[  52% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/enemies/melee_enemy_animation.gdc[39m[0m
+[  52% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-f9d69eb4b46e7b07c62ede7906dc988f-RuinCrawler.scn[39m[0m
+[  53% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-d225c78623f388f0d71da28f9d6be106-RuinCrawlerPreview.scn[39m[0m
+[  53% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-fb2733cabc85591d4830804ffa248bdd-RuinSentinel.scn[39m[0m
+[  53% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-06efabe16eda23d5db2b5913ab7103ef-RuinSentinelPreview.scn[39m[0m
+[  54% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/enemies/ruin_sentinel.gdc[39m[0m
+[  54% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/enemies/spider_combat.gdc[39m[0m
+[  54% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-0939f90b8988cf34101e1509c2cda87d-VenomSpiderModel.scn[39m[0m
+[  55% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-bc87e0d7ca53cbed648fd32a0e2dcdc5-AttackRune.scn[39m[0m
+[  55% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/items/coin_pickup.gdc[39m[0m
+[  55% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/items/commerce_presenter.gdc[39m[0m
+[  56% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/items/economy_hud.gdc[39m[0m
+[  56% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/items/firearm_attack.gdc[39m[0m
+[  56% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-8f8889fb9de47df468d6f823a3fb3dfc-GoldCoins.scn[39m[0m
+[  57% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-26e8c93358dc0819ce4b3e8445245cf0-GuardRune.scn[39m[0m
+[  57% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-113c74702dadaadac960b58f1643feea-HealthPotion.scn[39m[0m
+[  57% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-d562245cce9f491c3664395549caad92-ItemInventory.scn[39m[0m
+[  58% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/items/item_inventory.gdc[39m[0m
+[  58% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/items/item_pickup.gdc[39m[0m
+[  58% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/items/shop_stand.gdc[39m[0m
+[  59% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/player/character_ability.gdc[39m[0m
+[  59% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/player/character_catalog.gdc[39m[0m
+[  59% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-d891864ae9183d80eb0d90016c2ed029-MeleeAttack.scn[39m[0m
+[  60% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/player/melee_attack.gdc[39m[0m
+[  60% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/player/Player.gdc[39m[0m
+[  60% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-a4e9bb150591131ae307f440fab940ce-Player.scn[39m[0m
+[  61% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-00eb10ae9909f6bbd2d15b09ed38fc65-PlayerAstra.scn[39m[0m
+[  61% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-36bcc0b21d399137194690972b09dd61-PlayerIron.scn[39m[0m
+[  61% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-7843ae175900c0bebfec9bfed2ddac25-PlayerKnight.scn[39m[0m
+[  62% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-3e55b78c13f0ca454ad02a1c8258c2cf-PlayerLan.scn[39m[0m
+[  62% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/player/player_attack_animation.gdc[39m[0m
+[  63% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/player/player_cast_animation.gdc[39m[0m
+[  63% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/player/player_death_animation.gdc[39m[0m
+[  63% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/player/player_dodge_animation.gdc[39m[0m
+[  64% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/player/player_hit_animation.gdc[39m[0m
+[  64% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/player/player_locomotion.gdc[39m[0m
+[  64% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-df856786f0167ebf7e30c155ece7ada8-EnergyRelayPuzzle.scn[39m[0m
+[  65% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/puzzles/energy_relay/energy_relay_puzzle.gdc[39m[0m
+[  65% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-b2f8ce9a61dff0bbaaa7fb71076020ac-RelayControl.scn[39m[0m
+[  65% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/puzzles/energy_relay/relay_control.gdc[39m[0m
+[  66% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/puzzles/puzzle_interactable.gdc[39m[0m
+[  66% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-24c247494abd23376c44b884d1f88577-RuneAltarVisual.scn[39m[0m
+[  66% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-14725ed88bf95179c6b64f5a9e2789cc-RunePuzzle.scn[39m[0m
+[  66% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-86416d8136b77fd8fa2096b46d35f57f-RuneSwitch.scn[39m[0m
+[  66% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/puzzles/rune_altar_visual.gdc[39m[0m
+[  66% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/puzzles/rune_puzzle.gdc[39m[0m
+[  67% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/skills/creature_projectile.gdc[39m[0m
+[  67% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-edefa1ddbcd3405200b326352a5bce2d-EnemyEnergyBolt.scn[39m[0m
+[  67% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/skills/enemy_energy_bolt.gdc[39m[0m
+[  68% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-caad719a397cbe5154373b3ffdb44966-EnergyBolt.scn[39m[0m
+[  68% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-676336c455adc7cd047b348bd8bf5458-EnergyShock.scn[39m[0m
+[  68% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/skills/energy_bolt.gdc[39m[0m
+[  69% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/skills/energy_shock.gdc[39m[0m
+[  69% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/skills/gravity_field.gdc[39m[0m
+[  69% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/skills/web_wrap.gdc[39m[0m
+[  70% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/tutorial/control_reference.gdc[39m[0m
+[  70% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/tutorial/tutorial_controller.gdc[39m[0m
+[  70% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/backpack_screen.gdc[39m[0m
+[  71% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-3713973fc01975abbee17fec3fee159e-backpack_screen.scn[39m[0m
+[  71% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-e545431110507cd1c8c8e2f2ff0657f6-BossHealthBar.scn[39m[0m
+[  71% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/boss_health_bar.gdc[39m[0m
+[  72% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-5dfdd13c0af1e872ce94b04b6749b158-CommerceLayer.scn[39m[0m
+[  72% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/commerce_controller.gdc[39m[0m
+[  72% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/commerce_ui_style.gdc[39m[0m
+[  73% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/controls_guide.gdc[39m[0m
+[  73% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/cooldown_indicator.gdc[39m[0m
+[  74% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-275b685a229b63a66f5b0bc1b9ad06ac-cooldown_indicator.scn[39m[0m
+[  74% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/death_screen.gdc[39m[0m
+[  74% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-be141c6a00f314be906c0495b1235c9a-death_screen.scn[39m[0m
+[  75% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-9ed285d0610899dd7b7f08d9b9658aac-dungeon_font.res[39m[0m
+[  75% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-6a07b61d27dfbc4061800102714c7185-dungeon_frame.scn[39m[0m
+[  75% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/enemy_health_label_3d.gdc[39m[0m
+[  76% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-0a86c52f57e017eaef9356554caabb6e-enemy_health_label_3d.scn[39m[0m
+[  76% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/hit_flash_3d.gdc[39m[0m
+[  76% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/hotbar.gdc[39m[0m
+[  77% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/hud.gdc[39m[0m
+[  77% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-f26fe175837e58804f1c48b99041ac16-hud.scn[39m[0m
+[  77% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/inventory_slot.gdc[39m[0m
+[  78% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-f9c1fbb2bc21a5a1445e8a30e28cae7f-LevelObjective.scn[39m[0m
+[  78% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/level_objective.gdc[39m[0m
+[  78% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/level_select.gdc[39m[0m
+[  79% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-f5d59af24016aa24d79b5f80e6de31dc-level_select.scn[39m[0m
+[  79% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/level_tile.gdc[39m[0m
+[  79% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-6fd5afc00a5ea766e178d6267dc0611d-menu_theme.res[39m[0m
+[  80% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/pause_menu.gdc[39m[0m
+[  80% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-14114c379f76b1c04097459e2387a1e6-pause_menu.scn[39m[0m
+[  80% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/responsive_layout.gdc[39m[0m
+[  81% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-2d82ff1c2c670ee1d87b1c0668c702e5-RunOverlay.scn[39m[0m
+[  81% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/run_overlay.gdc[39m[0m
+[  81% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/settings_screen.gdc[39m[0m
+[  82% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-4d705c724345cddea95d659f7f57c6b5-settings_screen.scn[39m[0m
+[  82% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/shop_product_card.gdc[39m[0m
+[  82% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/shop_screen.gdc[39m[0m
+[  83% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-69c28d1528fafc9fbd318c4443905271-shop_screen.scn[39m[0m
+[  83% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/start_screen.gdc[39m[0m
+[  83% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-ca28c25824d7b8df70f19a6f2082f20f-start_screen.scn[39m[0m
+[  84% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-1f8ee33a9e19920c04228f3501b77efb-stone_material.res[39m[0m
+[  84% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/tutorial_prompt.gdc[39m[0m
+[  84% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/win_screen.gdc[39m[0m
+[  85% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-5aea99a1428ce88fb5191cbe4a892a96-win_screen.scn[39m[0m
+[  85% ] [90m[1msavepack[22m | 正在保存文件：res://scripts/integration/campaign_progress.gdc[39m[0m
+[  85% ] [90m[1msavepack[22m | 正在保存文件：res://scripts/integration/menu_navigation.gdc[39m[0m
+[  86% ] [90m[1msavepack[22m | 正在保存文件：res://scripts/integration/player_profile.gdc[39m[0m
+[  86% ] [90m[1msavepack[22m | 正在保存文件：res://scripts/integration/run_bindings.gdc[39m[0m
+[  87% ] [90m[1msavepack[22m | 正在保存文件：res://scripts/settings/game_settings.gdc[39m[0m
+[  87% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/capture_campaign.gdc[39m[0m
+[  87% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/capture_level02.gdc[39m[0m
+[  88% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/capture_progression_gates.gdc[39m[0m
+[  88% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/capture_secret_door.gdc[39m[0m
+[  88% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/test_campaign_flow.gdc[39m[0m
+[  89% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/test_energy_relay.gdc[39m[0m
+[  89% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/test_export_presentation.gdc[39m[0m
+[  89% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/test_gate_integration.gdc[39m[0m
+[  90% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/test_gate_lifecycle.gdc[39m[0m
+[  90% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/test_level02_integration.gdc[39m[0m
+[  90% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/test_level02_layout.gdc[39m[0m
+[  91% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/test_level02_navigation.gdc[39m[0m
+[  91% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/test_room_progress.gdc[39m[0m
+[  91% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/test_secret_door.gdc[39m[0m
+[  92% ] [90m[1msavepack[22m | 正在保存文件：res://tests/scenes/capture_commerce.gdc[39m[0m
+[  92% ] [90m[1msavepack[22m | 正在保存文件：res://tests/scenes/capture_creatures.gdc[39m[0m
+[  92% ] [90m[1msavepack[22m | 正在保存文件：res://tests/scenes/capture_revision.gdc[39m[0m
+[  93% ] [90m[1msavepack[22m | 正在保存文件：res://tests/scenes/capture_swarm_revision.gdc[39m[0m
+[  93% ] [90m[1msavepack[22m | 正在保存文件：res://tests/scenes/capture_week9.gdc[39m[0m
+[  93% ] [90m[1msavepack[22m | 正在保存文件：res://tests/scenes/commerce_tests.gdc[39m[0m
+[  94% ] [90m[1msavepack[22m | 正在保存文件：res://tests/scenes/creature_tests.gdc[39m[0m
+[  94% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-6d3cc137bd1da36c866c14135c43734a-Level02Preview.scn[39m[0m
+[  94% ] [90m[1msavepack[22m | 正在保存文件：res://tests/scenes/level02_preview.gdc[39m[0m
+[  95% ] [90m[1msavepack[22m | 正在保存文件：res://tests/scenes/level02_revision_flow.gdc[39m[0m
+[  95% ] [90m[1msavepack[22m | 正在保存文件：res://tests/scenes/level02_revision_tests.gdc[39m[0m
+[  95% ] [90m[1msavepack[22m | 正在保存文件：res://tests/scenes/week9_tests.gdc[39m[0m
+[  96% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-ec16365d485c931a9c04d4281ad62ec7-PackageEntry.scn[39m[0m
+[  96% ] [90m[1msavepack[22m | 正在保存文件：res://tools/export/package_entry.gdc[39m[0m
+[  96% ] [90m[1msavepack[22m | 正在保存文件：res://tools/export/package_smoke.gdc[39m[0m
+[  97% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-ef2c6f52408278013657e03c84431286-RevisionEntry.scn[39m[0m
+[  97% ] [90m[1msavepack[22m | 正在保存文件：res://tools/export/revision_entry.gdc[39m[0m
+[  97% ] [90m[1msavepack[22m | 正在保存文件：res://tools/build_creature_models.gdc[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://Main.gdc[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/exported/133200997/export-bcb0d2eb5949c52b6a65bfe9de3e985b-Main.scn[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/animations/death.tres.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/animations/dodge.tres.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/animations/hit.tres.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/animations/locomotion.tres.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/animations/magic.tres.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/animations/melee.tres.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/barbarian/animations/melee.tres.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/skeletons/animations/warrior.tres.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/BronzeGatekeeper.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/bronze_gatekeeper_visual.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/IronGuard.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/iron_guard_rig.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://assets/characters/kaykit/iron_guard_visual.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://data/item_catalog.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/audio/game_sfx.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/bosses/boss_charge_animation.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/bosses/boss_death_animation.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/bosses/boss_hit_animation.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/bosses/boss_melee_animation.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/bosses/DreadScorpionModel.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/bosses/RuinColossus.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/bosses/RuinColossusPreview.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/bosses/RuinGatekeeper.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/bosses/RuinGatekeeper.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/bosses/ruin_colossus.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/components/combat_room_encounter.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/components/ProgressionGate.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/components/progression_gate.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/components/room_progress_controller.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/level02/campaign_level02.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/level02/hub_guard.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/level02/level02.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/level02/Level02.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/level02/Level02Campaign.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/level02/stone_cover.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/level02/stone_region.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/almsyone_visuals.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/BossHall.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/boss_hall.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/CreaturePreviewStage.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/creature_preview.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/crossroads.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/Crossroads.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/DungeonDoorway.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/DungeonRegion.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/DungeonTest.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/dungeon_map.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/dungeon_region.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/EntranceHall.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/entrance_hall.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/ExitChamber.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/ExitDoorway.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/ExitFrame.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/ExitPortcullis.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/exit_chamber.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/exit_frame.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/exit_portcullis.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/follow_camera.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/Level02Run.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/LevelTwoCombat.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/level_two_combat.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/PuzzleChamber.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/dungeon/puzzle_chamber.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/enemies/broodling_field.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/enemies/broodling_visual.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/enemies/creature_fx.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/enemies/creature_visual.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/enemies/CryptSpiderModel.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/enemies/MeleeEnemy.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/enemies/MeleeEnemy.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/enemies/melee_enemy_animation.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/enemies/RuinCrawler.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/enemies/RuinCrawlerPreview.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/enemies/RuinSentinel.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/enemies/RuinSentinelPreview.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/enemies/ruin_sentinel.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/enemies/spider_combat.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/enemies/VenomSpiderModel.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/items/AttackRune.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/items/coin_pickup.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/items/commerce_presenter.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/items/economy_hud.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/items/firearm_attack.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/items/GoldCoins.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/items/GuardRune.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/items/HealthPotion.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/items/ItemInventory.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/items/item_inventory.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/items/item_pickup.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/items/shop_stand.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/player/character_ability.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/player/character_catalog.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/player/MeleeAttack.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/player/melee_attack.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/player/Player.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/player/Player.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/player/PlayerAstra.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/player/PlayerIron.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/player/PlayerKnight.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/player/PlayerLan.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/player/player_attack_animation.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/player/player_cast_animation.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/player/player_death_animation.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/player/player_dodge_animation.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/player/player_hit_animation.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/player/player_locomotion.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/puzzles/energy_relay/EnergyRelayPuzzle.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/puzzles/energy_relay/energy_relay_puzzle.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/puzzles/energy_relay/RelayControl.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/puzzles/energy_relay/relay_control.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/puzzles/puzzle_interactable.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/puzzles/RuneAltarVisual.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/puzzles/RunePuzzle.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/puzzles/RuneSwitch.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/puzzles/rune_altar_visual.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/puzzles/rune_puzzle.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/skills/creature_projectile.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/skills/EnemyEnergyBolt.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/skills/enemy_energy_bolt.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/skills/EnergyBolt.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/skills/EnergyShock.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/skills/energy_bolt.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/skills/energy_shock.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/skills/gravity_field.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/skills/web_wrap.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/tutorial/control_reference.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/tutorial/tutorial_controller.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/backpack_screen.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/backpack_screen.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/BossHealthBar.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/boss_health_bar.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/CommerceLayer.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/commerce_controller.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/commerce_ui_style.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/controls_guide.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/cooldown_indicator.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/cooldown_indicator.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/death_screen.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/death_screen.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/dungeon_font.tres.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/dungeon_frame.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/enemy_health_label_3d.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/enemy_health_label_3d.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/hit_flash_3d.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/hotbar.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/hud.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/hud.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/inventory_slot.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/LevelObjective.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/level_objective.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/level_select.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/level_select.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/level_tile.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/menu_theme.tres.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/pause_menu.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/pause_menu.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/responsive_layout.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/RunOverlay.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/run_overlay.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/settings_screen.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/settings_screen.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/shop_product_card.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/shop_screen.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/shop_screen.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/start_screen.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/start_screen.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/stone_material.tres.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/tutorial_prompt.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/win_screen.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scenes/ui/win_screen.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scripts/integration/campaign_progress.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scripts/integration/menu_navigation.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scripts/integration/player_profile.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scripts/integration/run_bindings.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://scripts/settings/game_settings.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/capture_campaign.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/capture_level02.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/capture_progression_gates.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/capture_secret_door.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/test_campaign_flow.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/test_energy_relay.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/test_export_presentation.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/test_gate_integration.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/test_gate_lifecycle.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/test_level02_integration.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/test_level02_layout.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/test_level02_navigation.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/test_room_progress.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tests/dungeon/test_secret_door.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tests/scenes/capture_commerce.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tests/scenes/capture_creatures.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tests/scenes/capture_revision.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tests/scenes/capture_swarm_revision.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tests/scenes/capture_week9.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tests/scenes/commerce_tests.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tests/scenes/creature_tests.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tests/scenes/Level02Preview.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tests/scenes/level02_preview.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tests/scenes/level02_revision_flow.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tests/scenes/level02_revision_tests.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tests/scenes/week9_tests.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tools/export/PackageEntry.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tools/export/package_entry.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tools/export/package_smoke.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tools/export/RevisionEntry.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tools/export/revision_entry.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://tools/build_creature_models.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://Main.gd.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://Main.tscn.remap[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/global_script_class_cache.cfg[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://.godot/uid_cache.bin[39m[0m
+导出: 使用编辑器内嵌的文本服务器数据。如果导出模板是使用不同的 ICU 版本构建的，则导出项目中的文本显示可能会出现问题！
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://icudt_godot.dat[39m[0m
+[  98% ] [90m[1msavepack[22m | 正在保存文件：res://project.binary[39m[0m
+[92m[ DONE ][39m [1msavepack[22m
+[0m
+ERROR: Safe save failed. This may be a permissions problem, but also may happen because you are running a paranoid antivirus. If this is the case, please switch to Windows Defender or disable the 'safe save' option in editor settings. This makes it work, but increases the risk of file corruption in a crash.
+   at: _close (drivers/windows/file_access_windows.cpp:277)
+ERROR: Condition "f.is_null()" is true. Continuing.
+   at: get_multiple_md5 (core/io/file_access.cpp:967)
+ERROR: Safe save failed. This may be a permissions problem, but also may happen because you are running a paranoid antivirus. If this is the case, please switch to Windows Defender or disable the 'safe save' option in editor settings. This makes it work, but increases the risk of file corruption in a crash.
+   at: _close (drivers/windows/file_access_windows.cpp:277)

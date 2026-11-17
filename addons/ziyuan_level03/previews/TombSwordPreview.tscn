@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3]
+[ext_resource type="PackedScene" path="res://addons/ziyuan_level03/previews/PreviewStage.tscn" id="1"]
+[ext_resource type="PackedScene" path="res://addons/ziyuan_level03/models/TombSwordModel.tscn" id="2"]
+[node name="TombSwordPreview" instance=ExtResource("1")]
+creature_index = 2
+display_name = "长剑墓卫"
+base_distance = 6.8
+focus_height = 1.3
+[node name="Camera3D" parent="." index="6"]
+position = Vector3(2.4, 3.0, -6.3999999999999995)
+rotation = Vector3(-0.28, 2.72159, 0)
+[node name="Model" parent="Slot" instance=ExtResource("2")]

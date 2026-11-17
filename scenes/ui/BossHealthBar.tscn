@@ -15,10 +15,23 @@ shadow_color = Color(0, 0, 0, 0.5)
 shadow_size = 4
 
 [sub_resource type="StyleBoxFlat" id="Style_background"]
-bg_color = Color(0.08, 0.07, 0.055, 1)
+bg_color = Color(0.035, 0.04, 0.045, 1)
+border_width_left = 1
+border_width_right = 1
+border_width_top = 1
+border_width_bottom = 1
+border_color = Color(0.7, 0.72, 0.74, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_left = 6
+corner_radius_bottom_right = 6
 
 [sub_resource type="StyleBoxFlat" id="Style_fill"]
-bg_color = Color(0.72, 0.32, 0.16, 1)
+bg_color = Color(0.94, 0.22, 0.20, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_left = 6
+corner_radius_bottom_right = 6
 
 [node name="BossHealthBar" type="PanelContainer"]
 visible = false
@@ -70,12 +83,12 @@ text = "遗迹守门者"
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
-theme_override_font_sizes/font_size = 14
-text = "24 / 24"
+theme_override_font_sizes/font_size = 12
+text = "HP 24/24"
 
 [node name="BossHPBar" type="ProgressBar" parent="Padding/Content"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 12)
+custom_minimum_size = Vector2(0, 8)
 layout_mode = 2
 mouse_filter = 2
 theme_override_styles/background = SubResource("Style_background")

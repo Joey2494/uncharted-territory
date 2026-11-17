@@ -124,6 +124,8 @@ func clear_room(id: StringName) -> void:
 func third_route() -> void:
 	var map: Node = host._dungeon
 	host._player._invulnerability_remaining = 1000.0
+	var wallet_before: int = PROFILE.coins
+	check(host._items.add_gold(37) and PROFILE.coins == wallet_before, "第三关本局金币独立于永久钱包")
 	check(host._boss == null and not host._boss_bar.visible, "第三关无虚构 Boss 或 Boss 血条")
 	check(root.get_node("MusicManager").current_context == &"level_3", "第三关进入自己的游戏音乐上下文")
 	check(map.get_node_or_null("HUD") == null, "正式宿主不叠加独立白盒 HUD")
@@ -159,16 +161,59 @@ func third_route() -> void:
 	check(host.get_run_state() == host.RunState.PLAYING, "G 清场及出口重叠不能绕过 I 泄压")
 	await use_station(&"release")
 	check(map.get_storage_state() == 2 and host.get_run_state() == host.RunState.PLAYING, "真实泄压仍不能替代实际出口")
+	# 仅让钱包存档写入失败，保持同一档案的内存余额和本局结算身份。
+	var profile_path: String = PROFILE.override_path
+	PROFILE.override_path = "user://third-missing-%d/profile.cfg" % Time.get_ticks_usec()
+	PROFILE._loaded_path = PROFILE.override_path
 	await go(map.get_node("Rooms/J").global_position)
 	check(host.get_run_state() == host.RunState.VICTORY and map.is_victorious(), "I 泄压、G 清场、门打开并走入 J 才通关")
 	check(host.get_node("MenuNavigation").progress.is_completed(&"level3"), "第三关完成写入进度")
 	var result: Control = host._hud.get_result_screen()
 	check(result != null and not result.next_level_button.visible and not host.advance_to_next_level(), "第三关终局没有第四关按钮且拒绝越界跳转")
 	check(result.summary_label.text.contains("守卫") and not result.summary_label.text.contains("Boss") and result.get_node("%PuzzleLabel").text.contains("潮汐"), "结算如实显示守卫和潮汐机关")
+	check(not host._settled and PROFILE.coins == wallet_before and host._items.gold == 37 and host._settlement_id not in PROFILE.settled_runs, "第三关结算保存失败回滚钱包并保留本局金币")
+	check(result.get_node("%SettlementLabel").text.contains("金币保存失败") and result._retry.visible, "第三关结算显示金币失败文案和实际重试按钮")
+	check(result.get_node("%RewardLabel").text == "溢流花园奖励：未领取", "金币保存失败不覆盖第三关奖励名称和实际领取状态")
+	await result_layout(result)
+	PROFILE.override_path = profile_path
+	PROFILE._loaded_path = profile_path
+	result._retry.pressed.emit()
+	await frames()
+	check(host._settled and PROFILE.coins == wallet_before + 37 and host._items.gold == 0, "胜利页真实按钮重试成功仅入账本局金币")
+	check(result.get_node("%SettlementLabel").text == "通关结算：+37 金币 · 已存入永久钱包" and not result._retry.visible, "重试成功更新结算文案并隐藏重试按钮")
+	check(result.summary_label.text == map.get_completion_snapshot().completion_summary and result.get_node("%PuzzleLabel").text == "潮汐机关：已解开" and result.get_node("%RewardLabel").text == "溢流花园奖励：未领取", "重试刷新保留第三关完成摘要与机关奖励字段")
+	result._retry.pressed.emit()
+	host._on_exit_reached()
+	check(PROFILE.coins == wallet_before + 37, "重复保存重试与出口回调不重复入账")
+	await result_layout(result)
 	result.restart_button.pressed.emit()
 	await frames(12)
 	host = current_scene
 	check(host.level_id == 3 and host.get_run_state() == host.RunState.PLAYING and host._dungeon.get_storage_state() == 0, "第三关胜利重开新局重置机关")
+
+func result_layout(screen: Control) -> void:
+	for dimensions in [Vector2i(1280, 720), Vector2i(720, 720)]:
+		root.size = dimensions
+		await frames()
+		var panels: Array[Control] = [screen.get_node("%ResultDetails"), screen.get_node("%RewardsPanel"), screen.get_node("%SettlementLabel"), screen.get_node("%ProgressLabel"), screen.restart_button, screen.get_node("%LevelSelectButton"), screen.get_node("%MainMenuButton")]
+		if screen._retry.visible: panels.append(screen._retry)
+		var viewport := root.get_visible_rect()
+		var bounded := true
+		var separated := true
+		for i in panels.size():
+			bounded = bounded and viewport.encloses(panels[i].get_global_rect())
+			for j in range(i + 1, panels.size()):
+				if panels[i].get_global_rect().intersects(panels[j].get_global_rect()):
+					print("LAYOUT_OVERLAP ", panels[i].name, " ", panels[j].name)
+				separated = separated and not panels[i].get_global_rect().intersects(panels[j].get_global_rect())
+		check(bounded and separated, "%s 金币状态、机关奖励、补给与操作按钮均在窗口内且互不重叠" % dimensions)
+		var readable := true
+		for name in ["PuzzleLabel", "RewardLabel", "SettlementLabel"]:
+			var label: Label = screen.get_node("%" + name)
+			readable = readable and label.get_theme_font("font").get_string_size(label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, label.get_theme_font_size("font_size")).x <= label.size.x
+		check(readable, "%s 机关奖励与金币保存文案完整可读" % dimensions)
+	root.size = Vector2i(1280, 720)
+	await frames()
 
 func lifecycle() -> void:
 	for role in CHARACTERS.IDS:

@@ -1,0 +1,28 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS BoneAxe has serialized geometry before ready
+PASS BoneAxe has separate inspectable anatomical parts
+PASS BoneAxe owns mesh and material resources
+PASS BoneAxe fits preview outside toolbar
+PASS BoneAxe animation reuses saved meshes
+PASS BoneSpike has serialized geometry before ready
+PASS BoneSpike has separate inspectable anatomical parts
+PASS BoneSpike owns mesh and material resources
+PASS BoneSpike fits preview outside toolbar
+PASS BoneSpike animation reuses saved meshes
+PASS TombSword has serialized geometry before ready
+PASS TombSword has separate inspectable anatomical parts
+PASS TombSword owns mesh and material resources
+PASS TombSword fits preview outside toolbar
+PASS TombSword animation reuses saved meshes
+PASS ChainJailer has serialized geometry before ready
+PASS ChainJailer has separate inspectable anatomical parts
+PASS ChainJailer owns mesh and material resources
+PASS ChainJailer fits preview outside toolbar
+PASS ChainJailer animation reuses saved meshes
+PASS SandKing has serialized geometry before ready
+PASS SandKing has separate inspectable anatomical parts
+PASS SandKing owns mesh and material resources
+PASS SandKing fits preview outside toolbar
+PASS SandKing animation reuses saved meshes
+LEVEL03_MODEL_TEST_RESULT passed=25 failed=0

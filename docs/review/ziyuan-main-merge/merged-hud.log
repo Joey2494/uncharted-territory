@@ -1,0 +1,120 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS actual objective and relevant progress: 前往分流中庭 / 探索 1/8
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+PASS fresh scene does not celebrate historical or automatic arrival completion
+PASS actual objective and relevant progress: 肃清中庭守卫 / 0/2
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+PASS first actual guard accepts fatal damage
+PASS actual objective and relevant progress: 肃清中庭守卫 / 1/2
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+PASS one defeated guard does not falsely complete the encounter
+PASS last actual guard accepts fatal damage
+PASS actual objective and relevant progress: 前往导能回廊 / 探索 2/8
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+PASS encounter completion shows an inline acknowledgement while advancing to the next task
+PASS unchanged completed state does not restart the feedback every frame
+PASS pause freezes lightweight feedback along with gameplay
+PASS completion acknowledgement expires without adding a persistent text row
+PASS revisiting a cleared room does not celebrate it twice
+PASS actual objective and relevant progress: 肃清导能守卫 / 0/2
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+PASS actual objective and relevant progress: 启动导能核心 / 待激活
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+PASS real nearest-device interaction activates the relay
+PASS actual objective and relevant progress: 进入共鸣前厅 / 探索 3/8
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+PASS actual objective and relevant progress: 肃清前厅守卫 / 0/3
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+PASS actual objective and relevant progress: 前往灾厄大厅 / 探索 4/8
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+PASS actual objective and relevant progress: 击败灾厄巨蝎 / 0/1
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+PASS compact combat retains the existing Boss-bar priority
+PASS actual Boss defeat advances the real room state
+PASS Boss death immediately hides the defeated health bar
+PASS tracker returns with completion acknowledgement immediately after Boss death
+PASS actual objective and relevant progress: 前往遗迹出口 / 通路开启中
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+PASS visible post-Boss tracker advances its completion acknowledgement normally
+PASS completion acknowledgement expires while the exit task stays visible and the Boss bar stays hidden
+PASS actual objective and relevant progress: 前往遗迹出口 / 出口已开启
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+PASS tracking objectives preserves the physical-exit victory flow
+PASS new run clears the tracker completion history
+PASS actual objective and relevant progress: 启动回廊主供能 / 未供电
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+PASS optional room is presented as a side objective
+PASS unpowered rack can be inspected
+PASS actual objective and relevant progress: 启动回廊主供能 / 未供电
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+PASS main relay supplies the upgraded archive
+PASS actual objective and relevant progress: 过桥接通检修线 / 门锁 0/2
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+PASS rack provides the two real cores
+PASS first receiver accepts one core
+PASS actual objective and relevant progress: 过桥接通检修线 / 门锁 1/2
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+PASS second receiver accepts one core
+PASS actual objective and relevant progress: 过桥接通检修线 / 门锁 2/2
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+PASS two powered receivers without maintenance do not open the vault
+PASS confirmed reset returns cores
+PASS actual objective and relevant progress: 过桥接通检修线 / 门锁 0/2
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+PASS retrieve cores after reset
+PASS power the temporary bridge
+PASS actual maintenance lever completes the permanent return path
+PASS actual objective and relevant progress: 为双接收器供能 / 门锁 0/2
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+PASS maintenance completion acknowledges the step without completing the whole puzzle
+PASS recover bridge core
+PASS power first receiver after repair
+PASS actual objective and relevant progress: 为双接收器供能 / 门锁 1/2
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+PASS second receiver starts the actual vault opening
+PASS actual objective and relevant progress: 等待密室开启 / 开启中
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+PASS actual objective and relevant progress: 领取密室奖励 / 待领取
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+PASS actual inventory accepts the unique reward
+PASS actual objective and relevant progress: 返回主路继续探索 / 支线完成
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+PASS tracker celebrates only the successful reward delivery
+PASS returning to the completed side room neither repeats completion nor grants another reward
+PASS actual objective and relevant progress: 返回主路继续探索 / 支线完成
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+PASS actual objective and relevant progress: 返回主路继续探索 / 支线完成
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+PASS actual objective and relevant progress: 返回主路继续探索 / 支线完成
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+PASS actual objective and relevant progress: 返回主路继续探索 / 支线完成
+PASS tracker retains its compact footprint with one archive resource row
+PASS short task title remains fully readable
+OBJECTIVE_HUD_RESULT 117 checks, 0 failures

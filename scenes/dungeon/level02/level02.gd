@@ -87,6 +87,11 @@ func stop_run() -> void:
 		return
 	_stopped = true
 	_active = false
+	# 终局清理：移除蛛丝/毒刺等危险物，并打断正在进行的怪物攻击。
+	for hazard in get_tree().get_nodes_in_group("creature_hazards"):
+		if is_ancestor_of(hazard): hazard.queue_free()
+	for actor in $Enemies.get_children() + [boss]:
+		if is_instance_valid(actor) and actor.has_method("cancel_combat"): actor.cancel_combat()
 	puzzle.stop_run()
 	progress.stop_run()
 	for encounter in _encounters.values():

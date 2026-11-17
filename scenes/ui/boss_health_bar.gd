@@ -20,7 +20,7 @@ func begin_encounter(display_name: String, current: int, maximum: int) -> void:
 func update_hp(current: int, maximum: int) -> void:
 	hp_bar.max_value = maxi(1, maximum)
 	hp_bar.value = clampi(current, 0, maxi(0, maximum))
-	hp_label.text = "%d / %d" % [clampi(current, 0, maxi(0, maximum)), maxi(0, maximum)]
+	hp_label.text = "HP %d/%d" % [clampi(current, 0, maxi(0, maximum)), maxi(0, maximum)]
 
 
 func update_state(message: String) -> void:
@@ -29,9 +29,9 @@ func update_state(message: String) -> void:
 
 func show_defeated() -> void:
 	_defeated = true
-	_hide_remaining = 2.0
+	_hide_remaining = 0.0
 	state_label.text = "%s已击败" % title_label.text
-	show()
+	hide()
 
 
 func is_defeated() -> bool:

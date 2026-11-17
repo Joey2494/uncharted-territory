@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3]
+[ext_resource type="PackedScene" path="res://addons/ziyuan_level03/previews/PreviewStage.tscn" id="1"]
+[ext_resource type="PackedScene" path="res://addons/ziyuan_level03/models/BoneSpikeModel.tscn" id="2"]
+[node name="BoneSpikePreview" instance=ExtResource("1")]
+creature_index = 1
+display_name = "枯筋腐尸"
+base_distance = 7.0
+focus_height = 1.35
+[node name="Camera3D" parent="." index="6"]
+position = Vector3(2.4, 3.05, -6.6)
+rotation = Vector3(-0.28, 2.72159, 0)
+[node name="Model" parent="Slot" instance=ExtResource("2")]
