@@ -30,18 +30,21 @@ func run() -> void:
 		var corners := [bounds.position, Vector2(bounds.position.x, bounds.end.y),
 			Vector2(bounds.end.x, bounds.position.y), bounds.end]
 		var top := 4.8 if room == "Boss" else 2.8
-		var warning_margin := 3.7 if room == "Boss" else 0.0
 		for dimensions in [Vector2i(1280, 720), Vector2i(1920, 1080), Vector2i(720, 720)]:
 			viewport.size = dimensions
 			await settle()
 			var camera_transform := camera.get_camera_transform()
+			var focus: Vector3 = camera._focus
 			for corner: Vector2 in corners:
 				check(fits(camera, Vector3(corner.x, 0.04, corner.y)), "%s %s 战场地面覆盖 %s" % [room, dimensions, corner])
-				var outer := corner + (corner - bounds.get_center()).sign() * warning_margin
+				var outer := corner
 				check(fits(camera, Vector3(outer.x, top, outer.y)), "%s %s 角色轮廓覆盖 %s" % [room, dimensions, outer])
 			player.global_position = Vector3(bounds.position.x + 0.9, 0.05, bounds.end.y - 0.9)
 			await settle()
-			check(camera.get_camera_transform().is_equal_approx(camera_transform), room + " 玩家及敌人移动时取景不变")
+			if room == "Boss":
+				check(camera._focus.is_equal_approx(focus), "巨蝎靠墙可扩大视距但房间中心保持稳定")
+			else:
+				check(camera.get_camera_transform().is_equal_approx(camera_transform), room + " 玩家及敌人移动时取景不变")
 			if room == "Hub":
 				var wall := map.get_node("Regions/Hub/Geometry/Walls/SouthWall1") as StaticBody3D
 				check(wall.get_node("CollisionShape3D").disabled == false, "前景墙淡出保留碰撞")

@@ -22,7 +22,6 @@ const MIN_SAFE_FRAME_SIZE := Vector2(0.25, 0.15)
 @onready var _camera: Camera3D = get_node_or_null(camera_path)
 
 var _layout_pending: bool = false
-var _puzzle_layout := false
 
 
 func _ready() -> void:
@@ -66,11 +65,9 @@ func _apply_layout() -> void:
 	var viewport_size := get_viewport().get_visible_rect().size
 	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
 		return
-	_puzzle_layout = is_instance_valid(_camera) and _camera.has_method("is_puzzle_framed") and _camera.is_puzzle_framed()
-	# 档案室是无敌人的安全支线，暂收战斗/道具栏，将空间留给机关关系。
-	# 离开或进入任何封场立即恢复；快捷键及背包功能不改变。
-	_hotbar.visible = not _puzzle_layout
-	_cooldowns.visible = not _puzzle_layout
+	if is_instance_valid(_camera) and _camera.has_method("is_puzzle_framed"):
+		_apply_level02_layout(viewport_size)
+		return
 	var wide := viewport_size.x >= WIDE_WIDTH
 	var half_width := (viewport_size.x - MARGIN * 2.0 - GAP) * 0.5
 	var left_width := COLUMN_WIDTH if wide else minf(COLUMN_WIDTH, half_width)
@@ -139,27 +136,61 @@ func _apply_layout() -> void:
 		frame_start.y = maxf(frame_start.y, _objective.get_rect().end.y + MARGIN)
 	if not wide and _feedback.visible:
 		frame_end.y = minf(_feedback.position.y, _cooldowns.position.y) - MARGIN
-	if _puzzle_layout:
-		_apply_puzzle_frame(viewport_size, bottom_edge)
-		return
 	if is_instance_valid(_camera):
 		var clear := _largest_clear_rect(viewport_size)
 		if clear.has_area():
 			_camera.set_safe_frame(Rect2(clear.position / viewport_size, clear.size / viewport_size))
 
 
-## 固定预留双行交互提示与反馈空间，消息出现/消失不会推动相机。
-func _apply_puzzle_frame(viewport_size: Vector2, bottom_edge: float) -> void:
-	var width := minf(640.0, viewport_size.x - MARGIN * 2.0)
-	_place(_feedback, Vector2((viewport_size.x - width) * 0.5, bottom_edge - 104.0), Vector2(width, 104.0))
-	var top := maxf(_stats.get_rect().end.y, _resources.get_rect().end.y)
-	if _objective != null and _objective.visible:
-		top = maxf(top, _objective.get_rect().end.y)
-	if is_instance_valid(_shop_shortcut) and _shop_shortcut.is_visible_in_tree():
-		top = maxf(top, _shop_shortcut.get_global_rect().end.y)
-	var start := Vector2(MARGIN, top + GAP)
-	var end := Vector2(viewport_size.x - MARGIN, bottom_edge - 104.0 - GAP)
-	_camera.set_safe_frame(_bounded_safe_frame(start, end, viewport_size))
+## 二关统一使用紧凑边缘HUD。区域切换不再隐藏操作栏，也不由临时消息决定镜头。
+func _apply_level02_layout(viewport: Vector2) -> void:
+	var ui_scale := (0.72 if viewport.x < 900.0 else 0.8) if viewport.y < 900.0 else 1.0
+	var margin := 16.0
+	for control in [_stats, _resources, _feedback, _cooldowns, _hotbar, _boss_bar, _objective, _shop_shortcut]:
+		if is_instance_valid(control): control.scale = Vector2.ONE * ui_scale
+	_hotbar.show()
+	_cooldowns.show()
+	_cooldowns.set_compact_mode(true)
+	_place(_stats, Vector2(margin,margin), Vector2(352,144))
+	_place(_resources, Vector2(viewport.x-margin-256*ui_scale,margin), Vector2(256,114))
+	if is_instance_valid(_shop_shortcut):
+		_place(_shop_shortcut,Vector2(viewport.x-margin-64*ui_scale, margin+122*ui_scale),Vector2(64,64))
+	var bottom := viewport.y-32.0
+	if is_instance_valid(_footer):
+		var footer_size := _footer.get_combined_minimum_size()
+		_place(_footer, Vector2(viewport.x-margin-footer_size.x, viewport.y-10-footer_size.y), footer_size)
+	var hotbar_size := _hotbar.get_combined_minimum_size()
+	_place(_hotbar, Vector2((viewport.x-hotbar_size.x*ui_scale)*0.5,bottom-hotbar_size.y*ui_scale), hotbar_size)
+	var skills := _cooldowns.get_combined_minimum_size()
+	_place(_cooldowns,Vector2(viewport.x-margin-skills.x*ui_scale,bottom-skills.y*ui_scale),skills)
+	var top := margin+144*ui_scale
+	var middle_left := margin*2+352*ui_scale
+	var middle_width := viewport.x-margin*4-(352+256)*ui_scale
+	if _objective != null:
+		_objective.visible = not _boss_bar.visible
+		var objective_y := margin if middle_width >= 288*ui_scale else top+8
+		var objective_x := middle_left+(middle_width-288*ui_scale)*0.5 if objective_y == margin else margin
+		_place(_objective,Vector2(objective_x,objective_y),Vector2(288,_objective.get_combined_minimum_size().y))
+		if _objective.visible: top = maxf(top,_objective.get_global_rect().end.y)
+	var boss_width := minf(410.0,middle_width/ui_scale)
+	var boss_y := margin
+	if boss_width < _boss_bar.get_combined_minimum_size().x:
+		boss_width = minf(410, (viewport.x-margin*2)/ui_scale)
+		boss_y = margin+144*ui_scale+8
+	var boss_x := middle_left+(middle_width-boss_width*ui_scale)*0.5 if boss_y == margin else (viewport.x-boss_width*ui_scale)*0.5
+	_place(_boss_bar,Vector2(boss_x,boss_y),Vector2(boss_width,maxf(88,_boss_bar.get_combined_minimum_size().y)))
+	if _boss_bar.visible: top = maxf(top,_boss_bar.get_global_rect().end.y)
+	# 提示卡按内容收缩；始终保留同一条交互带，反馈消失不改变构图。
+	var feedback_width := minf(420, (viewport.x-2*margin)/ui_scale)
+	var feedback_height := _feedback.get_combined_minimum_size().y
+	var feedback_bottom := bottom-hotbar_size.y*ui_scale-8
+	_place(_feedback,Vector2(margin,feedback_bottom-feedback_height*ui_scale),Vector2(feedback_width,feedback_height))
+	# 窄画幅下提示不压到右侧技能，长文本会在自身卡片中换行。
+	if _feedback.get_global_rect().intersects(_cooldowns.get_global_rect()):
+		_feedback.position.y = _cooldowns.get_global_rect().position.y-8-feedback_height*ui_scale
+	var frame_bottom := minf(feedback_bottom-90*ui_scale-8, _cooldowns.get_global_rect().position.y-8)
+	# 右上商城入口也属于遮挡区；固定预留其列，不因暂停时显隐而改变构图。
+	_camera.set_safe_frame(_bounded_safe_frame(Vector2(margin,top+12),Vector2(viewport.x-margin-64*ui_scale-12,frame_bottom),viewport))
 
 
 func _bounded_safe_frame(start: Vector2, end: Vector2, viewport_size: Vector2) -> Rect2:

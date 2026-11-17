@@ -41,8 +41,8 @@ func _run() -> void:
 		host._hud.show_item_message("")
 		await settle()
 		check(camera.get_camera_transform().is_equal_approx(pose),"反馈消失不改变构图")
-		check(not host._hud.hotbar.is_visible_in_tree(),"安全解谜区收起道具快捷栏")
-		check(not host._hud.get_node("CooldownBar").is_visible_in_tree(),"安全解谜区收起战斗快捷栏")
+		check(host._hud.hotbar.is_visible_in_tree(),"解谜区保留道具快捷栏")
+		check(host._hud.get_node("CooldownBar").is_visible_in_tree(),"解谜区保留操作提示")
 		player.global_position = world.get_node("Regions/Arrival").global_position + Vector3.UP*0.05
 		await settle()
 		check(host._hud.hotbar.is_visible_in_tree(),"离开解谜区恢复快捷栏")

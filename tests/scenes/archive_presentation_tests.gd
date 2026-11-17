@@ -87,6 +87,9 @@ func run() -> void:
 	root.get_node("MusicManager").stop_music()
 	host.queue_free()
 	await frames(3)
+	finish.call_deferred()
+
+func finish() -> void:
 	print("ARCHIVE_PRESENTATION_RESULT %d checks, %d failures" % [checks, failures])
 	quit(1 if failures else 0)
 

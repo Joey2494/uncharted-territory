@@ -21,6 +21,7 @@ const ARCHIVE := &"l2_archive"
 var _framed_room: StringName
 var _framed_size := Vector2.ZERO
 var _ground_samples := PackedVector3Array()
+var _arena_distance := 18.0
 
 
 func _ready() -> void:
@@ -59,6 +60,11 @@ func _process(delta: float) -> void:
 	if room != _framed_room or _framed_size != get_viewport().get_visible_rect().size:
 		_frame_battle(room)
 	var actors := _get_actors()
+	# 房间中心保持稳定；仅当真实角色轮廓越过固定构图时扩展视距。
+	# 不再为“可能站在每个角落的巨蝎”同时预留四份体积。
+	var required := maxf(_arena_distance, _required_distance(actors, _focus))
+	_distance = maxf(required, lerpf(_distance, required, 1.0-exp(-zoom_speed*delta)))
+	_apply_view()
 	_update_labels(actors)
 	# 同时检视战斗地面，挡住预警的墙体也可淡出，即使后方没有角色。
 	var samples := _actor_visibility_points(actors)
@@ -95,14 +101,11 @@ func _frame_battle(room: StringName) -> void:
 	var region: Node3D = _archive if room == ARCHIVE else _combat_rooms[room]
 	var bounds: Rect2 = region.get_world_bounds()
 	var height := FIGHTER_HEIGHT
-	var model_margin := 0.0
 	if room == &"l2_boss" and is_instance_valid(_boss):
 		var dimensions := _actor_dimensions(_boss)
-		var capsule := _boss.get_node("CollisionShape3D").shape as CapsuleShape3D
 		height = dimensions.y
-		model_margin = maxf(0.0, dimensions.x - capsule.radius)
-	# 地面预警以实际可站立范围为准；巨蝎的轮廓可以越过物理边界。
-	var envelope := bounds.grow(model_margin)
+	# 以真实战场取景，不把巨蝎半径扩张到整个房间四角形成虚构的大房间。
+	var envelope := bounds
 	var points := PackedVector3Array()
 	for x: float in [envelope.position.x, envelope.end.x]:
 		for z: float in [envelope.position.y, envelope.end.y]:
@@ -110,7 +113,8 @@ func _frame_battle(room: StringName) -> void:
 			points.append(Vector3(x, region.global_position.y + height, z))
 	var center := bounds.get_center()
 	_focus = Vector3(center.x, region.global_position.y + height * 0.33, center.y)
-	_distance = _fit_points(points, _focus) + 0.35
+	_arena_distance = _fit_points(points, _focus) + 0.35
+	_distance = maxf(_arena_distance, _required_distance(_get_actors(), _focus))
 	var changed := _framed_room != room
 	_framed_room = room
 	_framed_size = get_viewport().get_visible_rect().size
