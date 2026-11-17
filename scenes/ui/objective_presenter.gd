@@ -3,6 +3,9 @@ extends RefCounted
 const PUZZLE = preload("res://scenes/puzzles/energy_relay/energy_relay_puzzle.gd")
 
 static func read(world: Node3D) -> Dictionary:
+	# 新地图可提供同一只读目标契约，不要求伪造第二关的机关或 Boss。
+	if world.has_method("get_hud_objective"):
+		return world.get_hud_objective()
 	var room: StringName = world.get_current_room_id()
 	var progress: Node = world.progress
 	var puzzle: Node = world.puzzle
@@ -18,6 +21,7 @@ static func read(world: Node3D) -> Dictionary:
 	var status := {"id":"", "title":"", "category":"当前任务",
 		"progress":"探索 %d/%d" % [world.get_visited_count(),world.get_room_count()], "completed":completed}
 	if room in [world.ARCHIVE,world.VAULT]:
+		status.resource_summary = puzzle.get_resource_summary()
 		status.category = "支线任务"
 		status.id = "puzzle:%d" % state
 		match state:

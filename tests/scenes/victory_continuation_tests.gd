@@ -5,6 +5,7 @@ const CHARACTERS = preload("res://scenes/player/character_catalog.gd")
 const NAVIGATION = preload("res://scripts/integration/menu_navigation.gd")
 const FIRST := "res://Main.tscn"
 const SECOND := "res://scenes/dungeon/Level02Run.tscn"
+const THIRD := "res://scenes/dungeon/Level03Run.tscn"
 var host: Node
 var checks := 0
 var failures := 0
@@ -37,7 +38,7 @@ func boot(role: String, level: int = 1, writable: bool = true) -> void:
 	CHARACTERS.start_pending = false
 	NAVIGATION.pending_level_select = false
 	PROGRESS.override_path = "user://victory-campaign-%d.cfg" % Time.get_ticks_usec() if writable else "user://victory-missing-%d/campaign.cfg" % Time.get_ticks_usec()
-	change_scene_to_file(FIRST if level == 1 else SECOND)
+	change_scene_to_file({1: FIRST, 2: SECOND, 3: THIRD}[level])
 	await frames(8)
 	host = current_scene
 	host._on_run_started()
@@ -49,7 +50,7 @@ func settle(complete: bool = true) -> void:
 	host._dungeon.process_mode = Node.PROCESS_MODE_DISABLED
 	host._commerce.finish_run()
 	if complete: host.get_node("MenuNavigation").progress.complete(host.level_id)
-	host._hud.show_win_screen({"level_id":host.level_id}, host.level_id == 1)
+	host._hud.show_win_screen({"level_id":host.level_id}, host.LEVEL_PATHS.has(host.level_id + 1))
 
 func real_victory_next() -> void:
 	await boot("lan")
@@ -62,6 +63,7 @@ func real_victory_next() -> void:
 	await create_timer(1.2).timeout
 	await go(Vector3(30,0.05,-45))
 	check(host.get_run_state() == host.RunState.VICTORY and host.get_node("MenuNavigation").progress.is_unlocked(&"level2"), "real first-level victory unlocks the next level before settlement")
+	check(not host.get_node("MenuNavigation").progress.is_unlocked(&"level3"), "real first-level victory cannot unlock the third level")
 	var before := scene_changes
 	var profile_before := FileAccess.get_file_as_string(PROFILE.override_path)
 	var screen: Control = host._hud.get_result_screen()
@@ -115,7 +117,7 @@ func locked_next() -> void:
 	check(nav.level_select.visible and nav.level_select.get_level_button(&"level2").disabled, "locked Next retains a working return-to-levels action without bypassing unlocks")
 
 func final_level(action: String) -> void:
-	await boot("astra", 2)
+	await boot("astra", 3)
 	settle()
 	var before := scene_changes
 	var screen: Control = host._hud.get_result_screen()

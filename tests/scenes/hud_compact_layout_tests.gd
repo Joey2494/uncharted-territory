@@ -4,7 +4,7 @@ const PROFILE = preload("res://scripts/integration/player_profile.gd")
 const PROGRESS = preload("res://scripts/integration/campaign_progress.gd")
 const REFERENCE = preload("res://scenes/tutorial/control_reference.gd")
 const SIZES := [Vector2i(1920,1080),Vector2i(1280,720),Vector2i(1180,720),Vector2i(1179,720),Vector2i(1024,768),Vector2i(800,600),Vector2i(720,720),Vector2i(640,360),Vector2i(480,800)]
-const OUT := "D:/My File/Game/Team Game/output/hud-pause-navigation-2026-11-14"
+const OUT := "user://hud-layout-verification"
 const REVEALED: Array[String] = ["attack","spell","dodge"]
 var host: Node
 var checks := 0
@@ -13,6 +13,11 @@ var records: Array = []
 
 func _initialize() -> void: run.call_deferred()
 func run() -> void:
+	# 测试记录跟随 Godot 用户目录，不依赖某位成员的本机磁盘布局。
+	if DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUT)) != OK:
+		push_error("Cannot create HUD verification output directory")
+		quit(1)
+		return
 	PROFILE.override_path = "user://hud-layout-profile-%d.cfg" % Time.get_ticks_usec()
 	PROGRESS.override_path = "user://hud-layout-campaign-%d.cfg" % Time.get_ticks_usec()
 	PROFILE.set_coins(300)
@@ -64,7 +69,11 @@ func finish() -> void:
 	paused = false
 	if not records.is_empty():
 		var file := FileAccess.open(OUT.path_join("layout-records.json"),FileAccess.WRITE)
-		file.store_string(JSON.stringify(records,"\t"))
+		if file == null:
+			push_error("Cannot write HUD verification records")
+			failures += 1
+		else:
+			file.store_string(JSON.stringify(records,"\t"))
 	root.get_node("MusicManager").stop_music()
 	current_scene.queue_free()
 	await frames(3)

@@ -1,8 +1,9 @@
 extends Node3D
-## 第一关会话状态、暂停、通关结算及跨关入口。
+## 三关共享会话状态、暂停、通关结算及跨关入口。
 
 const LEVEL02_PATH := "res://scenes/dungeon/Level02Run.tscn"
-const LEVEL_PATHS := {1: "res://Main.tscn", 2: LEVEL02_PATH}
+const LEVEL03_PATH := "res://scenes/dungeon/Level03Run.tscn"
+const LEVEL_PATHS := {1: "res://Main.tscn", 2: LEVEL02_PATH, 3: LEVEL03_PATH}
 
 @export var level_id: int = 1
 
@@ -21,7 +22,7 @@ func _enter_tree() -> void:
 @onready var _player: CharacterBody3D = $DungeonTest/Player
 @onready var _hud: Control = $UILayer/HUD
 @onready var _items: Node3D = $DungeonTest/Player/ItemInventory
-@onready var _boss: CharacterBody3D = $DungeonTest.get_node("Boss" if level_id == 2 else "RuinGatekeeper")
+@onready var _boss: CharacterBody3D = $DungeonTest.get_node_or_null("Boss" if level_id == 2 else "RuinGatekeeper")
 @onready var _boss_bar: Control = $UILayer/BossHealthBar
 @onready var _rune_puzzle: Node3D = $DungeonTest.get_node_or_null("RunePuzzle")
 @onready var _start_screen: Control = $UILayer/StartScreen
@@ -48,6 +49,10 @@ func _ready() -> void:
 	if level_id == 2:
 		_start_screen.get_node("Center/Card/Padding/Content/Description").text = "第二关 · 导能遗迹\n击败灾厄巨蝎，从开启的出口离开。"
 		_start_screen.get_node("Center/Card/Padding/Content/Tagline").text = "循着金线，唤醒沉寂的遗迹。"
+	elif level_id == 3:
+		_start_screen.get_node("Center/Card/Padding/Content/Description").text = "第三关 · 潮汐回流工坊\n调节潮位、回流泄压，清除最终守卫后抵达远航出口。"
+		_start_screen.get_node("Center/Card/Padding/Content/Tagline").text = "循着潮汐与回流，开启远航之路。"
+	if level_id > 1:
 		_hud.get_node("LevelObjective").world = _dungeon
 	_overlay.resume_requested.connect(_resume_playing)
 	_overlay.restart_requested.connect(_on_restart_requested)
@@ -87,13 +92,17 @@ func _ready() -> void:
 	_items.feedback.connect(_hud.show_item_message)
 	_hud.use_potion_requested.connect(_items.try_use_potion)
 	_hud.use_rune_requested.connect(_items.try_use_rune)
-	_boss_bar.update_hp(_boss.hp, _boss.max_hp)
-	_boss_name = _boss.boss_name
-	_boss.hp_changed.connect(_boss_bar.update_hp)
-	_boss.state_changed.connect(_boss_bar.update_state)
-	_boss.battle_started.connect(_on_boss_battle_started)
-	_boss.died.connect(_on_boss_died)
-	_boss.tree_exiting.connect(_on_boss_exiting)
+	# 潮汐关沿用现有守卫，不要求用虚构 Boss 填补生命周期接口。
+	if _boss != null:
+		_boss_bar.update_hp(_boss.hp, _boss.max_hp)
+		_boss_name = _boss.boss_name
+		_boss.hp_changed.connect(_boss_bar.update_hp)
+		_boss.state_changed.connect(_boss_bar.update_state)
+		_boss.battle_started.connect(_on_boss_battle_started)
+		_boss.died.connect(_on_boss_died)
+		_boss.tree_exiting.connect(_on_boss_exiting)
+	else:
+		_boss_bar.hide()
 	_player.feedback.connect(_hud.show_item_message)
 	_player.get_node("CharacterAbility").feedback.connect(_hud.show_item_message)
 	var bindings := preload("res://scripts/integration/run_bindings.gd").new()
@@ -167,7 +176,7 @@ func _on_boss_died() -> void:
 ## 以世界真正开始开门的事件提示，不能把提前击败Boss误报为出口已解锁。
 func _on_exit_opening_started() -> void:
 	if _run_state == RunState.PLAYING:
-		_hud.show_item_message("已击败%s · 出口封印正在解除" % _boss_name)
+		_hud.show_item_message("已击败%s · 出口封印正在解除" % _boss_name if not _boss_name.is_empty() else "最终守卫已清除 · 远航出口正在开启")
 
 
 func _on_exit_unlocked() -> void:
@@ -176,7 +185,11 @@ func _on_exit_unlocked() -> void:
 
 
 func _on_exit_reached() -> void:
-	if _run_state != RunState.PLAYING or not _boss_defeated or _player.is_dead():
+	if _run_state != RunState.PLAYING or _player.is_dead():
+		return
+	# 有 Boss 的地图保持原权限；无 Boss 的地图必须明确提供完成条件。
+	var authorized: bool = _boss_defeated if not _boss_name.is_empty() else (_dungeon.has_method("is_completion_ready") and _dungeon.is_completion_ready())
+	if not authorized:
 		return
 	if not _dungeon.is_exit_open() or not _dungeon.is_player_in_exit_area():
 		return
@@ -192,10 +205,9 @@ func _on_exit_reached() -> void:
 		"player_max_hp": _player.max_hp,
 		"boss_name": _boss_name,
 		"boss_defeated": _boss_defeated,
-		"puzzle_solved": _rune_puzzle.is_solved() if _rune_puzzle != null else _dungeon.puzzle.get_state() >= _dungeon.puzzle.State.OPEN,
-		"reward_claimed": _rune_puzzle.is_reward_claimed() if _rune_puzzle != null else _dungeon.puzzle.get_state() == _dungeon.puzzle.State.CLAIMED,
 		"level_id": level_id,
 	}
+	_run_result.merge(_get_completion_snapshot(), true)
 	_player.velocity = Vector3.ZERO
 	_dungeon.stop_run()
 	_dungeon.process_mode = Node.PROCESS_MODE_DISABLED
@@ -203,6 +215,18 @@ func _on_exit_reached() -> void:
 	_refresh_overlay()
 	get_node("MenuNavigation").progress.complete(level_id)
 	_hud.show_win_screen(_run_result, LEVEL_PATHS.has(level_id + 1))
+
+
+## 关卡自行描述可选机关与奖励，避免共享宿主要求每关都具备二关谜题。
+func _get_completion_snapshot() -> Dictionary:
+	if _dungeon.has_method("get_completion_snapshot"):
+		return _dungeon.get_completion_snapshot()
+	if _rune_puzzle != null:
+		return {"puzzle_solved": _rune_puzzle.is_solved(), "reward_claimed": _rune_puzzle.is_reward_claimed()}
+	if level_id == 2:
+		return {"puzzle_solved": _dungeon.puzzle.get_state() >= _dungeon.puzzle.State.OPEN,
+			"reward_claimed": _dungeon.puzzle.get_state() == _dungeon.puzzle.State.CLAIMED}
+	return {}
 
 
 func _on_boss_exiting() -> void:

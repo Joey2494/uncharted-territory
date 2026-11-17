@@ -66,12 +66,13 @@ func _refresh_result() -> void:
 		summary_label.text = "本次探索已结束"
 		return
 	summary_label.text = "%s%s · 成功离开地牢" % [_run_result.get("boss_name", "最终Boss"), "已击败" if _run_result.get("boss_defeated", false) else "战斗结束"]
+	if _run_result.has("completion_summary"): summary_label.text = _run_result.completion_summary
 	var seconds := floori(maxf(0.0, float(_run_result.get("elapsed_seconds", 0.0))))
 	%TimeLabel.text = "通关用时：%02d:%02d" % [floori(seconds / 60.0), seconds % 60]
 	%ExplorationLabel.text = "探索区域：%d/%d" % [_run_result.get("rooms_visited", 0), _run_result.get("rooms_total", completed_rooms)]
 	%HealthLabel.text = "剩余生命：%d/%d" % [_run_result.get("player_hp", 0), _run_result.get("player_max_hp", 0)]
-	%PuzzleLabel.text = "%s：%s" % ["档案机关" if _run_result.get("level_id", 1) == 2 else "符文机关", "已解开" if _run_result.get("puzzle_solved", false) else "未解开"]
-	%RewardLabel.text = "密室奖励：%s" % ("已领取" if _run_result.get("reward_claimed", false) else "未领取")
+	%PuzzleLabel.text = "%s：%s" % [_run_result.get("puzzle_name", "档案机关" if _run_result.get("level_id", 1) == 2 else "符文机关"), "已解开" if _run_result.get("puzzle_solved", false) else "未解开"]
+	%RewardLabel.text = "%s：%s" % [_run_result.get("reward_name", "密室奖励"), "已领取" if _run_result.get("reward_claimed", false) else "未领取"]
 
 
 func _focus_action() -> void:

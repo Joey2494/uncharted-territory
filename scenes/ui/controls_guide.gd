@@ -4,6 +4,9 @@ const REFERENCE = preload("res://scenes/tutorial/control_reference.gd")
 var _card: PanelContainer
 var _scroll: ScrollContainer
 var _close: Button
+var _level_reference: VBoxContainer
+var _route_title: Label
+var _route_body: Label
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -43,6 +46,21 @@ func _ready() -> void:
 	rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	rows.add_theme_constant_override("separation", 4)
 	_scroll.add_child(rows)
+	# 地图可选的只读路线说明与按键表共用滚动区、关闭按钮和暂停宿主。
+	_level_reference = VBoxContainer.new()
+	_level_reference.name = "LevelReference"
+	_level_reference.hide()
+	rows.add_child(_level_reference)
+	_route_title = Label.new()
+	_route_title.add_theme_font_size_override("font_size", 20)
+	_route_title.add_theme_color_override("font_color", Color("d4bc84"))
+	_level_reference.add_child(_route_title)
+	_route_body = Label.new()
+	_route_body.name = "RouteBody"
+	_route_body.add_theme_font_size_override("font_size", 15)
+	_route_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_level_reference.add_child(_route_body)
+	_level_reference.add_child(HSeparator.new())
 	for entry in REFERENCE.GUIDE:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 18)
@@ -86,6 +104,12 @@ func open_guide(back_label: String = "返回设置") -> void:
 	show()
 	_scroll.scroll_vertical = 0
 	_safe_focus.call_deferred(_close)
+
+## 只配置额外说明，不操纵游戏状态或新增独立输入处理器。
+func set_level_reference(reference: Dictionary) -> void:
+	_route_title.text = reference.get("title", "")
+	_route_body.text = reference.get("body", "")
+	_level_reference.visible = not _route_body.text.is_empty()
 
 func close_guide() -> void:
 	hide()

@@ -9,6 +9,8 @@ const Catalog = preload("res://data/item_catalog.gd")
 enum View { NONE, PAUSE, SHOP, BACKPACK }
 enum ReturnTo { MENU, GAME, PAUSE }
 @export var external_pause := false
+## 紧凑HUD接管快捷按钮几何，商城只管理其显隐与权限，避免两处抢写位置。
+@export var external_shortcut_layout := false
 var external_pause_state: Callable
 
 @onready var shop: Control = $ShopScreen
@@ -283,10 +285,11 @@ func _refresh() -> void:
 func _update_shortcut() -> void:
 	if external_pause:
 		# Shared campaign HUD owns the top-right resources at every window width.
-		var top := 154.0
-		shortcut.offset_left = -24.0 - shop_button.get_combined_minimum_size().x
-		shortcut.offset_top = top
-		shortcut.offset_bottom = top + shop_button.get_combined_minimum_size().y
+		if not external_shortcut_layout:
+			var top := 154.0
+			shortcut.offset_left = -24.0 - shop_button.get_combined_minimum_size().x
+			shortcut.offset_top = top
+			shortcut.offset_bottom = top + shop_button.get_combined_minimum_size().y
 		wallet.hide() # The shared resource panel already displays the same wallet.
 	shortcut.visible = _playing and _enabled and view == View.NONE
 	shop_button.disabled = not _can_open()

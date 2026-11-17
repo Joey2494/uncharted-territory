@@ -1,6 +1,8 @@
 extends Node3D
 ## 独立的第三关白盒。谜题门可重置，战斗门复用共享封场和开门生命周期。
 
+@export var standalone_hud := true
+
 signal feedback(message: String)
 signal finished(won: bool)
 
@@ -56,6 +58,7 @@ var _active_room: StringName = &""
 var _encounters: Array[Node] = []
 var _reset_armed := 0.0
 var _terminal := false
+var _run_active := true
 var _won := false
 var _exit_gate: StaticBody3D
 var _exit_area: Area3D
@@ -65,6 +68,13 @@ var _station_lamps: Dictionary = {}
 @onready var _player := $Player
 @onready var _inventory := $Player/ItemInventory
 @onready var _progress := $Progress
+
+
+## 正式宿主使用共享 HUD，移除预览界面的脚本和输入入口。
+func _enter_tree() -> void:
+	if not standalone_hud:
+		var preview_hud := get_node_or_null("HUD")
+		if preview_hud != null: preview_hud.free()
 
 
 func _ready() -> void:
@@ -81,7 +91,7 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if _terminal:
+	if _terminal or not _run_active:
 		return
 	if _reset_armed > 0.0:
 		var station: Node3D = $Stations/reset
@@ -127,7 +137,7 @@ func is_camera_target_relevant(actor: Node3D, _target: Node3D) -> bool:
 
 
 func station_available(action: StringName) -> bool:
-	return not _terminal and STATIONS.has(action)
+	return _run_active and not _terminal and STATIONS.has(action)
 
 
 ## 交互距离及视线由 Station 检查；这里检查该装置的水位、战斗与供能约束。
@@ -294,7 +304,9 @@ func _create_stations() -> void:
 		station.level = self
 		station.position = entry[0]
 		$Stations.add_child(station)
-		_layout.box(station, Vector3(0, 0.38, 0), Vector3(1.25, 0.76, 0.9), Color("303b44"))
+		# 交互台是实体设施，网格和碰撞使用同一尺寸；灯仅为装饰。
+		var body: Node3D = _layout.box(station, Vector3(0, 0.38, 0), Vector3(1.25, 0.76, 0.9), Color("303b44"), true)
+		body.name = "Body"
 		var lamp: Node3D = _layout.box(station, Vector3(0, 0.8, 0), Vector3(0.66, 0.18, 0.5), Color("d5bb76"))
 		_station_lamps[id] = lamp
 		_layout.label(station, entry[1], Vector3(0, 1.55, 0), Color("fce9b5"))
@@ -408,11 +420,17 @@ func _set_blocked(id: StringName, blocked: bool) -> void:
 func _finish(won: bool) -> void:
 	if _terminal:
 		return
-	_terminal = true
 	_won = won
-	_progress.stop_run()
-	for encounter in _encounters:
-		encounter.stop()
+	stop_run()
 	if won:
 		_player.process_mode = Node.PROCESS_MODE_DISABLED
 	finished.emit(won)
+
+
+## 终局单向停止机关和战斗；玩家死亡动画仍由宿主继续播放。
+func stop_run() -> void:
+	_terminal = true
+	_run_active = false
+	_progress.stop_run()
+	for encounter in _encounters:
+		encounter.stop()

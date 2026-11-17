@@ -39,9 +39,12 @@ func _ready() -> void:
 	load_error.back_requested.connect(_dismiss_load_error)
 	level_select.hide()
 	settings_screen.hide()
-	var levels: Array[Dictionary] = [{"id": &"level1", "name": "第一关"}, {"id": &"level2", "name": "第二关"}]
+	var levels: Array[Dictionary] = [{"id": &"level1", "name": "第一关"}, {"id": &"level2", "name": "第二关"}, {"id": &"level3", "name": "第三关"}]
 	level_select.configure(levels, progress)
 	settings_screen.configure(settings)
+	if host._dungeon.has_method("get_route_reference"):
+		settings_screen.get_node("ControlsGuide").set_level_reference(host._dungeon.get_route_reference())
+		settings_screen.get_node("%ControlsGuideButton").text = "操作与路线"
 	level_select.back_requested.connect(_back_from_levels)
 	character_select.back_requested.connect(_back_to_menu)
 	character_select.character_confirmed.connect(_character_confirmed)
@@ -60,6 +63,8 @@ func _ready() -> void:
 	pause_menu.get_node("%SettingsButton").show()
 	pause_menu.settings_requested.connect(open_settings)
 	pause_menu.get_node("%ControlsGuideButton").show()
+	if host._dungeon.has_method("get_route_reference"):
+		pause_menu.get_node("%ControlsGuideButton").text = "操作与路线"
 	pause_menu.controls_guide_requested.connect(open_controls_guide)
 	pause_menu.resume_requested.connect(func() -> void: host.set_paused(false))
 	host._commerce.restart_requested.connect(host._on_restart_requested)
@@ -113,11 +118,12 @@ func _launch(id: StringName) -> void:
 	if not host.PROFILE.owns(host._start_screen.selected_character_id):
 		level_select.show_status("请先返回主菜单解锁角色或选择初始旅人")
 		return
-	var level := 2 if id == &"level2" else 1
+	var level := progress.LEVEL_IDS.find(String(id)) + 1
+	if not host.LEVEL_PATHS.has(level): return
 	if level == host.level_id:
 		host._on_run_started()
 	else:
-		host.request_scene_change("res://scenes/dungeon/Level02Run.tscn" if level == 2 else "res://Main.tscn",
+		host.request_scene_change(host.LEVEL_PATHS[level],
 			{"character_id": host._start_screen.selected_character_id, "start_run": true})
 	# Capture the launching page before hiding it so failures can restore it.
 	if host._transition_queued or host._run_state == host.RunState.PLAYING:

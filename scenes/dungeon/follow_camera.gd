@@ -221,7 +221,7 @@ func _fade_occluders(points: PackedVector3Array, delta: float) -> void:
 			excluded.append(body.get_rid())
 			for mesh in body.find_children("*", "MeshInstance3D", true, false):
 				var id: int = mesh.get_instance_id()
-				blocked[id] = true
+				blocked[id] = minf(occluder_transparency, float(body.get_meta("camera_fade_limit", occluder_transparency)))
 				if not _faded_meshes.has(id):
 					_remember_occluder(mesh)
 	for id in _faded_meshes.keys():
@@ -231,7 +231,7 @@ func _fade_occluders(points: PackedVector3Array, delta: float) -> void:
 			continue
 		var entry: Dictionary = _faded_meshes[id]
 		if blocked.has(id):
-			entry.fade = occluder_transparency
+			entry.fade = blocked[id]
 		else:
 			entry.fade = lerpf(entry.fade, 0.0, 1.0 - exp(-12.0 * delta))
 			if entry.fade < 0.001:
