@@ -1,7 +1,7 @@
 extends RefCounted
 ## Scene-local facades share one authoritative in-memory state per save file.
 static var override_path: String = ""
-const LEVEL_IDS := ["level1", "level2"]
+const LEVEL_IDS := ["level1", "level2", "level3"]
 
 class SessionState:
 	var message: String = ""
@@ -50,10 +50,15 @@ func _init(save_path: String = "user://campaign_progress.cfg") -> void:
 			_last_played = StringName(played.back())
 
 func is_unlocked(id: StringName) -> bool:
-	return id == &"level1" or (id == &"level2" and ("level1" in completed or "level2" in played))
+	var index := LEVEL_IDS.find(String(id))
+	# 已游玩记录兼容旧档；新关卡必须有前一关完成记录。
+	return index == 0 or (index > 0 and (LEVEL_IDS[index - 1] in completed or String(id) in played))
 func has_played(id: StringName) -> bool: return String(id) in played
 func is_completed(id: StringName) -> bool: return String(id) in completed
-func recommended_level() -> StringName: return &"level2" if is_unlocked(&"level2") else &"level1"
+func recommended_level() -> StringName:
+	for index in range(LEVEL_IDS.size() - 1, -1, -1):
+		if is_unlocked(StringName(LEVEL_IDS[index])): return StringName(LEVEL_IDS[index])
+	return &"level1"
 func get_last_played_level() -> StringName: return _last_played
 func mark_played(level: int) -> void:
 	var id := "level%d" % level
@@ -64,6 +69,7 @@ func mark_played(level: int) -> void:
 	_save()
 func complete(level: int) -> void:
 	var id := "level%d" % level
+	if id not in LEVEL_IDS: return
 	if id not in completed: completed.append(id)
 	_save()
 func _save() -> void:

@@ -1,8 +1,8 @@
 extends SceneTree
 ## 从正式菜单到真实出口的主线回归。以定点移动和伤害隔离战斗难度。
 
-const LEVEL := preload("res://scenes/dungeon/Level02Run.tscn")
-const START := "UILayer/StartScreen/Center/Card/Padding/Content/StartButton"
+const LEVEL := "res://scenes/dungeon/Level02Run.tscn"
+const START := "UILayer/StartScreen/%StartButton"
 const PROFILE := preload("res://scripts/integration/player_profile.gd")
 const PROGRESS := preload("res://scripts/integration/campaign_progress.gd")
 var checks := 0
@@ -46,6 +46,10 @@ func press(host: Node, path: String) -> void:
 	check(available, "可操作按钮 " + path)
 	if available:
 		button.pressed.emit()
+		if path == START:
+			var nav: Node = host.get_node("MenuNavigation")
+			nav.character_select.get_node("%ConfirmButton").pressed.emit()
+			nav.level_select.get_level_button(&"level2").pressed.emit()
 
 func reload_finished() -> void:
 	for i in 4:
@@ -70,7 +74,8 @@ func run() -> void:
 	var run_id := str(OS.get_process_id()) + "-" + str(Time.get_ticks_usec())
 	PROFILE.override_path = "user://level02-test-profile-" + run_id + ".cfg"
 	PROGRESS.override_path = "user://level02-test-progress-" + run_id + ".cfg"
-	change_scene_to_packed(LEVEL)
+	PROGRESS.new().complete(1)
+	change_scene_to_file(LEVEL)
 	await reload_finished()
 	var host := current_scene
 	var map = host.get_node("DungeonTest")
@@ -122,7 +127,7 @@ func run() -> void:
 	var start_distance: float = hub.global_position.distance_to(player.global_position)
 	await create_timer(0.72).timeout
 	check(hub.global_position.distance_to(player.global_position) < start_distance - 0.7, "实体守卫沿掩体西侧向真实玩家追击")
-	press(host, "UILayer/RunOverlay/Corner/GuideButton")
+	check(host.open_guide(), "共享宿主打开探索指引")
 	check(host.get_run_state() == host.RunState.GUIDE and paused, "区域指引暂停世界")
 	action("pause")
 	check(host.get_run_state() == host.RunState.PLAYING and not paused, "关闭指引恢复探索")
@@ -195,11 +200,10 @@ func run() -> void:
 	await reload_finished()
 	host = current_scene
 	map = host.get_node("DungeonTest")
-	check(host.get_run_state() == host.RunState.MENU and not paused and not map.is_run_active(), "真实重开返回干净菜单")
-	check(not map.relay_activated and not map.shortcut_unlocked and map.get_visited_count() == 0, "重开重置所有进度")
+	check(host.get_run_state() == host.RunState.PLAYING and not paused and map.is_run_active(), "胜利重开直接开始干净新局")
+	check(not map.relay_activated and not map.shortcut_unlocked and map.get_visited_count() == 1, "重开仅记录新的到达进度")
 	check(not map.get_node("Enemies/Hub1").can_process() and not map.get_node("Gates/BossNorth").is_open(), "重开恢复敌人休眠及顺序锁")
 
-	press(host, START)
 	player = map.get_node("Player")
 	await go(player, Vector3(0, 0.05, -26))
 	map.get_node("Enemies/Hub1").queue_free()
@@ -222,5 +226,9 @@ func run() -> void:
 	finish()
 
 func finish() -> void:
+	paused = false
+	root.get_node("MusicManager").stop_music()
+	if is_instance_valid(current_scene): current_scene.queue_free()
+	await frames(3)
 	print("LEVEL02_INTEGRATION: ", checks, " checks, ", failures, " failures")
 	quit(1 if failures else 0)

@@ -1,0 +1,6 @@
+[gd_scene load_steps=3 format=3]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/level03/Level03Preview.tscn" id="base"]
+[ext_resource type="Script" path="res://scenes/dungeon/level03/campaign_level03.gd" id="script"]
+[node name="Level03Campaign" instance=ExtResource("base")]
+script = ExtResource("script")
+standalone_hud = false

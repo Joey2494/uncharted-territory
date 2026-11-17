@@ -4,9 +4,9 @@ Godot 4.7.2 项目。本仓库 `main` 是第九周整合后的开发基准，后
 
 用 Godot 导入根目录 `project.godot`，按 F5 启动 `Main.tscn`。第二关可通过第一关胜利页面进入，也可直接运行 `scenes/dungeon/Level02Run.tscn`。
 
-第三关「潮汐回流工坊」可独立试玩。在 Godot 打开 `scenes/dungeon/level03/Level03Preview.tscn` 后按 F6。靠近设备按 E，Tab 查看路线，Esc 暂停。
+第二关从实际出口通关后解锁第三关「潮汐回流工坊」，可从胜利页继续或在关卡选择进入。第三关正式入口为 `scenes/dungeon/Level03Run.tscn`；地图仍为白盒美术。靠近设备按 E，Esc 暂停后选择「操作与路线」查阅路线说明。独立调试入口 `scenes/dungeon/level03/Level03Preview.tscn` 保留，打开后按 F6；独立预览使用 Tab 查看路线。
 
-保留免费初始旅人 Knight，新增 Lan、Iron、Astra 三名金币解锁角色；两关共用 HUD、暂停、商城、背包和操作设置。第二关地图沿用第一关的石砖地牢素材风格。
+保留免费初始旅人 Knight，新增 Lan、Iron、Astra 三名金币解锁角色；三关共用 HUD、暂停、商城、背包和操作设置。第二关采用天然蜘蛛洞窟外观；档案室使用固定全房间取景，能源归属常驻目标卡，靠近设备显示操作提示。
 
 主要操作：WASD / 方向键移动、J 使用当前武器、K 法术、L 角色技能、Space 闪避、E 交互、R 药剂、F 强化符文、G 守护符文、I 切换手炮与近战、P 商城、Esc 暂停。
 

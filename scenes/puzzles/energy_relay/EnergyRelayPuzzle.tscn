@@ -1,12 +1,13 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scenes/puzzles/energy_relay/energy_relay_puzzle.gd" id="puzzle"]
+[ext_resource type="Script" path="res://scenes/puzzles/energy_relay/archive_partition.gd" id="partition"]
 [ext_resource type="PackedScene" path="res://scenes/puzzles/energy_relay/RelayControl.tscn" id="control"]
 [ext_resource type="PackedScene" path="res://scenes/puzzles/energy_relay/ArchivePassage.tscn" id="passage"]
 [ext_resource type="Font" path="res://scenes/ui/dungeon_font.tres" id="font"]
 
 [sub_resource type="StandardMaterial3D" id="PartitionMaterial"]
-albedo_color = Color(0.26, 0.29, 0.32, 1)
+albedo_color = Color(0.16, 0.22, 0.24, 1)
 roughness = 0.88
 
 [sub_resource type="StandardMaterial3D" id="CoreMaterial"]
@@ -38,7 +39,7 @@ size = Vector3(0.12, 0.12, 7.76)
 
 [sub_resource type="BoxMesh" id="LinkageBracket"]
 material = SubResource("LinkageMaterial")
-size = Vector3(0.34, 1.66, 0.28)
+size = Vector3(0.34, 0.12, 0.28)
 
 [sub_resource type="BoxMesh" id="Direct"]
 size = Vector3(0.12, 0.055, 1.7)
@@ -54,24 +55,24 @@ size = Vector3(0.11, 0.055, 0.35)
 
 [sub_resource type="BoxMesh" id="NorthPartition"]
 material = SubResource("PartitionMaterial")
-size = Vector3(3.0, 1.6, 4.68)
+size = Vector3(3.0, 0.55, 4.68)
 
 [sub_resource type="BoxShape3D" id="NorthPartitionShape"]
-size = Vector3(3.0, 1.6, 4.68)
+size = Vector3(3.0, 0.55, 4.68)
 
 [sub_resource type="BoxMesh" id="CenterPartition"]
 material = SubResource("PartitionMaterial")
-size = Vector3(3.0, 1.6, 1.025)
+size = Vector3(3.0, 0.55, 1.025)
 
 [sub_resource type="BoxShape3D" id="CenterPartitionShape"]
-size = Vector3(3.0, 1.6, 1.025)
+size = Vector3(3.0, 0.55, 1.025)
 
 [sub_resource type="BoxMesh" id="SouthPartition"]
 material = SubResource("PartitionMaterial")
-size = Vector3(3.0, 1.6, 1.65)
+size = Vector3(3.0, 0.55, 1.65)
 
 [sub_resource type="BoxShape3D" id="SouthPartitionShape"]
-size = Vector3(3.0, 1.6, 1.65)
+size = Vector3(3.0, 0.55, 1.65)
 
 [node name="EnergyRelayPuzzle" type="Node3D"]
 script = ExtResource("puzzle")
@@ -83,8 +84,9 @@ position = Vector3(-4.15, 0, -0.375)
 position = Vector3(-4.15, 0, 4.15)
 scale = Vector3(1, 1, 0.7407407)
 
-[node name="NorthPartition" type="StaticBody3D" parent="." groups=["camera_occluders"]]
-position = Vector3(-4.15, 0.8, -4.74)
+[node name="NorthPartition" type="StaticBody3D" parent="."]
+script = ExtResource("partition")
+position = Vector3(-4.15, 0.275, -4.74)
 collision_mask = 0
 
 [node name="Mesh" type="MeshInstance3D" parent="NorthPartition"]
@@ -93,8 +95,9 @@ mesh = SubResource("NorthPartition")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="NorthPartition"]
 shape = SubResource("NorthPartitionShape")
 
-[node name="CenterPartition" type="StaticBody3D" parent="." groups=["camera_occluders"]]
-position = Vector3(-4.15, 0.8, 2.155)
+[node name="CenterPartition" type="StaticBody3D" parent="."]
+script = ExtResource("partition")
+position = Vector3(-4.15, 0.275, 2.155)
 collision_mask = 0
 
 [node name="Mesh" type="MeshInstance3D" parent="CenterPartition"]
@@ -103,8 +106,9 @@ mesh = SubResource("CenterPartition")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CenterPartition"]
 shape = SubResource("CenterPartitionShape")
 
-[node name="SouthPartition" type="StaticBody3D" parent="." groups=["camera_occluders"]]
-position = Vector3(-4.15, 0.8, 6.475)
+[node name="SouthPartition" type="StaticBody3D" parent="."]
+script = ExtResource("partition")
+position = Vector3(-4.15, 0.275, 6.475)
 collision_mask = 0
 
 [node name="Mesh" type="MeshInstance3D" parent="SouthPartition"]
@@ -118,6 +122,7 @@ position = Vector3(3.0, 0, 2.65)
 receiver_path = NodePath("..")
 control_id = &"rack"
 caption = "取放能源"
+short_caption = "能源"
 
 [node name="Core1" type="MeshInstance3D" parent="CoreRack"]
 position = Vector3(-0.28, 1.16, 0)
@@ -134,6 +139,7 @@ position = Vector3(-2.05, 0, -1.42)
 receiver_path = NodePath("..")
 control_id = &"bridge"
 caption = "桥台插槽"
+short_caption = "桥槽"
 
 [node name="Core" type="MeshInstance3D" parent="BridgeSocket"]
 position = Vector3(0, 1.18, 0)
@@ -143,7 +149,8 @@ mesh = SubResource("Core")
 position = Vector3(-6.48, 0, -3.54)
 receiver_path = NodePath("..")
 control_id = &"lever"
-caption = "检修手柄"
+caption = "步道开关"
+short_caption = "步道开关"
 accent = Color(0.9, 0.68, 0.32, 1)
 
 [node name="ReceiverA" parent="." instance=ExtResource("control")]
@@ -151,6 +158,7 @@ position = Vector3(-1.55, 0, -5.25)
 receiver_path = NodePath("..")
 control_id = &"a"
 caption = "接收器一"
+short_caption = "门锁Ⅰ"
 
 [node name="Core" type="MeshInstance3D" parent="ReceiverA"]
 position = Vector3(0, 1.18, 0)
@@ -161,6 +169,7 @@ position = Vector3(1.55, 0, -5.25)
 receiver_path = NodePath("..")
 control_id = &"b"
 caption = "接收器二"
+short_caption = "门锁Ⅱ"
 
 [node name="Core" type="MeshInstance3D" parent="ReceiverB"]
 position = Vector3(0, 1.18, 0)
@@ -171,6 +180,8 @@ position = Vector3(5.7, 0, -1.5)
 receiver_path = NodePath("..")
 control_id = &"inspect"
 caption = "查看供能铭牌"
+short_caption = "铭牌"
+auxiliary = true
 accent = Color(0.89, 0.78, 0.55, 1)
 
 [node name="Hints" parent="." instance=ExtResource("control")]
@@ -178,6 +189,8 @@ position = Vector3(5.75, 0, 2.45)
 receiver_path = NodePath("..")
 control_id = &"hints"
 caption = "查看解谜提示"
+short_caption = "提示"
+auxiliary = true
 accent = Color(0.89, 0.78, 0.55, 1)
 
 [node name="ResetConsole" parent="." instance=ExtResource("control")]
@@ -185,6 +198,8 @@ position = Vector3(4.5, 0, 5.05)
 receiver_path = NodePath("..")
 control_id = &"reset"
 caption = "复位档案室"
+short_caption = "复位"
+auxiliary = true
 accent = Color(0.9, 0.62, 0.48, 1)
 
 [node name="PassageLabels" type="Node3D" parent="."]
@@ -228,21 +243,22 @@ mesh = SubResource("GateLead")
 [node name="Linkage" type="Node3D" parent="Circuit"]
 
 [node name="Crossbar" type="MeshInstance3D" parent="Circuit/Linkage"]
-position = Vector3(-2.24, 1.67, -4.95)
+position = Vector3(-2.24, 0.09, -4.95)
 rotation_degrees = Vector3(0, 20, 0)
 mesh = SubResource("LinkageCrossbar")
 
 [node name="ConductorBracket" type="MeshInstance3D" parent="Circuit/Linkage"]
-position = Vector3(1.42, 0.86, -6.27)
+position = Vector3(1.42, 0.09, -6.27)
 mesh = SubResource("LinkageBracket")
 
 [node name="WalkwayDrive" type="Node3D" parent="Circuit"]
 
 [node name="Shaft" type="MeshInstance3D" parent="Circuit/WalkwayDrive"]
-position = Vector3(-5.55, 0.23, 0.25)
+position = Vector3(-5.55, 0.09, 0.25)
 mesh = SubResource("LinkageShaft")
 
 [node name="LineState" type="Label3D" parent="Circuit"]
+visible = false
 position = Vector3(3.95, 1.2, -5.78)
 billboard = 1
 modulate = Color(0.95, 0.78, 0.53, 1)
@@ -255,4 +271,5 @@ outline_size = 9
 receiver_path = NodePath("..")
 control_id = &"reward"
 caption = "领取攻击强化符文"
+short_caption = "符文"
 accent = Color(0.94, 0.69, 0.37, 1)

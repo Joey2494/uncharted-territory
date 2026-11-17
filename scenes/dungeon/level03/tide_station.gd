@@ -22,7 +22,11 @@ func can_interact(player: CharacterBody3D) -> bool:
 	var target := Vector3(global_position.x, origin.y, global_position.z)
 	if origin.is_equal_approx(target):
 		return true
-	var ray := PhysicsRayQueryParameters3D.create(origin, target, 1, [player.get_rid()])
+	# 台体参与移动/弹道碰撞，但不能挡住玩家对本台的交互视线。
+	var excluded: Array[RID] = [player.get_rid()]
+	var body := get_node_or_null("Body") as StaticBody3D
+	if body != null: excluded.append(body.get_rid())
+	var ray := PhysicsRayQueryParameters3D.create(origin, target, 1, excluded)
 	return get_world_3d().direct_space_state.intersect_ray(ray).is_empty()
 
 

@@ -23,6 +23,7 @@ func run() -> void:
 	Profile.settled_runs = []
 	Profile.save()
 	change_scene_to_file("res://scenes/dungeon/Level02Run.tscn")
+	await scene_changed
 	await frames()
 	var h := current_scene
 	var map: Node = h.get_node("DungeonTest")
@@ -58,7 +59,9 @@ func run() -> void:
 	check(h._run_state == h.RunState.VICTORY and Profile.coins == 137, "physical exit banks exactly pending coins")
 	h._on_exit_reached()
 	check(Profile.coins == 137, "duplicate exit callback cannot double pay")
-	check(h.restart_run(), "victory allows restart")
+	var restarted: bool = h.restart_run()
+	check(restarted, "victory allows restart")
+	if restarted: await scene_changed
 	await frames(12)
 	check(current_scene._items.gold == 0 and Profile.coins == 137, "restart clears pending and preserves permanent balance")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(Profile.override_path))

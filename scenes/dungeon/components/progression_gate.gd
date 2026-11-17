@@ -32,6 +32,8 @@ func _ready() -> void:
 	_label.text = locked_message
 	_label.visible = show_lock_label
 	add_to_group("camera_occluders")
+	# 门承担封场信息，不能像装饰墙一样淡到近乎不可见。
+	set_meta("camera_fade_limit", 0.35)
 	if initially_open:
 		_progression_locked = false
 		state = State.OPEN

@@ -148,7 +148,8 @@ text = "下一关"
 mouse_default_cursor_shape = 2
 theme_override_font_sizes/font_size = 15
 
-[node name="Description" type="Label" parent="Center/Card/Padding/Content"]
+[node name="SettlementLabel" type="Label" parent="Center/Card/Padding/Content"]
+unique_name_in_owner = true
 theme_override_font_sizes/font_size = 13
 autowrap_mode = 2
 

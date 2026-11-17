@@ -37,6 +37,9 @@ func _ready() -> void:
 	%LevelSelectButton.pressed.connect(func() -> void: level_select_requested.emit())
 	visibility_changed.connect(_focus_action)
 	resized.connect(_queue_layout)
+	# Text wrapping updates minimum height after a width change.
+	%SettlementLabel.minimum_size_changed.connect(_queue_layout)
+	%ProgressLabel.minimum_size_changed.connect(_queue_layout)
 	# 结算存档失败时出现的重试按钮；默认隐藏，由布局引擎放入按钮行。
 	_retry = Button.new()
 	_retry.text = "重试保存通关金币"
@@ -73,17 +76,20 @@ func _refresh_result() -> void:
 	if is_instance_valid(_retry):
 		_retry.visible = not settlement_ok and not _run_result.is_empty()
 	%ResultDetails.visible = not _run_result.is_empty()
+	%SettlementLabel.visible = not _run_result.is_empty()
 	if _run_result.is_empty():
 		summary_label.text = "本次探索已结束"
 		_queue_layout()
 		return
 	summary_label.text = "%s%s · 成功离开地牢" % [_run_result.get("boss_name", "最终Boss"), "已击败" if _run_result.get("boss_defeated", false) else "战斗结束"]
+	if _run_result.has("completion_summary"): summary_label.text = _run_result.completion_summary
 	var seconds := floori(maxf(0.0, float(_run_result.get("elapsed_seconds", 0.0))))
 	%TimeLabel.text = "通关用时：%02d:%02d" % [floori(seconds / 60.0), seconds % 60]
 	%ExplorationLabel.text = "探索区域：%d/%d" % [_run_result.get("rooms_visited", 0), _run_result.get("rooms_total", completed_rooms)]
 	%HealthLabel.text = "剩余生命：%d/%d" % [_run_result.get("player_hp", 0), _run_result.get("player_max_hp", 0)]
-	%PuzzleLabel.text = "%s：%s" % ["档案机关" if _run_result.get("level_id", 1) == 2 else "符文机关", "已解开" if _run_result.get("puzzle_solved", false) else "未解开"]
-	%RewardLabel.text = ("通关结算：+%d 金币 · 已存入永久钱包" % _run_result.get("settled_gold", 0)) if settlement_ok else "金币保存失败，请检查存储权限"
+	%PuzzleLabel.text = "%s：%s" % [_run_result.get("puzzle_name", "档案机关" if _run_result.get("level_id", 1) == 2 else "符文机关"), "已解开" if _run_result.get("puzzle_solved", false) else "未解开"]
+	%RewardLabel.text = "%s：%s" % [_run_result.get("reward_name", "密室奖励"), "已领取" if _run_result.get("reward_claimed", false) else "未领取"]
+	%SettlementLabel.text = ("通关结算：+%d 金币 · 已存入永久钱包" % _run_result.get("settled_gold", 0)) if settlement_ok else "金币保存失败，请检查存储权限"
 	_queue_layout()
 
 
@@ -148,8 +154,8 @@ func _layout_result() -> void:
 	_place(%Eyebrow, Vector2(0, size.y * 0.16), Vector2(size.x, 24))
 	_place(%TitleLabel, Vector2(0, size.y * 0.19), Vector2(size.x, 100))
 	_place(%SummaryLabel, Vector2(0, size.y * 0.19 + 106), Vector2(size.x, 32))
-	_place(%ResultDetails, Vector2(margin, size.y - 196), Vector2(380 if wide else 320, 80))
-	_place(%RewardsPanel, Vector2(size.x - margin - 290, size.y - 196), Vector2(290, 72))
+	_place(%ResultDetails, Vector2(margin, size.y - 218), Vector2(380 if wide else 320, 80))
+	_place(%RewardsPanel, Vector2(size.x - margin - 290, size.y - 218), Vector2(290, 72))
 	_place(%ProgressLabel, Vector2(margin, size.y - 102), Vector2(size.x - margin * 2, 22))
 	var buttons: Array[Button] = [%RestartButton, %LevelSelectButton, %MainMenuButton]
 	if offer_next_level:
@@ -157,11 +163,23 @@ func _layout_result() -> void:
 	if is_instance_valid(_retry) and _retry.visible:
 		buttons.push_front(_retry)
 	var count := buttons.size()
-	var button_width := minf(210, (size.x - margin * 2 - 12 * (count - 1)) / count)
-	var start_x := size.x - margin - button_width * count - 12 * (count - 1)
+	# Preserve each action's text width when the retry action joins a compact row.
+	var row_width := 12.0 * (count - 1)
+	for button in buttons:
+		row_width += button.get_combined_minimum_size().x
+	var extra := maxf(0.0, (size.x - margin * 2 - row_width) / count)
+	var widths: Array[float] = []
+	row_width = 12.0 * (count - 1)
+	for button in buttons:
+		var minimum := button.get_combined_minimum_size().x
+		var width := maxf(minimum, minf(210, minimum + extra))
+		widths.append(width)
+		row_width += width
+	var start_x := size.x - margin - row_width
 	for i in range(count):
-		_place(buttons[i], Vector2(start_x + i * (button_width + 12), size.y - 64), Vector2(button_width, 42))
-	_place($Center/Card/Padding/Content/Description, Vector2(margin, size.y - 124), Vector2(size.x - margin * 2, 22))
+		_place(buttons[i], Vector2(start_x, size.y - 64), Vector2(widths[i], 42))
+		start_x += widths[i] + 12
+	_place(%SettlementLabel, Vector2(margin, size.y - 132), Vector2(size.x - margin * 2, 22))
 
 func _place(control: Control, at: Vector2, dimensions: Vector2) -> void:
 	control.position = at

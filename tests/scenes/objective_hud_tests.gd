@@ -118,7 +118,7 @@ func puzzle_checks() -> void:
 	check(await interact("BridgeSocket",Vector3(1.25,0.05,0)), "power the temporary bridge")
 	check(await interact("Lever"), "actual maintenance lever completes the permanent return path")
 	verify("为双接收器供能","门锁 0/2")
-	check(panel.get_node("%ObjectiveCategory").text == "目标完成", "maintenance completion acknowledges the actual new puzzle step")
+	check(panel.get_node("%ObjectiveCategory").text == "步骤完成", "maintenance completion acknowledges the step without completing the whole puzzle")
 	check(await interact("BridgeSocket",Vector3(1.25,0.05,0)), "recover bridge core")
 	check(await interact("ReceiverA"), "power first receiver after repair")
 	verify("为双接收器供能","门锁 1/2")
@@ -142,7 +142,8 @@ func puzzle_checks() -> void:
 
 func verify(title: String, progress: String) -> void:
 	check(panel.get_node("%ObjectiveTask").text == title and panel.get_node("%ObjectiveDetail").text == progress, "actual objective and relevant progress: "+title+" / "+progress)
-	check(panel.size.x <= 288 and panel.size.y <= 64, "tracker retains its compact footprint across task states")
+	var height_limit := 84 if panel.get_node("%ObjectiveResources").visible else 64
+	check(panel.size.x <= 288 and panel.size.y <= height_limit, "tracker retains its compact footprint with one archive resource row")
 	var label: Label = panel.get_node("%ObjectiveTask")
 	check(label.get_theme_font("font").get_string_size(label.text,HORIZONTAL_ALIGNMENT_LEFT,-1,label.get_theme_font_size("font_size")).x <= label.size.x, "short task title remains fully readable")
 

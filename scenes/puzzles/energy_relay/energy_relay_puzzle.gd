@@ -1,5 +1,5 @@
 extends Node3D
-## 断流档案室。两枚能源在托架、手持和三个插槽间转移，检修手柄改变两条通路。
+## 断流档案室。两枚能源在托架、手持和三个插槽间转移，步道开关改变两条通路。
 
 signal feedback(message: String)
 signal reward_claimed
@@ -17,7 +17,7 @@ const OFFLINE := "主供能中断 · 来自东侧回廊（C）"
 const HINTS := [
 	"看看对岸检修台旁折起的机械步道，留意它通向哪里。",
 	"临时桥上的能源可以撤回。机械步道卡合后不需要供能。",
-	"用一枚能源过桥，拉下检修手柄。走侧步道回来撤回能源，再填满两个接收器。",
+	"用一枚能源过桥，拉下步道开关。走侧步道回来撤回能源，再填满两个接收器。",
 ]
 
 @export var gate_path: NodePath
@@ -41,13 +41,36 @@ var _claiming := false
 var _vault_reset_lock := false
 var _flow_material := _make_flow_material(Color(0.35, 0.89, 0.84))
 var _dark_material := _make_flow_material(Color(0.21, 0.34, 0.36))
+var _short_labels: Array[Label3D] = []
 
 func _ready() -> void:
+	for label: Label3D in find_children("*", "Label3D", true, false):
+		if label.visible:
+			_short_labels.append(label)
 	if _gate != null:
 		_gate.opened.connect(_on_gate_opened)
 	if _reward_point != null:
 		$Reward.global_position = _reward_point.global_position
 	_refresh_devices()
+
+## 完整房间镜头会拉远；只给档案室短标识补足屏幕字号，不缩放任何实体。
+func _process(_delta: float) -> void:
+	var camera := get_viewport().get_camera_3d()
+	if camera == null or not is_instance_valid(_player):
+		return
+	var local := to_local(_player.global_position)
+	var in_archive := _active and ARCHIVE_BOUNDS.has_point(Vector2(local.x, local.z))
+	for label in _short_labels:
+		label.no_depth_test = in_archive
+		if not in_archive:
+			label.scale = Vector3.ONE
+			continue
+		var origin := camera.unproject_position(label.global_position)
+		var top := camera.unproject_position(label.global_position + camera.global_basis.y * label.pixel_size * label.font_size)
+		var height := origin.distance_to(top)
+		var target := 14.0 if label.get_parent() is RelayControl and label.get_parent().auxiliary else 16.0
+		# 限幅避免镜头未就绪或调试远景产生巨型文字；正常构图约放大三倍。
+		label.scale = Vector3.ONE * clampf(target / maxf(height, 0.1), 0.8, 6.0)
 
 func begin_run() -> void:
 	_active = not _stopped and _gate != null and _reward_point != null and _player != null
@@ -69,6 +92,42 @@ func get_state() -> State:
 
 func get_core_count(location: StringName) -> int:
 	return _cores.get(location, 0)
+
+## 直接读取机关唯一能源账本；常驻 HUD 不缓存或推算临时反馈中的数量。
+func get_resource_summary() -> String:
+	return "手持 %d｜托架 %d｜桥 %d｜门锁 %d/2" % [
+		_cores[&"carried"], _cores[&"rack"], _cores[&"bridge"], _cores[&"a"] + _cores[&"b"]]
+
+## 仅最近且可达的设施请求完整提示，世界短标签不承担操作说明。
+func get_control_prompt(id: StringName) -> String:
+	match id:
+		&"inspect":
+			return "供能铭牌 · 机关规则\n[E] 阅读能源与插槽说明"
+		&"hints":
+			return "解谜提示 · 第 %d/3 条\n[E] 查看提示" % mini(_hint_index + 1, HINTS.size())
+		&"reset":
+			return "档案室复位 · " + ("等待确认\n[E] 再次确认复位" if _reset_pending else "能源归架、通路收起\n[E] 请求复位")
+		&"reward":
+			return "攻击强化符文 · 待领取\n[E] 领取符文"
+	var names := {&"rack": "能源托架", &"bridge": "桥台插槽", &"a": "接收器一", &"b": "接收器二", &"lever": "步道开关"}
+	var name: String = names.get(id, "机关")
+	if _state == State.SUPPLY_OFF:
+		return name + " · 主供能中断\n[E] 检查供能来源"
+	if id == &"rack":
+		var action := "取用 %d 枚能源" % _cores[&"rack"] if _cores[&"rack"] > 0 else ("存回手持能源" if _cores[&"carried"] > 0 else "检查能源去向")
+		return "%s · 存放 %d/2\n[E] %s" % [name, _cores[&"rack"], action]
+	if id == &"lever":
+		return name + (" · 检修线已接通\n[E] 检查已卡合开关" if _maintenance_latched else " · 检修线断开\n[E] 拉下开关，展开返回步道并接通门锁")
+	if id in SLOT_IDS:
+		var filled: bool = _cores[id] == 1
+		var action := "撤回能源" if filled else ("放入一枚能源" if _cores[&"carried"] > 0 else "检查空槽（手持为空）")
+		if id == &"bridge" and filled and not _bridge_can_retract(_player):
+			action = "检查插槽（先离开桥面）"
+		var state := "已供能" if filled else "空槽"
+		if id == &"b" and not _maintenance_latched:
+			state += "、检修线断开"
+		return "%s · %s\n[E] %s" % [name, state, action]
+	return "[E] 检查机关"
 
 func is_maintenance_connected() -> bool:
 	return _maintenance_latched
@@ -239,7 +298,7 @@ func _refresh_devices() -> void:
 	$CoreRack.set_display("能源托架 · %d/2" % _cores[&"rack"], _cores[&"rack"] > 0)
 	$CoreRack/Core1.visible = _cores[&"rack"] > 0
 	$CoreRack/Core2.visible = _cores[&"rack"] == 2
-	$Lever.set_display("检修手柄 · " + ("已卡合" if _maintenance_latched else "待操作"), _maintenance_latched)
+	$Lever.set_display("步道开关 · " + ("已卡合" if _maintenance_latched else "待操作"), _maintenance_latched)
 	$ResetConsole.set_display("再次按 E 确认" if _reset_pending else "前台复位", _reset_pending)
 	for id in SLOT_IDS:
 		var control := _slot_controls[id] as RelayControl
@@ -254,10 +313,13 @@ func _refresh_devices() -> void:
 	for wire in [$Circuit/ReceiverLead, $Circuit/MovableLink, $Circuit/GateLead]:
 		wire.material_override = repaired_flow
 	$Circuit/MovableLink.rotation_degrees.y = 0.0 if _maintenance_latched else 53.0
-	$Circuit/Linkage.position.x = 0.0 if _maintenance_latched else -0.24
+	# 贴地传动线用颜色表示接通，不再横移一根悬空的长连杆。
+	$Circuit/Linkage/Crossbar.material_override = _flow_material if _maintenance_latched else _dark_material
+	$Circuit/Linkage/ConductorBracket.material_override = _flow_material if _maintenance_latched else _dark_material
+	$Circuit/Linkage.position.x = 0.0
 	$Circuit/WalkwayDrive.position.z = 0.0 if _maintenance_latched else -0.24
-	$PassageLabels/BridgeState.text = "临时桥 · 展开" if bridged else "临时桥 · 收起"
-	$PassageLabels/WalkwayState.text = "机械步道 · 卡合" if _maintenance_latched else "机械步道 · 折起"
+	$PassageLabels/BridgeState.text = "临时桥"
+	$PassageLabels/WalkwayState.text = "机械步道"
 	$Circuit/LineState.text = "检修线 · 接通" if _maintenance_latched else "检修线 · 断开"
 	$Reward.visible = _state == State.OPEN
 	$Reward.get_node("Base/CollisionShape3D").set_deferred("disabled", _state != State.OPEN)

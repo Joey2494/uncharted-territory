@@ -1,0 +1,11 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS level=2 saved=false size=(1280, 720): result, wallet and actions fit without overlaps
+PASS level=2 saved=false size=(720, 720): result, wallet and actions fit without overlaps
+PASS level=2 saved=true size=(1280, 720): result, wallet and actions fit without overlaps
+PASS level=2 saved=true size=(720, 720): result, wallet and actions fit without overlaps
+PASS level=3 saved=false size=(1280, 720): result, wallet and actions fit without overlaps
+PASS level=3 saved=false size=(720, 720): result, wallet and actions fit without overlaps
+PASS level=3 saved=true size=(1280, 720): result, wallet and actions fit without overlaps
+PASS level=3 saved=true size=(720, 720): result, wallet and actions fit without overlaps
+SETTLEMENT_LAYOUT_RESULT checks=8 failed=0

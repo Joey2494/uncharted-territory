@@ -108,7 +108,7 @@ func run() -> void:
 	await use_control(puzzle, player, "Hints")
 	check(feedback_text.contains("撤回"), "二级提示说明能源回收")
 	await use_control(puzzle, player, "Hints")
-	check(feedback_text.contains("手柄") and feedback_text.contains("接收器"), "三级提示由玩家主动查看")
+	check(feedback_text.contains("步道开关") and feedback_text.contains("接收器"), "三级提示由玩家主动查看")
 
 	var hp: int = player.hp
 	await fill_gate(puzzle, player)

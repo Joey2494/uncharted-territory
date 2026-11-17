@@ -25,7 +25,8 @@ func _process(delta: float) -> void:
 			_completed[id] = true
 			newly_completed = not initial
 	if newly_completed:
-		_feedback_text = "目标完成"
+		# 支线中间步骤（供能、检修）完成时，后续任务仍未解决。
+		_feedback_text = "步骤完成" if status.category == "支线任务" else "目标完成"
 		_feedback_remaining = 1.6
 	elif status.id != _task_id and not initial:
 		_feedback_text = "任务更新"
@@ -33,6 +34,9 @@ func _process(delta: float) -> void:
 	_task_id = status.id
 	%ObjectiveTask.text = status.title
 	%ObjectiveDetail.text = status.progress
+	# 能源属于谜题，不随临时反馈计时消失，也不复制到普通背包。
+	%ObjectiveResources.text = status.get("resource_summary", "")
+	%ObjectiveResources.visible = not %ObjectiveResources.text.is_empty()
 	%ObjectiveCategory.text = _feedback_text if _feedback_remaining > 0.0 else status.category
 	var emphasis := minf(1.0,_feedback_remaining)
 	%ObjectiveAccent.color = ACCENT.lerp(HIGHLIGHT,emphasis)
