@@ -1,0 +1,20 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS premature exit check uses the physical trigger
+PASS premature exit cannot settle
+PASS real kill Hub1
+PASS real kill Hub2
+PASS real kill Relay1
+PASS real kill Relay2
+PASS real relay interaction activates after room clear
+PASS real kill Antechamber1
+PASS real kill Antechamber2
+PASS real kill Antechamber3
+PASS clearing all three rooms still does not bank
+PASS real boss death
+PASS boss death alone cannot settle
+PASS physical exit banks exactly pending coins
+PASS duplicate exit callback cannot double pay
+PASS victory allows restart
+PASS restart clears pending and preserves permanent balance
+FLOW_RESULT checks=17 failed=0

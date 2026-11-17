@@ -1,0 +1,50 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS isolated test wallet saved
+PASS new run separates wallet and pending
+PASS pending coins collectible
+PASS pickup never saves pending wallet
+PASS shop cannot mutate permanent wallet
+PASS room one uses silk only
+PASS room two uses brood mothers
+PASS room three mixes both
+PASS abandoned run loses pending coins
+PASS death cannot bank coins
+PASS success banks once
+PASS duplicate success ignored
+PASS settlement dedup survives profile reload
+PASS save failure rolls back balance and idempotence marker
+PASS legacy melee disabled
+PASS engaged living spider bar appears
+PASS overhead HP uses real values instead of percentage
+PASS overhead HP updates after damage
+PASS silk fires on first reaction tick without aim or warning
+PASS silk hunter has faster cadence, pursuit and higher health
+PASS instant shot still respects recovery and cannot fire every frame
+PASS single silk travels at increased speed
+PASS silk is one continuous strand with no energy-ball visual
+PASS real swept silk collision deals damage and applies web
+PASS player wrap contains radial webs and encircling silk rings
+PASS dodge blocks silk damage and web refresh
+PASS broodling crawls onto player on physical contact
+PASS roll removes attached broodling
+PASS broodlings begin underground before emerging into collision
+PASS mother summons thirty-two underground broodlings
+PASS two waves accumulate sixty-four broodlings
+PASS dense swarm has a bounded sixty-four-spider limit
+PASS dead spider bar disappears
+PASS mother death removes every summoned broodling
+PASS scorpion accepts tail sweep
+PASS tail windup causes no damage
+PASS windup enters explicit animated strike
+PASS boss sweep deals three actual damage versus spiders one
+PASS boss HP readout is numeric above bar
+PASS boss has stronger endurance, shorter recovery and faster pursuit
+PASS boss accepts strengthened venom volley
+PASS five venom stingers inherit boss damage and projectile speed
+PASS boss venom swept collision applies two real damage
+PASS boss tail needle deals two actual damage per strike
+PASS boss death hides HUD immediately
+REVISION_RESULT checks=45 failed=0
+WARNING: 2 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+   at: cleanup (core/object/object.cpp:2536)
