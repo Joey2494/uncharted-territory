@@ -7,7 +7,8 @@ var _battle_position := Vector3.ZERO
 var _presented := false
 
 func _ready() -> void:
-	_host._boss.died.connect(_keep_boss_remains)
+	if is_instance_valid(_host._boss):
+		_host._boss.died.connect(_keep_boss_remains)
 
 func _keep_boss_remains() -> void:
 	var boss: Node3D = _host._boss
@@ -35,6 +36,8 @@ func present() -> void:
 	if _presented or _host.get_run_state() != _host.RunState.VICTORY:
 		return
 	_presented = true
+	# 无 Boss 关卡在玩家抵达的出口举行结算，不指向不存在的战场遗体。
+	if _host._boss_name.is_empty(): _battle_position = _player.global_position
 	var layout: Node = _host.get_node("UILayer/ResponsiveLayout")
 	layout.process_mode = Node.PROCESS_MODE_DISABLED
 	# Disabled processing still permits already queued layout callbacks. Detach

@@ -31,7 +31,7 @@ func update_view(_playing: bool, paused: bool, guide: bool) -> void:
 	%BackpackButton.visible = paused
 	%Title.text = "探索指引" if guide else "探索已暂停"
 	%Body.text = (
-		"WASD / 方向键移动，J 攻击，K 发射能量弹，方向键加 Space 闪避。\n\n靠近道具或机关按 E，R 使用药剂，F 使用强化符文，G 激活守护，I 切换手炮，P 打开商城。战斗房完整入场后封门，清除守卫即可继续。\n\n生命耗尽可从入口重开。击败守门者后踏入出口即可通关，再从结算页前往第二关。新关卡会重新整备生命和道具。"
+		"WASD / 方向键移动，J 攻击，K 发射能量弹，方向键加 Space 闪避。\n\n靠近道具或机关按 E，R 使用药剂，F 使用强化符文，G 激活守护，I 切换手炮，P 打开商城。战斗房完整入场后封门，清除守卫即可继续。\n\n生命耗尽可从入口重开。达成关卡目标后踏入出口即可通关，再从结算页进入下一关。第三关需完成回流泄压并清除最终守卫。新关卡会重新整备生命和道具。"
 		if guide else "继续当前探索，或从入口重新开始。"
 	)
 	if _modal.visible:

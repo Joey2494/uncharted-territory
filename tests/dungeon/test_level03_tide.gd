@@ -14,6 +14,9 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	var unique := "%d-%d" % [OS.get_process_id(), Time.get_ticks_usec()]
+	preload("res://scripts/integration/player_profile.gd").override_path = "user://tide-profile-" + unique + ".cfg"
+	preload("res://scripts/integration/campaign_progress.gd").override_path = "user://tide-progress-" + unique + ".cfg"
 	if not ResourceLoader.exists(SCENE):
 		_check(false, "第三关必须有可独立启动的预览场景")
 		quit(1)
