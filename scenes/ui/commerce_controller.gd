@@ -284,8 +284,9 @@ func _update_shortcut() -> void:
 	if external_pause:
 		# Shared campaign HUD owns the top-right resources at every window width.
 		var top := 154.0
+		shortcut.offset_left = -24.0 - shop_button.get_combined_minimum_size().x
 		shortcut.offset_top = top
-		shortcut.offset_bottom = top + 76.0
+		shortcut.offset_bottom = top + shop_button.get_combined_minimum_size().y
 		wallet.hide() # The shared resource panel already displays the same wallet.
 	shortcut.visible = _playing and _enabled and view == View.NONE
 	shop_button.disabled = not _can_open()

@@ -1,14 +1,11 @@
 extends Control
 ## 第一关暂停与指引界面。关卡状态及 SceneTree 暂停由 Main 管理。
 
-signal pause_requested
-signal guide_requested
 signal resume_requested
 signal restart_requested
 signal shop_requested
 signal backpack_requested
 
-@onready var _corner: HBoxContainer = $Corner
 @onready var _modal: Control = $Modal
 @onready var _resume: Button = %ResumeButton
 @onready var _restart: Button = %RestartButton
@@ -16,8 +13,6 @@ signal backpack_requested
 
 
 func _ready() -> void:
-	$Corner/PauseButton.pressed.connect(func() -> void: pause_requested.emit())
-	$Corner/GuideButton.pressed.connect(func() -> void: guide_requested.emit())
 	_resume.pressed.connect(func() -> void: resume_requested.emit())
 	_restart.pressed.connect(func() -> void: restart_requested.emit())
 	%ShopButton.pressed.connect(func() -> void: shop_requested.emit())
@@ -25,13 +20,10 @@ func _ready() -> void:
 	$VersionFooter.text = str(ProjectSettings.get_setting("application/config/version", "")).strip_edges()
 	if $VersionFooter.text.is_empty():
 		$VersionFooter.text = "开发版"
-	get_viewport().size_changed.connect(_layout_corner)
-	_layout_corner()
 
 
 ## 显示可用入口，并仅在进入模态面板时将键盘焦点移到继续按钮。
-func update_view(playing: bool, paused: bool, guide: bool) -> void:
-	_corner.visible = playing
+func update_view(_playing: bool, paused: bool, guide: bool) -> void:
 	_modal.visible = paused or guide
 	_notice.hide()
 	_restart.visible = paused
@@ -50,9 +42,3 @@ func update_view(playing: bool, paused: bool, guide: bool) -> void:
 func show_error(message: String) -> void:
 	_notice.text = message
 	_notice.show()
-
-
-func _layout_corner() -> void:
-	_corner.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	_corner.position = Vector2(24, 184)
-	_corner.size = _corner.get_combined_minimum_size()

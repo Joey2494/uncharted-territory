@@ -1,0 +1,29 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scenes/characters/knight_visual.gd" id="1_visual"]
+[ext_resource type="PackedScene" path="res://assets/characters/kaykit/Knight.glb" id="2_model"]
+[ext_resource type="AnimationLibrary" path="res://assets/characters/kaykit/animations/locomotion.tres" id="3_locomotion"]
+[ext_resource type="AnimationLibrary" path="res://assets/characters/kaykit/animations/melee.tres" id="4_melee"]
+[ext_resource type="AnimationLibrary" path="res://assets/characters/kaykit/animations/dodge.tres" id="5_dodge"]
+[ext_resource type="AnimationLibrary" path="res://assets/characters/kaykit/animations/hit.tres" id="6_hit"]
+[ext_resource type="AnimationLibrary" path="res://assets/characters/kaykit/animations/magic.tres" id="7_magic"]
+[ext_resource type="AnimationLibrary" path="res://assets/characters/kaykit/animations/death.tres" id="8_death"]
+
+[node name="Model" type="Node3D"]
+rotation = Vector3(0, 3.14159265, 0)
+scale = Vector3(0.71, 0.71, 0.71)
+script = ExtResource("1_visual")
+
+[node name="Knight" parent="." instance=ExtResource("2_model")]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+root_node = NodePath("../Knight")
+callback_mode_process = 0
+libraries = {
+&"death": ExtResource("8_death"),
+&"dodge": ExtResource("5_dodge"),
+&"hit": ExtResource("6_hit"),
+&"locomotion": ExtResource("3_locomotion"),
+&"magic": ExtResource("7_magic"),
+&"melee": ExtResource("4_melee")
+}

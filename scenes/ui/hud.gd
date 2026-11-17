@@ -19,6 +19,7 @@ signal use_potion_requested
 signal use_rune_requested
 signal skip_tutorial_requested
 signal hotbar_selection_requested(index: int, item_id: StringName)
+signal combat_action_requested(action: StringName, pressed: bool)
 
 @export_range(1, 99, 1) var total_rooms: int = 3
 
@@ -58,6 +59,7 @@ var _message_remaining: float = 0.0
 var _combat_player: CharacterBody3D
 var _combat_attack: Node3D
 var _combat_skill: Node3D
+var _character_skill_id: String = ""
 var _tutorial_mode: bool = false
 var _tutorial_message: String = ""
 var _tutorial_move_directions: Array[String] = []
@@ -78,6 +80,12 @@ func _ready() -> void:
 	update_room_label(0)
 	%TutorialPrompt.skip_requested.connect(func() -> void: skip_tutorial_requested.emit())
 	hotbar.selection_requested.connect(func(index: int, item_id: StringName) -> void: hotbar_selection_requested.emit(index, item_id))
+	melee_cooldown.activation_requested.connect(func() -> void: combat_action_requested.emit(&"attack", true))
+	skill_cooldown.activation_requested.connect(func() -> void: combat_action_requested.emit(&"skill_1", true))
+	dodge_cooldown.activation_requested.connect(func() -> void: combat_action_requested.emit(&"dodge", true))
+	%CharacterCooldown.activation_started.connect(func() -> void: combat_action_requested.emit(&"character_skill", true))
+	%CharacterCooldown.activation_ended.connect(func() -> void: combat_action_requested.emit(&"character_skill", false))
+	%CharacterCooldown.hide()
 	item_message.hide()
 	update_pickup_prompt("")
 
@@ -94,6 +102,7 @@ func _process(delta: float) -> void:
 
 func bind_combat_actions(player: CharacterBody3D) -> void:
 	_combat_player = player
+	_character_skill_id = ""
 	_combat_attack = player.get_node_or_null("MeleeAttack") if is_instance_valid(player) else null
 	_combat_skill = player.get_node_or_null("EnergyShock") if is_instance_valid(player) else null
 	_update_combat_cooldowns()
@@ -103,14 +112,24 @@ func _update_combat_cooldowns() -> void:
 	if not is_instance_valid(_combat_player) or not is_instance_valid(_combat_attack) or not is_instance_valid(_combat_skill):
 		for indicator in [melee_cooldown, dodge_cooldown, skill_cooldown]:
 			indicator.update_cooldown(0.0, 1.0, "未就绪")
+		%CharacterCooldown.hide()
+		_character_skill_id = ""
 		return
 	var ability := _combat_player.get_node("CharacterAbility")
-	%CharacterCooldown.visible = _combat_player.character_id != "knight"
+	if _character_skill_id != _combat_player.character_id:
+		var configuration: Dictionary = ability.get_configuration()
+		%CharacterCooldown.configure_ability(configuration.name,configuration.icon,configuration.description)
+		%CharacterCooldown.visible = configuration.active
+		_character_skill_id = _combat_player.character_id
 	var ability_block := ""
 	if _combat_player.is_dead() or not _combat_player.can_process():
 		ability_block = "暂不可用"
 	elif _combat_player.is_dodging():
 		ability_block = "闪避中"
+	elif ability.is_casting():
+		ability_block = "施法中"
+	elif ability.is_guarding():
+		ability_block = "举盾中"
 	elif ability.remaining > 0.0:
 		ability_block = "持续 %.1fs" % ability.remaining
 	%CharacterCooldown.update_cooldown(ability.get_cooldown_remaining(), ability.get_cooldown_duration(), ability_block)
@@ -137,6 +156,7 @@ func _update_combat_cooldowns() -> void:
 	var firearm := _combat_player.get_node("Firearm")
 	var ranged: bool = inventory.equipped_weapon == inventory.FIREARM
 	melee_cooldown.get_node("%AbilityName").text = "手炮" if ranged else "普通攻击"
+	melee_cooldown.icon.texture = preload("res://assets/ui/gun.svg") if ranged else EQUIPPED_WEAPON_ICON
 	if ranged and inventory.ammo <= 0 and attack_block.is_empty(): attack_block = "弹药不足"
 	melee_cooldown.update_cooldown(firearm.get_cooldown_remaining() if ranged else _combat_attack.get_cooldown_remaining(), firearm.cooldown if ranged else attack_duration, attack_block)
 	var dodge_block := blocked

@@ -70,6 +70,9 @@ func get_state() -> State:
 func get_core_count(location: StringName) -> int:
 	return _cores.get(location, 0)
 
+func is_maintenance_connected() -> bool:
+	return _maintenance_latched
+
 func get_objective() -> String:
 	match _state:
 		State.SUPPLY_OFF:

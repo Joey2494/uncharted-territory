@@ -1,0 +1,276 @@
+[gd_scene load_steps=13 format=3]
+[ext_resource type="Script" path="res://scenes/ui/character_select.gd" id="1"]
+[ext_resource type="Theme" path="res://scenes/ui/menu_theme.tres" id="2"]
+[ext_resource type="Script" path="res://scenes/ui/character_preview.gd" id="3"]
+[ext_resource type="Shader" path="res://assets/shaders/stone_surface.gdshader" id="4_slate"]
+[ext_resource type="PackedScene" path="res://scenes/ui/character_stat.tscn" id="5_stat"]
+[ext_resource type="Texture2D" path="res://assets/ui/weapon_equipped.svg" id="6_attack"]
+[ext_resource type="Texture2D" path="res://assets/ui/guard_rune.svg" id="7_defense"]
+[ext_resource type="Texture2D" path="res://assets/ui/heart.svg" id="8_health"]
+[ext_resource type="Texture2D" path="res://assets/ui/dodge.svg" id="9_speed"]
+[ext_resource type="Script" path="res://scenes/ui/character_skill_tooltip.gd" id="10_tooltip"]
+
+[sub_resource type="ShaderMaterial" id="DossierSlate"]
+shader = ExtResource("4_slate")
+shader_parameter/stone_shadow = Color(0.045,0.053,0.058,1)
+shader_parameter/stone_light = Color(0.105,0.114,0.117,1)
+shader_parameter/grain_strength = 0.012
+
+[sub_resource type="StyleBoxFlat" id="DossierFrame"]
+content_margin_left = 20.0
+content_margin_right = 20.0
+content_margin_top = 14.0
+content_margin_bottom = 14.0
+draw_center = false
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.43,0.36,0.23,1)
+shadow_color = Color(0,0,0,0.42)
+shadow_size = 12
+shadow_offset = Vector2(0,6)
+[node name="CharacterSelect" type="Control"]
+process_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2")
+script = ExtResource("1")
+[node name="Backdrop" type="ColorRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.025,0.032,0.04,1)
+[node name="Preview" type="SubViewportContainer" parent="."]
+mouse_filter = 2
+stretch = true
+[node name="PreviewViewport" type="SubViewport" parent="Preview"]
+unique_name_in_owner = true
+own_world_3d = true
+size = Vector2i(800,600)
+msaa_3d = 2
+render_target_update_mode = 0
+[node name="PreviewStage" type="Node3D" parent="Preview/PreviewViewport"]
+unique_name_in_owner = true
+script = ExtResource("3")
+[node name="Card" type="Control" parent="."]
+unique_name_in_owner = true
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+[node name="InfoStone" type="ColorRect" parent="Card"]
+unique_name_in_owner = true
+mouse_filter = 2
+material = SubResource("DossierSlate")
+
+[node name="InfoCard" type="PanelContainer" parent="Card"]
+unique_name_in_owner = true
+mouse_filter = 2
+theme_override_styles/panel = SubResource("DossierFrame")
+
+[node name="Body" type="VBoxContainer" parent="Card/InfoCard"]
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="InfoScroll" type="ScrollContainer" parent="Card/InfoCard/Body"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0,100)
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+follow_focus = true
+
+[node name="InfoPanel" type="VBoxContainer" parent="Card/InfoCard/Body/InfoScroll"]
+unique_name_in_owner = true
+mouse_filter = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="PanelAccent" type="ColorRect" parent="Card"]
+unique_name_in_owner = true
+mouse_filter = 2
+color = Color(0.68,0.55,0.32,1)
+
+[node name="Eyebrow" type="Label" parent="Card"]
+unique_name_in_owner = true
+mouse_filter = 2
+theme_override_font_sizes/font_size = 12
+text = "U N C H A R T E D   /   E X P L O R E R"
+theme_override_colors/font_color = Color(0.72,0.60,0.36,1)
+
+[node name="TitleLabel" type="Label" parent="Card"]
+unique_name_in_owner = true
+mouse_filter = 2
+theme_override_font_sizes/font_size = 30
+text = "探索者档案"
+
+
+[node name="CharacterName" type="Label" parent="Card/InfoCard/Body/InfoScroll/InfoPanel"]
+unique_name_in_owner = true
+mouse_filter = 2
+theme_override_font_sizes/font_size = 32
+text = ""
+autowrap_mode = 2
+theme_override_colors/font_color = Color(0.94,0.82,0.58,1)
+
+[node name="RoleLabel" type="Label" parent="Card/InfoCard/Body/InfoScroll/InfoPanel"]
+unique_name_in_owner = true
+mouse_filter = 2
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.77,0.66,0.45,1)
+autowrap_mode = 2
+
+[node name="StatsGrid" type="GridContainer" parent="Card/InfoCard/Body/InfoScroll/InfoPanel"]
+unique_name_in_owner = true
+mouse_filter = 2
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+columns = 2
+
+[node name="AttackStat" parent="Card/InfoCard/Body/InfoScroll/InfoPanel/StatsGrid" instance=ExtResource("5_stat")]
+unique_name_in_owner = true
+tooltip_text = "初始近战单次命中伤害，不含强化符文与技能加成。"
+attribute_label = "攻击力"
+icon = ExtResource("6_attack")
+accent = Color(0.72,0.57,0.33,1)
+
+[node name="HealthStat" parent="Card/InfoCard/Body/InfoScroll/InfoPanel/StatsGrid" instance=ExtResource("5_stat")]
+unique_name_in_owner = true
+tooltip_text = "角色初始最大生命值。"
+attribute_label = "生命值"
+icon = ExtResource("8_health")
+accent = Color(0.66,0.36,0.32,1)
+
+[node name="ShieldStat" parent="Card/InfoCard/Body/InfoScroll/InfoPanel/StatsGrid" instance=ExtResource("5_stat")]
+unique_name_in_owner = true
+tooltip_text = "角色初始护盾值，受到伤害时优先消耗护盾。"
+attribute_label = "护盾值"
+icon = ExtResource("7_defense")
+accent = Color(0.43,0.61,0.68,1)
+
+[node name="SpeedStat" parent="Card/InfoCard/Body/InfoScroll/InfoPanel/StatsGrid" instance=ExtResource("5_stat")]
+unique_name_in_owner = true
+tooltip_text = "常规移动速度，以米/秒显示。"
+attribute_label = "移动速度"
+icon = ExtResource("9_speed")
+unit = "m/s"
+precision = 1
+accent = Color(0.64,0.66,0.43,1)
+
+[node name="Divider" type="HSeparator" parent="Card/InfoCard/Body/InfoScroll/InfoPanel"]
+
+[node name="SkillTitleRow" type="HBoxContainer" parent="Card/InfoCard/Body/InfoScroll/InfoPanel"]
+unique_name_in_owner = true
+mouse_filter = 0
+theme_override_constants/separation = 10
+script = ExtResource("10_tooltip")
+
+[node name="SkillIcon" type="TextureRect" parent="Card/InfoCard/Body/InfoScroll/InfoPanel/SkillTitleRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(28,28)
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+self_modulate = Color(0.74,0.62,0.39,1)
+mouse_filter = 2
+
+[node name="SkillDetails" type="VBoxContainer" parent="Card/InfoCard/Body/InfoScroll/InfoPanel/SkillTitleRow"]
+mouse_filter = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="SkillName" type="Label" parent="Card/InfoCard/Body/InfoScroll/InfoPanel/SkillTitleRow/SkillDetails"]
+unique_name_in_owner = true
+mouse_filter = 2
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.83,0.76,0.61,1)
+
+[node name="SkillCooldown" type="Label" parent="Card/InfoCard/Body/InfoScroll/InfoPanel/SkillTitleRow/SkillDetails"]
+unique_name_in_owner = true
+mouse_filter = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.63,0.65,0.61,1)
+
+[node name="SummaryDivider" type="HSeparator" parent="Card/InfoCard/Body/InfoScroll/InfoPanel"]
+
+[node name="CharacterDescription" type="Label" parent="Card/InfoCard/Body/InfoScroll/InfoPanel"]
+unique_name_in_owner = true
+mouse_filter = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.70,0.70,0.65,1)
+autowrap_mode = 2
+
+[node name="FooterDivider" type="HSeparator" parent="Card/InfoCard/Body"]
+
+[node name="UnlockButton" type="Button" parent="Card/InfoCard/Body"]
+unique_name_in_owner = true
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 16
+text = "解锁角色"
+
+[node name="StatusLabel" type="Label" parent="Card/InfoCard/Body"]
+unique_name_in_owner = true
+mouse_filter = 2
+theme_override_font_sizes/font_size = 13
+text = ""
+autowrap_mode = 2
+
+[node name="ActionLabel" type="Label" parent="Card"]
+unique_name_in_owner = true
+mouse_filter = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.62,0.65,0.64,1)
+horizontal_alignment = 1
+
+[node name="Actions" type="Control" parent="Card"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="BackButton" type="Button" parent="Card/Actions"]
+unique_name_in_owner = true
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 16
+text = "返回主菜单"
+
+[node name="ConfirmButton" type="Button" parent="Card/Actions"]
+unique_name_in_owner = true
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 16
+text = "确认角色，选择关卡"
+
+[node name="Navigation" type="HBoxContainer" parent="Card/Actions"]
+unique_name_in_owner = true
+theme_override_constants/separation = 16
+
+[node name="PreviousButton" type="Button" parent="Card/Actions/Navigation"]
+unique_name_in_owner = true
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 22
+text = "←"
+custom_minimum_size = Vector2(52,44)
+
+[node name="CharacterCounter" type="Label" parent="Card/Actions/Navigation"]
+unique_name_in_owner = true
+mouse_filter = 2
+theme_override_font_sizes/font_size = 18
+text = "01 / 04"
+horizontal_alignment = 1
+size_flags_horizontal = 3
+
+[node name="NextButton" type="Button" parent="Card/Actions/Navigation"]
+unique_name_in_owner = true
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 22
+text = "→"
+custom_minimum_size = Vector2(52,44)
+
+[node name="HintLabel" type="Label" parent="Card/Actions"]
+unique_name_in_owner = true
+mouse_filter = 2
+theme_override_font_sizes/font_size = 12
+text = "未知之境 · 探索者档案"
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.62,0.60,0.53,1)

@@ -72,6 +72,9 @@ func get_remaining_enemies(room_id: StringName) -> int:
 		if not entry.dead: count += 1
 	return count
 
+func get_total_enemies(room_id: StringName) -> int:
+	return _rooms[room_id].enemies.size() if _rooms.has(room_id) else 0
+
 ## 本局死亡或结算后单向停止；重新开始必须创建新控制器，避免复用旧信号。
 func stop_run() -> void:
 	_stopped = true

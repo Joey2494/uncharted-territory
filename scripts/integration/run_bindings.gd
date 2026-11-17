@@ -20,6 +20,7 @@ func _ready() -> void:
 	hud.main_menu_requested.connect(return_to_menu)
 	host.get_node("CommerceLayer").main_menu_requested.connect(return_to_menu)
 	hud.hotbar_selection_requested.connect(_use_hotbar)
+	hud.combat_action_requested.connect(_combat_action)
 	items.state_changed.connect(_refresh_inventory)
 	player.energy_changed.connect(hud.update_energy_bar)
 	hud.update_energy_bar(player.energy, player.max_energy)
@@ -56,20 +57,27 @@ func _use_hotbar(_index: int, key: StringName) -> void:
 	if id >= 0:
 		items.try_use_item(id)
 
+func _combat_action(action: StringName, pressed: bool) -> void:
+	if host._run_state != host.RunState.PLAYING or not player.can_process() or player.is_dead():
+		return
+	match action:
+		&"attack":
+			if pressed: player.get_node("MeleeAttack").try_attack()
+		&"skill_1":
+			if pressed: player.get_node("EnergyShock").try_cast()
+		&"dodge":
+			if pressed: player.try_dodge()
+		&"character_skill":
+			var ability := player.get_node("CharacterAbility")
+			if pressed:
+				ability.try_activate()
+			elif ability.is_guarding():
+				ability._finish_guard(true)
+
 func _process(_delta: float) -> void:
 	hud.update_energy_bar(player.energy, player.max_energy)
-	var ability := player.get_node("CharacterAbility")
-	var card := hud.get_node("%CharacterCooldown")
-	card.visible = player.character_id != "knight"
-	card.get_node("%AbilityName").text = player.CATALOG.definition(player.character_id).skill
-	var state := ""
-	if player.is_dead() or not player.can_process(): state = "暂不可用"
-	elif player.is_dodging(): state = "闪避中"
-	elif ability.remaining > 0: state = "持续 %.1fs" % ability.remaining
-	card.update_cooldown(ability.get_cooldown_remaining(), ability.get_cooldown_duration(), state)
 	hud.hp_state_label.tooltip_text = "角色护盾 %d/%d" % [player.shield, player.max_shield]
 	hud.hp_state_label.text = hud.hp_state_label.text.split(" · ")[0] + " · 盾%d" % player.shield
 
 func return_to_menu() -> void:
-	host._transition_queued = true
-	host._change_scene.call_deferred("res://Main.tscn")
+	host.request_scene_change("res://Main.tscn")

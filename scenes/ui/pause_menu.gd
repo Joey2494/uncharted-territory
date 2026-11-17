@@ -7,6 +7,7 @@ signal resume_requested
 signal restart_requested
 signal main_menu_requested
 signal settings_requested
+signal controls_guide_requested
 
 
 func _ready() -> void:
@@ -16,6 +17,7 @@ func _ready() -> void:
 	%RestartButton.pressed.connect(func() -> void: restart_requested.emit())
 	%MainMenuButton.pressed.connect(func() -> void: main_menu_requested.emit())
 	%SettingsButton.pressed.connect(func() -> void: settings_requested.emit())
+	%ControlsGuideButton.pressed.connect(func() -> void: controls_guide_requested.emit())
 
 
 func show_pause(elapsed_seconds: float) -> void:

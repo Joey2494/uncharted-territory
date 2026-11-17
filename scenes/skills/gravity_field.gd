@@ -1,5 +1,7 @@
 extends Node3D
 ## Frozen with the dungeon. All damage/control uses radius AND wall visibility.
+const CATALOG = preload("res://scenes/player/character_catalog.gd")
+var lifetime: float = CATALOG.definition("astra").ability.field_duration
 var source: CharacterBody3D
 var elapsed: float = 0.0
 var _ticks: int = 0
@@ -32,11 +34,11 @@ func _physics_process(delta: float) -> void:
 			direction.y = 0.0
 			if direction.length() > 0.4:
 				target.move_and_collide(direction.normalized() * minf(delta * 0.6, direction.length()))
-	while _ticks < mini(int(elapsed), 3):
+	while _ticks < mini(int(elapsed), int(lifetime)):
 		_ticks += 1
 		for target in targets:
 			target.take_damage(source.get_attack_damage(1))
-	if elapsed >= 3.0:
+	if elapsed >= lifetime:
 		for target in targets:
 			target.take_damage(source.get_attack_damage(2))
 		queue_free()
