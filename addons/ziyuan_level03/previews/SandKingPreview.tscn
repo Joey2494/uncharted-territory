@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3]
+[ext_resource type="PackedScene" path="res://addons/ziyuan_level03/previews/PreviewStage.tscn" id="1"]
+[ext_resource type="PackedScene" path="res://addons/ziyuan_level03/models/SandKingModel.tscn" id="2"]
+[node name="SandKingPreview" instance=ExtResource("1")]
+creature_index = 4
+display_name = "沙缚王"
+base_distance = 9.7
+focus_height = 1.95
+[node name="Camera3D" parent="." index="6"]
+position = Vector3(2.4, 3.65, -9.299999999999999)
+rotation = Vector3(-0.28, 2.72159, 0)
+[node name="Model" parent="Slot" instance=ExtResource("2")]

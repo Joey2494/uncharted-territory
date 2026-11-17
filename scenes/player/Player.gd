@@ -36,6 +36,19 @@ var _energy_recovery_delay: float = 0.0
 
 var hp: int
 var _dead: bool = false
+var web_remaining := 0.0
+var _web_visual: Node3D
+
+func apply_web(duration: float) -> void:
+	if _dead: return
+	web_remaining = maxf(web_remaining, minf(duration, 2.5))
+	feedback.emit("蛛丝缠绕 · 移速降低，仍可翻滚")
+	if not is_instance_valid(_web_visual):
+		_web_visual = preload("res://scenes/skills/web_wrap.gd").new()
+		add_child(_web_visual)
+	else:
+		_web_visual.form()
+
 var _invulnerability_remaining: float = 0.0
 var _dodge_remaining: float = 0.0
 var _dodge_invulnerability_remaining: float = 0.0
@@ -83,6 +96,8 @@ func _physics_process(delta: float) -> void:
 		energy = minf(max_energy, energy + energy_regeneration * recovery_delta)
 		energy_changed.emit(energy, max_energy)
 	_invulnerability_remaining = maxf(0.0, _invulnerability_remaining - delta)
+	web_remaining = maxf(0, web_remaining - delta)
+	if is_instance_valid(_web_visual): _web_visual.visible = web_remaining > 0 and not _dead
 	_dodge_invulnerability_remaining = maxf(0.0, _dodge_invulnerability_remaining - delta)
 	_dodge_cooldown_remaining = maxf(0.0, _dodge_cooldown_remaining - delta)
 	if _dodge_cooldown_remaining < 0.000001:
@@ -97,6 +112,7 @@ func _physics_process(delta: float) -> void:
 		velocity.z = _dodge_direction.z * _dodge_speed * step_fraction
 	else:
 		var speed := move_speed if Input.is_action_pressed("sprint") else minf(walk_speed, move_speed)
+		if web_remaining > 0: speed *= 0.35
 		if $CharacterAbility.is_guarding():
 			speed *= 0.5
 		velocity.x = move_direction.x * speed
@@ -249,5 +265,7 @@ func take_damage(amount: int) -> bool:
 		_attack.attack_enabled = false
 		_attack.cancel_attack()
 		_attack.process_mode = Node.PROCESS_MODE_DISABLED
+		web_remaining = 0
+		if is_instance_valid(_web_visual): _web_visual.hide()
 		died.emit()
 	return true

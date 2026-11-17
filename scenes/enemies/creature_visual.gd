@@ -48,14 +48,15 @@ func _process(delta: float) -> void:
 	if creature_kind == 2:
 		_strike = maxf(0.0, _strike - delta * 3.8)
 		var tail := get_node("Tail") as Node3D
-		tail.rotation.x = lerpf(tail.rotation.x, (-0.16 if windup else 0.0) + _strike * 0.28, minf(1.0, delta * 8))
-		tail.rotation.z = sin(_time * 0.8) * 0.035
+		if not is_instance_valid(_actor):
+			tail.rotation.x = sin(_time) * 0.12
 		for side in [-1.0, 1.0]:
 			var claw := get_node("ClawL" if side < 0 else "ClawR") as Node3D
 			claw.rotation.x = lerpf(claw.rotation.x, (-0.32 if windup else 0.0) + _strike * 0.3, minf(1.0, delta * 10))
 			claw.get_node("Jaw").rotation.y = side * (0.15 + sin(_time * 1.7) * 0.06 + (0.14 if windup else 0.0))
 	else:
-		_body.rotation.x = lerpf(_body.rotation.x, -0.1 if windup else 0.0, minf(1.0, delta * 8))
+		_strike = maxf(0, _strike - delta * 5)
+		_body.rotation.x = lerpf(_body.rotation.x, (-0.22 if windup else 0.0) + _strike * 0.35, minf(1.0, delta * 16))
 
 
 func _on_death() -> void:

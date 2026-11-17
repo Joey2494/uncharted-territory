@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scenes/dungeon/level02/level02.gd" id="map"]
 [ext_resource type="Script" path="res://scenes/dungeon/level02/stone_region.gd" id="stone_region"]
 [ext_resource type="Script" path="res://scenes/dungeon/level02/stone_cover.gd" id="stone_cover"]
-[ext_resource type="Script" path="res://scenes/dungeon/level02/hub_guard.gd" id="hub_guard"]
+[ext_resource type="Script" path="res://scenes/enemies/spider_combat.gd" id="hub_guard"]
 [ext_resource type="PackedScene" path="res://scenes/dungeon/DungeonRegion.tscn" id="region"]
 [ext_resource type="PackedScene" path="res://scenes/dungeon/components/ProgressionGate.tscn" id="gate"]
 [ext_resource type="Script" path="res://scenes/dungeon/components/room_progress_controller.gd" id="progress"]
@@ -386,6 +386,8 @@ detection_range = 18.0
 lose_range = 24.0
 
 [node name="Relay1" parent="Enemies" instance=ExtResource("enemy")]
+attack_kind = 1
+max_hp = 5
 position = Vector3(24, 0.05, -29)
 target_path = NodePath("../../Player")
 detection_range = 18.0

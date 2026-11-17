@@ -1,0 +1,10 @@
+[gd_scene load_steps=4 format=3]
+[ext_resource type="Script" path="res://addons/ziyuan_level03/enemy.gd" id="1"]
+[ext_resource type="Script" path="res://addons/ziyuan_level03/visual.gd" id="2"]
+[ext_resource type="PackedScene" path="res://addons/ziyuan_level03/models/TombSwordModel.tscn" id="3"]
+[node name="TombSword" type="CharacterBody3D"]
+script = ExtResource("1")
+enemy_id = "tomb_sword"
+[node name="Visuals" type="Node3D" parent="."]
+script = ExtResource("2")
+[node name="Model" parent="Visuals" instance=ExtResource("3")]

@@ -4,6 +4,7 @@ signal restart_requested
 signal main_menu_requested
 signal level_select_requested
 signal next_level_requested
+signal settlement_retry_requested
 
 @export_range(1, 99, 1) var completed_rooms: int = 3
 
@@ -14,6 +15,7 @@ var _run_result: Dictionary = {}
 var _reveal: Tween
 var _layout_pending := false
 var offer_next_level := false
+var _retry: Button
 @onready var next_level_button: Button = %NextLevelButton
 
 
@@ -35,6 +37,12 @@ func _ready() -> void:
 	%LevelSelectButton.pressed.connect(func() -> void: level_select_requested.emit())
 	visibility_changed.connect(_focus_action)
 	resized.connect(_queue_layout)
+	# 结算存档失败时出现的重试按钮；默认隐藏，由布局引擎放入按钮行。
+	_retry = Button.new()
+	_retry.text = "重试保存通关金币"
+	_retry.visible = false
+	_retry.pressed.connect(func() -> void: settlement_retry_requested.emit())
+	$Center/Card/Padding/Content.add_child(_retry)
 	_build_rewards()
 	_refresh_result()
 	_queue_layout()
@@ -61,9 +69,13 @@ func show_progress_message(message: String) -> void:
 
 
 func _refresh_result() -> void:
+	var settlement_ok: bool = _run_result.get("settlement_ok", true)
+	if is_instance_valid(_retry):
+		_retry.visible = not settlement_ok and not _run_result.is_empty()
 	%ResultDetails.visible = not _run_result.is_empty()
 	if _run_result.is_empty():
 		summary_label.text = "本次探索已结束"
+		_queue_layout()
 		return
 	summary_label.text = "%s%s · 成功离开地牢" % [_run_result.get("boss_name", "最终Boss"), "已击败" if _run_result.get("boss_defeated", false) else "战斗结束"]
 	var seconds := floori(maxf(0.0, float(_run_result.get("elapsed_seconds", 0.0))))
@@ -71,12 +83,15 @@ func _refresh_result() -> void:
 	%ExplorationLabel.text = "探索区域：%d/%d" % [_run_result.get("rooms_visited", 0), _run_result.get("rooms_total", completed_rooms)]
 	%HealthLabel.text = "剩余生命：%d/%d" % [_run_result.get("player_hp", 0), _run_result.get("player_max_hp", 0)]
 	%PuzzleLabel.text = "%s：%s" % ["档案机关" if _run_result.get("level_id", 1) == 2 else "符文机关", "已解开" if _run_result.get("puzzle_solved", false) else "未解开"]
-	%RewardLabel.text = "密室奖励：%s" % ("已领取" if _run_result.get("reward_claimed", false) else "未领取")
+	%RewardLabel.text = ("通关结算：+%d 金币 · 已存入永久钱包" % _run_result.get("settled_gold", 0)) if settlement_ok else "金币保存失败，请检查存储权限"
+	_queue_layout()
 
 
 func _focus_action() -> void:
 	if is_node_ready() and is_visible_in_tree():
-		var target := next_level_button if next_level_button.visible and not next_level_button.disabled else restart_button
+		var target: Control = next_level_button if next_level_button.visible and not next_level_button.disabled else restart_button
+		if is_instance_valid(_retry) and _retry.visible:
+			target = _retry
 		target.grab_focus.call_deferred()
 
 
@@ -139,6 +154,8 @@ func _layout_result() -> void:
 	var buttons: Array[Button] = [%RestartButton, %LevelSelectButton, %MainMenuButton]
 	if offer_next_level:
 		buttons.push_front(next_level_button)
+	if is_instance_valid(_retry) and _retry.visible:
+		buttons.push_front(_retry)
 	var count := buttons.size()
 	var button_width := minf(210, (size.x - margin * 2 - 12 * (count - 1)) / count)
 	var start_x := size.x - margin - button_width * count - 12 * (count - 1)

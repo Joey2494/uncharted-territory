@@ -40,11 +40,14 @@ var _boss_defeated: bool = false
 var _boss_name: String = ""
 var _run_result: Dictionary = {}
 var _death_room_index: int = 0
+var _settlement_id := ""
+var _settled := false
 
 
 func _ready() -> void:
 	PROFILE.ensure_loaded()
-	_items.gold = PROFILE.coins
+	# 本局金币从 0 开始；只有通关结算时才写入永久钱包。
+	_items.gold = 0
 	if level_id == 2:
 		_start_screen.get_node("Center/Card/Padding/Content/Description").text = "第二关 · 导能遗迹\n击败灾厄巨蝎，从开启的出口离开。"
 		_start_screen.get_node("Center/Card/Padding/Content/Tagline").text = "循着金线，唤醒沉寂的遗迹。"
@@ -127,6 +130,7 @@ func _on_run_started() -> void:
 	if _player.character_id != _start_screen.selected_character_id:
 		request_scene_change("", {"character_id": _start_screen.selected_character_id, "start_run": true})
 		return
+	_settlement_id = "%d-%d" % [Time.get_unix_time_from_system() * 1000000, Time.get_ticks_usec()]
 	_run_state = RunState.PLAYING
 	MusicManager.play_level(level_id)
 	_elapsed_seconds = 0.0
@@ -183,6 +187,12 @@ func _on_exit_reached() -> void:
 	# Set the terminal state before any UI signals; death/exit cannot replace it.
 	_run_state = RunState.VICTORY
 	MusicManager.play_context(&"victory")
+	# 通关结算：只有这里把本局余额写入永久钱包，且同一局只结算一次。
+	var pending: int = _items.gold
+	_settled = PROFILE.settle_run(_settlement_id, pending)
+	if _settled:
+		_items.gold = 0
+		_items._publish_state()
 	_commerce.finish_run()
 	_run_result = {
 		"elapsed_seconds": _elapsed_seconds,
@@ -195,6 +205,8 @@ func _on_exit_reached() -> void:
 		"puzzle_solved": _rune_puzzle.is_solved() if _rune_puzzle != null else _dungeon.puzzle.get_state() >= _dungeon.puzzle.State.OPEN,
 		"reward_claimed": _rune_puzzle.is_reward_claimed() if _rune_puzzle != null else _dungeon.puzzle.get_state() == _dungeon.puzzle.State.CLAIMED,
 		"level_id": level_id,
+		"settled_gold": pending if _settled else 0,
+		"settlement_ok": _settled,
 	}
 	_player.velocity = Vector3.ZERO
 	_dungeon.stop_run()
@@ -203,6 +215,7 @@ func _on_exit_reached() -> void:
 	_refresh_overlay()
 	get_node("MenuNavigation").progress.complete(level_id)
 	_hud.show_win_screen(_run_result, LEVEL_PATHS.has(level_id + 1))
+	_hud.get_result_screen().settlement_retry_requested.connect(retry_settlement)
 
 
 func _on_boss_exiting() -> void:
@@ -216,7 +229,11 @@ func _on_player_died() -> void:
 	# Stop the run clock and reject victory immediately; keep the world processing
 	# while the already input-locked player completes Death_A.
 	_run_state = RunState.DYING
+	# 死亡、退出、重开都不保留本局金币。
+	_items.gold = 0
+	_items._publish_state()
 	_commerce.finish_run()
+	_boss_bar.hide()
 	_death_room_index = _dungeon.get_visited_count() - 1
 	_refresh_overlay()
 
@@ -387,3 +404,16 @@ func _change_scene(destination: String) -> void:
 		const MESSAGE := "无法载入关卡，请重试。"
 		get_node("MenuNavigation").restore_after_load_failure(destination, failed_request, MESSAGE)
 		push_error("%s %s" % [MESSAGE, error_string(error)])
+
+
+## 存档失败时可在胜利页重试结算；同一局不会重复入账。
+func retry_settlement() -> void:
+	if _run_state != RunState.VICTORY or _settled: return
+	var pending: int = _items.gold
+	_settled = PROFILE.settle_run(_settlement_id, pending)
+	if _settled:
+		_items.gold = 0
+		_items._publish_state()
+	_run_result["settlement_ok"] = _settled
+	_run_result["settled_gold"] = pending if _settled else 0
+	_hud.get_result_screen().set_run_result(_run_result)

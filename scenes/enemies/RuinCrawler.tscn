@@ -1,6 +1,6 @@
 [gd_scene load_steps=7 format=3]
 
-[ext_resource type="Script" path="res://scenes/enemies/MeleeEnemy.gd" id="1"]
+[ext_resource type="Script" path="res://scenes/enemies/spider_combat.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player/MeleeAttack.tscn" id="2"]
 [ext_resource type="Script" path="res://scenes/ui/hit_flash_3d.gd" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/ui/enemy_health_label_3d.tscn" id="4"]

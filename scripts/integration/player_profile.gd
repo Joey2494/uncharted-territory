@@ -5,6 +5,7 @@ static var _loaded_path := ""
 static var coins: int = 0
 static var unlocked: Array[String] = ["knight"]
 static var _selected_character: String = "knight"
+static var settled_runs: Array = []
 static var message := ""
 const PRICES := {"lan": 100, "iron": 150, "astra": 180}
 
@@ -15,11 +16,14 @@ static func ensure_loaded() -> void:
 	coins = 0
 	unlocked = ["knight"]
 	_selected_character = "knight"
+	settled_runs = []
 	message = ""
 	var config := ConfigFile.new()
 	if config.load(path) != OK: return
 	var saved: Variant = config.get_value("profile", "coins", 0)
 	if saved is int: coins = clampi(saved, 0, 100000000)
+	var settled: Variant = config.get_value("profile", "settled_runs", [])
+	if settled is Array: settled_runs = settled
 	var owned: Variant = config.get_value("profile", "characters", [])
 	if owned is Array:
 		for id in owned:
@@ -56,6 +60,7 @@ static func save() -> bool:
 	var config := ConfigFile.new()
 	config.load(_loaded_path)
 	config.set_value("profile", "coins", coins)
+	config.set_value("profile", "settled_runs", settled_runs)
 	config.set_value("profile", "characters", unlocked)
 	config.set_value("profile", "selected_character", get_selected_character())
 	var ok := config.save(_loaded_path) == OK
@@ -87,4 +92,18 @@ static func unlock_character(id: String) -> bool:
 		unlocked.erase(id)
 		return false
 	message = "角色已解锁，可选择进入游戏"
+	return true
+
+## 通关结算入账：同一局（run_id）只结算一次；保存失败回滚。
+static func settle_run(run_id: String, pending: int) -> bool:
+	ensure_loaded()
+	if run_id.is_empty() or pending < 0: return false
+	if run_id in settled_runs: return true
+	var previous := coins
+	coins = clampi(coins + pending, 0, 100000000)
+	settled_runs.append(run_id)
+	if not save():
+		coins = previous
+		settled_runs.erase(run_id)
+		return false
 	return true
