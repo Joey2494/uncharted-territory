@@ -304,7 +304,9 @@ func _create_stations() -> void:
 		station.level = self
 		station.position = entry[0]
 		$Stations.add_child(station)
-		_layout.box(station, Vector3(0, 0.38, 0), Vector3(1.25, 0.76, 0.9), Color("303b44"))
+		# 交互台是实体设施，网格和碰撞使用同一尺寸；灯仅为装饰。
+		var body: Node3D = _layout.box(station, Vector3(0, 0.38, 0), Vector3(1.25, 0.76, 0.9), Color("303b44"), true)
+		body.name = "Body"
 		var lamp: Node3D = _layout.box(station, Vector3(0, 0.8, 0), Vector3(0.66, 0.18, 0.5), Color("d5bb76"))
 		_station_lamps[id] = lamp
 		_layout.label(station, entry[1], Vector3(0, 1.55, 0), Color("fce9b5"))

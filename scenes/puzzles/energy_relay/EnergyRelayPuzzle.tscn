@@ -38,7 +38,7 @@ size = Vector3(0.12, 0.12, 7.76)
 
 [sub_resource type="BoxMesh" id="LinkageBracket"]
 material = SubResource("LinkageMaterial")
-size = Vector3(0.34, 1.66, 0.28)
+size = Vector3(0.34, 0.12, 0.28)
 
 [sub_resource type="BoxMesh" id="Direct"]
 size = Vector3(0.12, 0.055, 1.7)
@@ -54,24 +54,24 @@ size = Vector3(0.11, 0.055, 0.35)
 
 [sub_resource type="BoxMesh" id="NorthPartition"]
 material = SubResource("PartitionMaterial")
-size = Vector3(3.0, 1.6, 4.68)
+size = Vector3(3.0, 0.55, 4.68)
 
 [sub_resource type="BoxShape3D" id="NorthPartitionShape"]
-size = Vector3(3.0, 1.6, 4.68)
+size = Vector3(3.0, 0.55, 4.68)
 
 [sub_resource type="BoxMesh" id="CenterPartition"]
 material = SubResource("PartitionMaterial")
-size = Vector3(3.0, 1.6, 1.025)
+size = Vector3(3.0, 0.55, 1.025)
 
 [sub_resource type="BoxShape3D" id="CenterPartitionShape"]
-size = Vector3(3.0, 1.6, 1.025)
+size = Vector3(3.0, 0.55, 1.025)
 
 [sub_resource type="BoxMesh" id="SouthPartition"]
 material = SubResource("PartitionMaterial")
-size = Vector3(3.0, 1.6, 1.65)
+size = Vector3(3.0, 0.55, 1.65)
 
 [sub_resource type="BoxShape3D" id="SouthPartitionShape"]
-size = Vector3(3.0, 1.6, 1.65)
+size = Vector3(3.0, 0.55, 1.65)
 
 [node name="EnergyRelayPuzzle" type="Node3D"]
 script = ExtResource("puzzle")
@@ -84,7 +84,7 @@ position = Vector3(-4.15, 0, 4.15)
 scale = Vector3(1, 1, 0.7407407)
 
 [node name="NorthPartition" type="StaticBody3D" parent="." groups=["camera_occluders"]]
-position = Vector3(-4.15, 0.8, -4.74)
+position = Vector3(-4.15, 0.275, -4.74)
 collision_mask = 0
 
 [node name="Mesh" type="MeshInstance3D" parent="NorthPartition"]
@@ -94,7 +94,7 @@ mesh = SubResource("NorthPartition")
 shape = SubResource("NorthPartitionShape")
 
 [node name="CenterPartition" type="StaticBody3D" parent="." groups=["camera_occluders"]]
-position = Vector3(-4.15, 0.8, 2.155)
+position = Vector3(-4.15, 0.275, 2.155)
 collision_mask = 0
 
 [node name="Mesh" type="MeshInstance3D" parent="CenterPartition"]
@@ -104,7 +104,7 @@ mesh = SubResource("CenterPartition")
 shape = SubResource("CenterPartitionShape")
 
 [node name="SouthPartition" type="StaticBody3D" parent="." groups=["camera_occluders"]]
-position = Vector3(-4.15, 0.8, 6.475)
+position = Vector3(-4.15, 0.275, 6.475)
 collision_mask = 0
 
 [node name="Mesh" type="MeshInstance3D" parent="SouthPartition"]
@@ -239,18 +239,18 @@ mesh = SubResource("GateLead")
 [node name="Linkage" type="Node3D" parent="Circuit"]
 
 [node name="Crossbar" type="MeshInstance3D" parent="Circuit/Linkage"]
-position = Vector3(-2.24, 1.67, -4.95)
+position = Vector3(-2.24, 0.09, -4.95)
 rotation_degrees = Vector3(0, 20, 0)
 mesh = SubResource("LinkageCrossbar")
 
 [node name="ConductorBracket" type="MeshInstance3D" parent="Circuit/Linkage"]
-position = Vector3(1.42, 0.86, -6.27)
+position = Vector3(1.42, 0.09, -6.27)
 mesh = SubResource("LinkageBracket")
 
 [node name="WalkwayDrive" type="Node3D" parent="Circuit"]
 
 [node name="Shaft" type="MeshInstance3D" parent="Circuit/WalkwayDrive"]
-position = Vector3(-5.55, 0.23, 0.25)
+position = Vector3(-5.55, 0.09, 0.25)
 mesh = SubResource("LinkageShaft")
 
 [node name="LineState" type="Label3D" parent="Circuit"]

@@ -53,7 +53,7 @@ func _run() -> void:
 	quit(1 if failures else 0)
 
 func settle() -> void:
-	for index in 12:
+	for index in 36:
 		await physics_frame
 		await process_frame
 

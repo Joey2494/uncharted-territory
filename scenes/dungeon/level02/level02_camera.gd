@@ -22,6 +22,13 @@ var _framed_room: StringName
 var _framed_size := Vector2.ZERO
 var _ground_samples := PackedVector3Array()
 var _arena_distance := 18.0
+var _room_focus := Vector3.ZERO
+# 档案室两侧门槛使用滞回，防止一小步反复切换；出入过渡与战斗镜头分开。
+const ARCHIVE_EXIT_MARGIN := 0.7
+const TRANSITION_SECONDS := 0.45
+var _transition_remaining := 0.0
+var _transition_focus := Vector3.ZERO
+var _transition_distance := 18.0
 
 
 func _ready() -> void:
@@ -30,6 +37,7 @@ func _ready() -> void:
 
 
 func reset_follow() -> void:
+	_transition_remaining = 0.0
 	_view_basis = Basis(Vector3.RIGHT, -deg_to_rad(COMBAT_PITCH))
 	var room := _get_fixed_room()
 	if room == &"":
@@ -52,18 +60,25 @@ func set_safe_frame(frame: Rect2) -> void:
 
 func _process(delta: float) -> void:
 	var room := _get_fixed_room()
+	if room != _framed_room and (room == ARCHIVE or _framed_room == ARCHIVE):
+		_transition_focus = _focus
+		_transition_distance = _distance
+		_transition_remaining = TRANSITION_SECONDS
 	if room == &"":
 		_clear_fixed_frame()
 		_ground_samples.clear()
 		super._process(delta)
+		_apply_archive_transition(delta)
 		return
 	if room != _framed_room or _framed_size != get_viewport().get_visible_rect().size:
 		_frame_battle(room)
+	_focus = _room_focus
 	var actors := _get_actors()
 	# 房间中心保持稳定；仅当真实角色轮廓越过固定构图时扩展视距。
 	# 不再为“可能站在每个角落的巨蝎”同时预留四份体积。
 	var required := maxf(_arena_distance, _required_distance(actors, _focus))
 	_distance = maxf(required, lerpf(_distance, required, 1.0-exp(-zoom_speed*delta)))
+	_apply_archive_transition(delta)
 	_apply_view()
 	_update_labels(actors)
 	# 同时检视战斗地面，挡住预警的墙体也可淡出，即使后方没有角色。
@@ -81,9 +96,12 @@ func _get_combat_room() -> StringName:
 
 ## 档案室本身没有战斗；若存在有效封场，战斗构图始终优先。
 func is_puzzle_framed() -> bool:
-	return is_instance_valid(_target) and is_instance_valid(_archive) \
-		and get_parent().is_run_active() and _get_combat_room() == &"" \
-		and _archive.contains_point(_target.global_position)
+	if not is_instance_valid(_target) or not is_instance_valid(_archive) \
+		or not get_parent().is_run_active() or _get_combat_room() != &"":
+		return false
+	var bounds: Rect2 = _archive.get_world_bounds()
+	if _framed_room == ARCHIVE: bounds = bounds.grow(ARCHIVE_EXIT_MARGIN)
+	return bounds.has_point(Vector2(_target.global_position.x, _target.global_position.z))
 
 
 func _get_fixed_room() -> StringName:
@@ -113,6 +131,7 @@ func _frame_battle(room: StringName) -> void:
 			points.append(Vector3(x, region.global_position.y + height, z))
 	var center := bounds.get_center()
 	_focus = Vector3(center.x, region.global_position.y + height * 0.33, center.y)
+	_room_focus = _focus
 	_arena_distance = _fit_points(points, _focus) + 0.35
 	_distance = maxf(_arena_distance, _required_distance(_get_actors(), _focus))
 	var changed := _framed_room != room
@@ -129,3 +148,13 @@ func _frame_battle(room: StringName) -> void:
 	_apply_view()
 	if changed:
 		framing_mode_changed.emit()
+
+
+## 用固定时长缓入缓出，完成后精确落到房间构图；显式 reset_follow 仍即时复位。
+func _apply_archive_transition(delta: float) -> void:
+	if _transition_remaining <= 0.0: return
+	_transition_remaining = maxf(0.0, _transition_remaining-delta)
+	var weight := smoothstep(0.0, 1.0, 1.0-_transition_remaining/TRANSITION_SECONDS)
+	_focus = _transition_focus.lerp(_focus, weight)
+	_distance = lerpf(_transition_distance, _distance, weight)
+	_apply_view()

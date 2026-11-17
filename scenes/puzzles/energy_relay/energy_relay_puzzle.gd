@@ -313,7 +313,10 @@ func _refresh_devices() -> void:
 	for wire in [$Circuit/ReceiverLead, $Circuit/MovableLink, $Circuit/GateLead]:
 		wire.material_override = repaired_flow
 	$Circuit/MovableLink.rotation_degrees.y = 0.0 if _maintenance_latched else 53.0
-	$Circuit/Linkage.position.x = 0.0 if _maintenance_latched else -0.24
+	# 贴地传动线用颜色表示接通，不再横移一根悬空的长连杆。
+	$Circuit/Linkage/Crossbar.material_override = _flow_material if _maintenance_latched else _dark_material
+	$Circuit/Linkage/ConductorBracket.material_override = _flow_material if _maintenance_latched else _dark_material
+	$Circuit/Linkage.position.x = 0.0
 	$Circuit/WalkwayDrive.position.z = 0.0 if _maintenance_latched else -0.24
 	$PassageLabels/BridgeState.text = "临时桥"
 	$PassageLabels/WalkwayState.text = "机械步道"

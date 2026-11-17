@@ -30,6 +30,8 @@ func _ready() -> void:
 func set_display(text: String, lit: bool) -> void:
 	_label.text = short_caption if not short_caption.is_empty() else text
 	_material.albedo_color = accent if lit else accent.darkened(0.68)
+	if control_id == &"lever" and not short_caption.is_empty():
+		_signal_mesh.rotation_degrees.z = 35.0 if lit else -35.0
 
 ## 只替换装饰网格与标签，基座碰撞、位置、可达半径均保持原状。
 func _configure_archive_visual() -> void:
@@ -48,6 +50,16 @@ func _configure_archive_visual() -> void:
 		_signal_mesh.mesh = handle
 		_signal_mesh.rotation_degrees = Vector3(0, 0, -35)
 		_signal_mesh.position.y = 1.2
+		# 短柄配握球，传动部分留在地面，避免把跨房间管线读成超长手柄。
+		var grip := MeshInstance3D.new()
+		grip.name = "Grip"
+		var ball := SphereMesh.new()
+		ball.radius = 0.17
+		ball.height = 0.34
+		grip.mesh = ball
+		grip.material_override = _material
+		grip.position.y = 0.45
+		_signal_mesh.add_child(grip)
 	elif control_id == &"bridge":
 		var socket := BoxMesh.new()
 		socket.size = Vector3(0.9, 0.18, 0.6)
