@@ -94,6 +94,7 @@ show_percentage = false
 
 [node name="ReferenceMarker" type="ColorRect" parent="Content/Meter"]
 unique_name_in_owner = true
+visible = false
 offset_right = 2.0
 offset_bottom = 8.0
 mouse_filter = 2
@@ -101,5 +102,6 @@ color = Color(0.91,0.88,0.78,0.80)
 
 [node name="ComparisonLabel" type="Label" parent="Content"]
 unique_name_in_owner = true
+visible = false
 mouse_filter = 2
 theme_override_font_sizes/font_size = 11

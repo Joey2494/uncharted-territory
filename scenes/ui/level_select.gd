@@ -52,7 +52,7 @@ func refresh_progress() -> void:
 		button.set_level_state(i + 1, unlocked, _progress.has_played(level.id) or _progress.is_completed(level.id))
 		if _progress.is_completed(level.id):
 			completed += 1
-	status_label.text = _progress.message if not _progress.message.is_empty() else "已通关 %d/%d · 进度自动保存" % [completed, _levels.size()]
+	status_label.text = _progress.message if not _progress.message.is_empty() else "测试版全关卡开放 · 已通关 %d/%d" % [completed, _levels.size()]
 	_focus_action()
 
 

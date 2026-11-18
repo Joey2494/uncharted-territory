@@ -38,6 +38,14 @@ var hp: int
 var _dead: bool = false
 var web_remaining := 0.0
 var _web_visual: Node3D
+var _sand_slow_remaining := 0.0
+var _sand_slow_factor := 1.0
+
+func apply_level03_slow(duration: float, factor: float) -> void:
+	if _dead or not can_process() or duration <= 0: return
+	_sand_slow_remaining = maxf(_sand_slow_remaining, duration)
+	_sand_slow_factor = clampf(factor, 0.25, 1.0)
+	feedback.emit("沙咒迟缓 · 仍可翻滚脱离危险区域")
 
 func apply_web(duration: float) -> void:
 	if _dead: return
@@ -97,6 +105,7 @@ func _physics_process(delta: float) -> void:
 		energy_changed.emit(energy, max_energy)
 	_invulnerability_remaining = maxf(0.0, _invulnerability_remaining - delta)
 	web_remaining = maxf(0, web_remaining - delta)
+	_sand_slow_remaining = maxf(0, _sand_slow_remaining - delta)
 	if is_instance_valid(_web_visual): _web_visual.visible = web_remaining > 0 and not _dead
 	_dodge_invulnerability_remaining = maxf(0.0, _dodge_invulnerability_remaining - delta)
 	_dodge_cooldown_remaining = maxf(0.0, _dodge_cooldown_remaining - delta)
@@ -113,6 +122,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		var speed := move_speed if Input.is_action_pressed("sprint") else minf(walk_speed, move_speed)
 		if web_remaining > 0: speed *= 0.35
+		if _sand_slow_remaining > 0: speed *= _sand_slow_factor
 		if $CharacterAbility.is_guarding():
 			speed *= 0.5
 		velocity.x = move_direction.x * speed
@@ -212,7 +222,16 @@ func get_attack_damage(base_damage: int) -> int:
 	return _items.get_attack_damage(base_damage)
 
 func get_spell_cost() -> float:
-	return 8.0 if character_id == "astra" else 10.0
+	return 5.0
+
+func restore_energy(amount: float, menu: Node = null) -> float:
+	var menu_use: bool = is_instance_valid(menu) and menu.is_in_group("commerce_controllers") and menu.has_method("allows_inventory_action") and menu.allows_inventory_action(_items, false)
+	if _dead or (not can_process() and not menu_use) or amount <= 0.0: return 0.0
+	var restored := minf(amount, max_energy - energy)
+	if restored > 0.0:
+		energy += restored
+		energy_changed.emit(energy, max_energy)
+	return restored
 
 func spend_energy(amount: float) -> bool:
 	if _dead or not can_process() or amount < 0.0 or energy + 0.000001 < amount:
@@ -222,10 +241,10 @@ func spend_energy(amount: float) -> bool:
 	energy_changed.emit(energy, max_energy)
 	return true
 
-func take_direct_damage(amount: int, source_position: Vector3) -> bool:
+func take_direct_damage(amount: int, source_position: Vector3, attack_id: String = "", blockable: bool = true) -> bool:
 	if _dead or not can_process() or amount <= 0 or is_invulnerable():
 		return false
-	if $CharacterAbility.block_direct_hit(source_position):
+	if blockable and $CharacterAbility.block_direct_hit(source_position, attack_id):
 		return false
 	return take_damage(amount)
 

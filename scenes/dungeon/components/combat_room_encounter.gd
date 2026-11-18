@@ -46,6 +46,7 @@ func configure(player: CharacterBody3D, region: Node3D, controller: Node, room_i
 	for enemy in enemies:
 		if not _controller.register_enemy(_room_id, enemy):
 			return false
+		enemy.set_meta("combat_room_key", "%s:%s" % [_controller.get_instance_id(), _room_id])
 	if not _controller.seal_enemy_roster(_room_id):
 		return false
 	_gates = required_gates
@@ -107,6 +108,9 @@ func _on_room_completed(room_id: StringName) -> void:
 	if room_id != _room_id or _stopped or _completed:
 		return
 	_completed = true
+	var ability := _player.get_node_or_null("CharacterAbility")
+	if ability != null:
+		ability.complete_combat_room("%s:%s" % [_controller.get_instance_id(), _room_id])
 	if _active:
 		for gate in _gates:
 			if is_instance_valid(gate):

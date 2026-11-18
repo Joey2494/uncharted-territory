@@ -6,7 +6,6 @@ const PROFILE = preload("res://scripts/integration/player_profile.gd")
 const RANGES = preload("res://scenes/ui/character_stat_ranges.gd")
 var OUT := OS.get_environment("GODOT_TEST_OUTPUT_DIR") if not OS.get_environment("GODOT_TEST_OUTPUT_DIR").is_empty() else ProjectSettings.globalize_path("user://verification")
 const SCALES := {"Attack":2.0,"Health":6.0,"Shield":2.0,"Speed":6.0}
-const BASELINE := {"Attack":1.0,"Health":5.0,"Shield":0.0,"Speed":5.0}
 var selector: Control
 var failures := 0
 var checks := 0
@@ -38,12 +37,9 @@ func run() -> void:
 			var card: Control = selector.get_node("%"+attribute+"Stat")
 			var bar: ProgressBar = card.get_node("%ComparisonBar")
 			check(is_equal_approx(bar.value,actual[attribute]) and is_equal_approx(bar.max_value,SCALES[attribute]) and bar.min_value == 0.0 and not bar.show_percentage, id+": "+attribute+" bar uses raw game units on its stable independent scale")
-			check(is_equal_approx(card.reference_value,BASELINE[attribute]), id+": "+attribute+" reference remains Knight while browsing")
-		if id == "iron":
-			check(selector.get_node("%HealthStat").get_node("%ComparisonLabel").text == "较旅人 +1" and selector.get_node("%ShieldStat").get_node("%ComparisonLabel").text == "较旅人 +2" and selector.get_node("%SpeedStat").get_node("%ComparisonLabel").text == "较旅人 −0.4", "Iron shows its exact HP, shield and speed differences")
+			check(not card.get_node("%ComparisonLabel").visible and card.get_node("%ComparisonLabel").text.is_empty() and not card.get_node("%ReferenceMarker").visible and not card.tooltip_text.contains("旅人"), id+": "+attribute+" shows only this character's actual attributes")
 		if id == "knight":
-			check(selector.get_node("%ShieldStat").get_node("%ComparisonBar").value == 0.0, "zero shield remains an empty bar")
-		check(selector.get_node("%AttackStat").get_node("%ComparisonLabel").text == "与旅人相同", id+": equal actual attack is shown honestly")
+			check(selector.get_node("%ShieldStat").get_node("%ComparisonBar").value == 2.0, "Knight displays the approved two starting shields")
 		actor.free()
 		await verify_layout(id, Vector2i(1280,720))
 		if "--capture" in OS.get_cmdline_user_args(): await capture(id+"-1280x720")
@@ -96,10 +92,8 @@ func verify_layout(id: String, dimensions: Vector2i) -> void:
 		fits = fits and viewport.encloses(card.get_global_rect())
 		var value: Label = card.get_node("%Value")
 		fits = fits and card.get_global_rect().encloses(value.get_global_rect())
-		for name in ["AttributeLabel","DisplayRange","Meter","ComparisonLabel"]:
+		for name in ["AttributeLabel","DisplayRange","Meter"]:
 			fits = fits and card.get_global_rect().grow(1).encloses(card.get_node("%"+name).get_global_rect())
-		var meter: Control = card.get_node("%Meter")
-		fits = fits and meter.get_global_rect().grow(1).encloses(card.get_node("%ReferenceMarker").get_global_rect())
 	check(fits, "%s %dx%d: all four stat cards and values visible without scrolling" % [id,dimensions.x,dimensions.y])
 	check(not scroll.get_h_scroll_bar().visible, "%s %dx%d: no horizontal overflow" % [id,dimensions.x,dimensions.y])
 	check(selector.get_node("%InfoCard").get_global_rect().end.y <= selector.get_node("%BackButton").get_global_rect().position.y, "%s %dx%d: information does not overlap bottom actions" % [id,dimensions.x,dimensions.y])

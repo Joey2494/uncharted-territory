@@ -18,8 +18,8 @@ func host() -> Node:
 	await frames()
 	return n
 func run() -> void:
-	Profile.override_path = "res://tests/revision_profile.cfg"
-	Campaign.override_path = "res://tests/revision_campaign.cfg"
+	Profile.override_path = "res://.godot/revision_profile.cfg"
+	Campaign.override_path = "res://.godot/revision_campaign.cfg"
 	Profile.ensure_loaded()
 	Profile.coins = 100
 	Profile.settled_runs = []
@@ -92,6 +92,7 @@ func run() -> void:
 	for hazard in world.get_tree().get_nodes_in_group("creature_hazards"):
 		if world.is_ancestor_of(hazard): hazard.queue_free()
 	await frames(2)
+	player.shield = 0 # Isolate HP damage from the approved starting shield.
 	var hp: int = player.hp
 	var silk := Shot.new()
 	world.add_child(silk)

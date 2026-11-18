@@ -6,8 +6,6 @@ const EnemyScene = preload("res://scenes/enemies/MeleeEnemy.tscn")
 const ColossusScene = preload("res://scenes/bosses/RuinColossus.tscn")
 const SentinelScene = preload("res://scenes/enemies/RuinSentinel.tscn")
 const Coins = preload("res://scenes/items/coin_pickup.gd")
-const Profile = preload("res://scripts/integration/player_profile.gd")
-const Progress = preload("res://scripts/integration/campaign_progress.gd")
 
 var passed := 0
 var failed := 0
@@ -18,10 +16,13 @@ var observed := {}
 
 
 func _initialize() -> void:
-	# 使用独立存档，覆盖真实的跨局钱包行为且不写入玩家档案。
-	var run_id := str(OS.get_process_id()) + "-" + str(Time.get_ticks_usec())
-	Profile.override_path = "user://regression-profile-" + run_id + ".cfg"
-	Progress.override_path = "user://regression-progress-" + run_id + ".cfg"
+	var profile = preload("res://scripts/integration/player_profile.gd")
+	profile.override_path = "res://.godot/fixture_week9_tests.cfg"
+	if FileAccess.file_exists(profile.override_path): DirAccess.remove_absolute(profile.override_path)
+	profile.ensure_loaded()
+	profile.set_coins(430)
+	for character in ["lan", "iron", "astra"]: profile.unlock_character(character)
+
 	_run.call_deferred()
 
 
@@ -62,6 +63,7 @@ func setup_world() -> void:
 	player.name = "Player"
 	player.position = Vector3(0, 0.05, 0)
 	world.add_child(player)
+	player.shield = 0 # Isolate legacy HP-damage tests from character starting shields.
 	inventory = player.get_node("ItemInventory")
 	await frames(3)
 
@@ -88,7 +90,7 @@ func _run() -> void:
 
 
 func test_catalog_and_transactions() -> void:
-	check(Catalog.get_products().size() == 5, "five configured products")
+	check(Catalog.get_products().size() == 6, "six configured products including energy potion")
 	check(Catalog.get_item(999).is_empty(), "unknown product rejected")
 	var product := Catalog.get_item(0)
 	product.price = -100
@@ -316,28 +318,35 @@ func test_first_level_rewards() -> void:
 func test_sentinel() -> void:
 	var sentinel: CharacterBody3D = SentinelScene.instantiate()
 	sentinel.name = "Sentinel"
+	sentinel.attack_kind = 0 # Exercise the silk variant; the campaign sentinel now uses brood attacks.
 	sentinel.position = Vector3(0, 0.05, -5)
 	world.add_child(sentinel)
 	await frames(2)
-	check(sentinel._charging and sentinel._warning.visible, "sentinel telegraphs before shooting")
-	check(player.hp == player.max_hp, "sentinel warning causes no damage")
-	var remaining: float = sentinel._shot_remaining
+	check(not sentinel._charging and not sentinel._warning.visible, "silk hunter fires directly without the retired aiming telegraph")
+	check(not sentinel.get_node("MeleeAttack").attack_enabled, "silk hunter disables inherited melee")
+	var remaining: float = sentinel._cooldown
 	world.process_mode = Node.PROCESS_MODE_DISABLED
 	await frames(5)
-	check(is_equal_approx(remaining, sentinel._shot_remaining), "paused telegraph timer stays frozen")
+	check(is_equal_approx(remaining, sentinel._cooldown), "paused silk cooldown stays frozen")
 	world.process_mode = Node.PROCESS_MODE_INHERIT
-	sentinel.take_damage(1)
-	await frames(2)
-	check(not sentinel._charging, "sentinel damage interrupts charge")
-	await frames(110)
-	check(player.hp < player.max_hp, "sentinel ranged projectile damages player")
+	await frames(80)
+	check(player.hp < player.max_hp and player.web_remaining > 0, "silk hunter projectile damages and webs player")
 	sentinel.take_damage(99)
 	await frames(2)
-	check(get_nodes_in_group("enemy_projectiles").is_empty(), "sentinel death cancels live projectiles")
+	check(sentinel.is_dead(), "silk hunter death stops its combat")
+	for hazard in get_nodes_in_group("creature_hazards"): hazard.queue_free()
 	sentinel.queue_free()
 	player.hp = player.max_hp
 	player._invulnerability_remaining = 0
+	player.web_remaining = 0
 	await frames()
+
+
+func advance_boss_strike(boss: Node, windup: float) -> void:
+	boss._physics_process(windup + 0.01)
+	for i in 22:
+		if boss.state != boss.State.STRIKE: break
+		boss._tick_tail_strike(0.02)
 
 
 func test_colossus() -> void:
@@ -351,11 +360,11 @@ func test_colossus() -> void:
 	check(boss.state == boss.State.WINDUP and boss._disc.visible, "shockwave has visible warning")
 	check(player.hp == player.max_hp, "shockwave has no early damage")
 	check(not boss.begin_attack(boss.Attack.ENERGY), "cannot replace committed attack")
-	boss._physics_process(boss.shock_windup + 0.01)
-	check(player.hp == player.max_hp - 2, "shockwave damages once inside radius")
+	advance_boss_strike(boss, boss.shock_windup)
+	check(player.hp == player.max_hp - 3, "shockwave damages once inside radius")
 	check(boss.state == boss.State.RECOVER, "shockwave exposes recovery window")
 	boss._physics_process(0.05)
-	check(player.hp == player.max_hp - 2, "recovery does not repeat damage")
+	check(player.hp == player.max_hp - 3, "recovery does not repeat damage")
 	check(boss.take_damage(2) and boss.hp == boss.max_hp - 2, "boss vulnerable during recovery")
 	boss.state = boss.State.CHASE
 	player.hp = player.max_hp
@@ -363,7 +372,7 @@ func test_colossus() -> void:
 	var wall := make_wall(Vector3(0, 1, -1.5), Vector3(4, 2, 0.3))
 	await frames()
 	boss.begin_attack(boss.Attack.SHOCKWAVE)
-	boss._physics_process(boss.shock_windup + 0.01)
+	advance_boss_strike(boss, boss.shock_windup)
 	check(player.hp == player.max_hp, "shockwave cannot damage through wall")
 	wall.queue_free()
 	await frames()
@@ -371,33 +380,35 @@ func test_colossus() -> void:
 	boss.begin_attack(boss.Attack.SHOCKWAVE)
 	player.global_position = Vector3(10, 0.05, 0)
 	await frames()
-	boss._physics_process(boss.shock_windup + 0.01)
+	advance_boss_strike(boss, boss.shock_windup)
 	check(player.hp == player.max_hp, "escaping warning avoids shockwave")
 	player.global_position = Vector3(0, 0.05, 0)
 	await frames()
 	boss.state = boss.State.CHASE
 	check(boss.begin_attack(boss.Attack.ENERGY), "energy attack begins")
-	boss._physics_process(boss.energy_windup + 0.01)
-	var bolts := get_nodes_in_group("enemy_projectiles")
-	check(bolts.size() == 3, "energy attack emits three projectiles")
+	advance_boss_strike(boss, boss.energy_windup)
+	var bolts := get_nodes_in_group("creature_hazards").filter(func(node: Node) -> bool: return node.get_script() == preload("res://scenes/skills/creature_projectile.gd") and node.kind == 2)
+	check(bolts.size() == 5, "energy attack emits five venom projectiles")
 	for bolt in bolts:
 		check(bolt.collision_mask == 3 and not bolt.is_in_group("player_projectiles"), "hostile projectile faction mask")
 		bolt.queue_free()
 	await frames()
 	boss.state = boss.State.CHASE
+	player.max_hp = 20 # Survive all three two-damage strikes to verify each hit.
+	player.hp = player.max_hp
 	check(boss.begin_attack(boss.Attack.COMBO), "combo begins")
 	observed["combo"] = 0
 	boss.attack_resolved.connect(func(kind: int, _index: int) -> void:
 		if kind == boss.Attack.COMBO: observed["combo"] += 1)
 	player._invulnerability_remaining = 0
 	for i in range(3):
-		boss._physics_process(boss.combo_windup + 0.01)
+		advance_boss_strike(boss, boss.combo_windup)
 		player._invulnerability_remaining = 0
 	check(observed.combo == 3 and boss.state == boss.State.RECOVER, "combo resolves three telegraphed strikes then recovery")
-	check(player.hp == player.max_hp - 3, "combo strike damage applies per distinct hit")
+	check(player.hp == player.max_hp - 6, "combo strike damage applies per distinct hit")
 	boss.state = boss.State.CHASE
 	boss.begin_attack(boss.Attack.ENERGY)
-	boss._physics_process(boss.energy_windup + 0.01)
+	advance_boss_strike(boss, boss.energy_windup)
 	boss.state = boss.State.CHASE
 	boss.begin_attack(boss.Attack.SHOCKWAVE)
 	check(boss.take_damage(999), "boss death during warning")
@@ -410,7 +421,7 @@ func test_colossus() -> void:
 
 
 func test_main_lifecycle() -> void:
-	var main_scene := preload("res://Main.tscn")
+	var main_scene := load("res://Main.tscn")
 	var main: Node3D = main_scene.instantiate()
 	root.add_child(main)
 	world = main
@@ -437,14 +448,13 @@ func test_main_lifecycle() -> void:
 	await frames(5)
 	check(main._run_state == main.RunState.VICTORY, "entering unlocked exit still wins")
 	check(not inventory.try_purchase(0), "victory freezes economy")
-	var saved_gold: int = inventory.gold
 	await cleanup()
 	main = main_scene.instantiate()
 	root.add_child(main)
 	world = main
 	player = main.get_node("DungeonTest/Player")
 	inventory = player.get_node("ItemInventory")
-	check(inventory.gold == saved_gold and not inventory.guard_active and not inventory.owns_firearm, "fresh main restores wallet and resets temporary equipment")
+	check(inventory.gold == 0 and not inventory.guard_active and not inventory.owns_firearm, "fresh main resets run gold and equipment independently of the permanent wallet")
 	main._on_run_started()
 	inventory.add_item(1)
 	inventory.try_use_rune()

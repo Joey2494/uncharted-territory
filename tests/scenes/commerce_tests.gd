@@ -11,6 +11,13 @@ var player: CharacterBody3D
 
 
 func _initialize() -> void:
+	var profile = preload("res://scripts/integration/player_profile.gd")
+	profile.override_path = "res://.godot/fixture_commerce_tests.cfg"
+	if FileAccess.file_exists(profile.override_path): DirAccess.remove_absolute(profile.override_path)
+	profile.ensure_loaded()
+	profile.set_coins(430)
+	for character in ["lan", "iron", "astra"]: profile.unlock_character(character)
+
 	_run.call_deferred()
 
 
@@ -54,7 +61,7 @@ func click(control: Control) -> void:
 
 
 func new_main() -> void:
-	main = preload("res://Main.tscn").instantiate()
+	main = load("res://Main.tscn").instantiate()
 	root.add_child(main)
 	current_scene = main
 	ui = main.get_node("CommerceLayer")
@@ -79,11 +86,11 @@ func _run() -> void:
 	for product in Catalog.get_products():
 		check(Presenter.item_id(StringName(product.key)) == product.id, "catalog UI id roundtrip %s" % product.key)
 	await new_main()
-	check(not ui.shop.has_signal("backpack_requested") and not ui.backpack.has_signal("shop_requested"),
-		"independent pages have no cross-navigation signals")
-	check(ui.shop.get_node_or_null("Center/Card/Padding/Content/Tabs") == null
-		and ui.backpack.get_node_or_null("Center/Card/Padding/Content/Tabs") == null,
-		"shop and backpack have no combined navigation tabs")
+	check(ui.shop.has_signal("backpack_requested") and ui.backpack.has_signal("shop_requested"),
+		"Tang pages expose navigation signals")
+	check(ui.shop.has_node("%BackpackTab")
+		and ui.backpack.has_node("%ShopTab"),
+		"Tang page navigation tabs are preserved")
 	check(not ui.shortcut.visible, "shortcut hidden on title screen")
 	check(main.get_node("DungeonTest").get_node_or_null("Shop0") == null, "default level has no placeholder stands")
 	main.get_node("UILayer/StartScreen").shop_requested.emit()
@@ -140,7 +147,7 @@ func _run() -> void:
 	check(paused and not player.can_process(), "purchase never resumes physics")
 	check(ui.shop.get_node("%WalletLabel").text == "金币 190", "shop wallet refreshed after commit")
 	check(ui.wallet.text == "金币 190", "HUD wallet shares committed balance")
-	check(main._hud.potion_button.text.ends_with("×1"), "HUD inventory refreshes while paused")
+	check(main._hud.hotbar.get_slot_data(0).get("count", 0) == 1, "HUD inventory refreshes while paused")
 	check(not ui.shop.get_product_card(&"health_potion").get_buy_button().disabled, "refresh after transaction lock keeps buy enabled")
 	check(ui.shop.get_product_card(&"health_potion")._owned.text == "已持有 1", "owned count refreshed")
 	buy(1)
@@ -220,17 +227,17 @@ func _run() -> void:
 	check(not paused and ui.view == ui.View.NONE, "Esc from direct shop resumes game")
 	key(KEY_ESCAPE)
 	await frames()
-	check(main.get_node("UILayer/RunOverlay/Modal").visible and paused, "Esc opens team pause menu")
-	main.get_node("UILayer/RunOverlay/Modal/Center/Card/Content/ShopButton").pressed.emit()
+	check(ui.pause_menu.visible and paused, "Esc opens team pause menu")
+	ui.pause_menu.get_node("%ShopButton").pressed.emit()
 	await frames()
 	check(ui.shop.visible and ui.shop.get_node("%BackButton").text == "返回暂停菜单", "pause menu shop return target")
 	key(KEY_ESCAPE)
 	await frames()
-	check(main.get_node("UILayer/RunOverlay/Modal").visible and paused, "shop back preserves team pause menu")
+	check(ui.pause_menu.visible and paused, "shop back preserves team pause menu")
 	key(KEY_P)
 	check(ui.shop.visible and paused, "P from pause menu opens shop")
 	key(KEY_P)
-	check(main.get_node("UILayer/RunOverlay/Modal").visible and paused, "P shop close preserves pause")
+	check(ui.pause_menu.visible and paused, "P shop close preserves pause")
 	main._resume_playing()
 	await frames()
 	check(not paused and ui.view == ui.View.NONE, "resume restores gameplay")
@@ -248,12 +255,12 @@ func _run() -> void:
 	main._on_run_started()
 	inventory.add_gold(10)
 	main.set_paused(true)
-	main.get_node("UILayer/RunOverlay/Modal/Center/Card/Content/RestartButton").pressed.emit()
+	ui.pause_menu.get_node("%RestartButton").pressed.emit()
 	await frames(12)
 	main = current_scene
 	ui = main.get_node("CommerceLayer")
 	inventory = main.get_node("DungeonTest/Player/ItemInventory")
-	check(not paused and inventory.gold == 0 and ui.view == ui.View.NONE, "pause restart reloads without stale pause or funds")
+	check(not paused and inventory.gold == preload("res://scripts/integration/player_profile.gd").coins and ui.view == ui.View.NONE, "restart keeps persistent wallet and clears pause")
 	check(not ui.shortcut.visible and ui.view == ui.View.NONE, "restart clears all commerce panels")
 	await cleanup()
 	await new_main()
@@ -268,7 +275,7 @@ func _run() -> void:
 	check(paused, "cleanup test has open modal")
 	await cleanup()
 	await new_main()
-	check(inventory.gold == 0 and inventory.potion_count == 0, "new run has no stale shop inventory")
+	check(inventory.gold == preload("res://scripts/integration/player_profile.gd").coins and inventory.potion_count == 0, "new run retains wallet and resets consumables")
 	await cleanup()
 	var sandbox := preload("res://scenes/dungeon/LevelTwoCombat.tscn").instantiate()
 	root.add_child(sandbox)

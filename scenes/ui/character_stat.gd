@@ -1,5 +1,5 @@
 extends PanelContainer
-## Raw game values, an independent scale and a fixed Knight reference.
+## Raw game values on independent scales, without character comparisons.
 @export var attribute_label: String = ""
 @export var icon: Texture2D
 @export var unit: String = ""
@@ -28,11 +28,10 @@ func set_stat(value: float, maximum: float, reference: float) -> void:
 	%DisplayRange.text = "0–" + _format(maximum)
 	%ComparisonBar.max_value = maximum
 	%ComparisonBar.value = value
-	var difference := value-reference
-	%ComparisonLabel.text = "与旅人相同" if is_zero_approx(difference) else "较旅人 %s%s" % ["+" if difference > 0 else "−",_format(absf(difference))]
-	%ComparisonLabel.add_theme_color_override("font_color",Color(0.65,0.73,0.56) if difference > 0.0001 else Color(0.79,0.54,0.43) if difference < -0.0001 else Color(0.57,0.59,0.57))
-	tooltip_text = "%s\n显示区间：0–%s %s\n白线为初始旅人基准：%s %s" % [_description,_format(maximum),unit,_format(reference),unit]
-	_update_reference_marker()
+	%ComparisonLabel.text = ""
+	%ComparisonLabel.hide()
+	%ReferenceMarker.hide()
+	tooltip_text = "%s\n显示区间：0–%s %s" % [_description,_format(maximum),unit]
 
 func get_value() -> String:
 	return %Value.text

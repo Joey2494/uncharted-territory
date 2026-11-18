@@ -28,6 +28,7 @@ const FIREARM: int = Catalog.FIREARM
 @onready var _heal_pulse: MeshInstance3D = $HealPulse
 @onready var _buff_aura: MeshInstance3D = $BuffAura
 
+var energy_potion_count: int = 0
 var potion_count: int = 0
 var rune_count: int = 0
 var guard_count: int = 0
@@ -242,6 +243,7 @@ func _on_player_died() -> void:
 
 func get_count(item_id: int) -> int:
 	match item_id:
+		Catalog.ENERGY_POTION: return energy_potion_count
 		HEALTH_POTION: return potion_count
 		ATTACK_RUNE: return rune_count
 		GUARD_RUNE: return guard_count
@@ -252,7 +254,7 @@ func get_count(item_id: int) -> int:
 
 func get_snapshot() -> Dictionary:
 	return {
-		"gold": gold, "items": {HEALTH_POTION: potion_count, ATTACK_RUNE: rune_count,
+		"gold": gold, "items": {Catalog.ENERGY_POTION: energy_potion_count, HEALTH_POTION: potion_count, ATTACK_RUNE: rune_count,
 		GUARD_RUNE: guard_count, FIREARM: get_count(FIREARM), Catalog.AMMO: ammo},
 		"equipped_weapon": equipped_weapon, "ammo": ammo, "guard_active": guard_active,
 		"attack_multiplier": get_multiplier(), "buff_remaining": _buff_remaining,
@@ -293,6 +295,7 @@ func _can_receive(items: Dictionary, coins: int) -> bool:
 
 func _receive(items: Dictionary, coins: int) -> void:
 	gold += coins
+	energy_potion_count += int(items.get(Catalog.ENERGY_POTION, 0))
 	potion_count += int(items.get(HEALTH_POTION, 0))
 	rune_count += int(items.get(ATTACK_RUNE, 0))
 	guard_count += int(items.get(GUARD_RUNE, 0))
@@ -356,6 +359,7 @@ func try_purchase(item_id: int, quantity: int = 1, menu: Node = null) -> bool:
 
 func try_use_item(item_id: int, menu: Node = null) -> bool:
 	match item_id:
+		Catalog.ENERGY_POTION: return try_use_energy_potion(menu)
 		HEALTH_POTION: return try_use_potion(menu)
 		ATTACK_RUNE: return try_use_rune(menu)
 		GUARD_RUNE: return try_use_guard(menu)
@@ -407,4 +411,20 @@ func try_spend_ammo() -> bool:
 		return false
 	ammo -= 1
 	_publish_state()
+	return true
+
+func try_use_energy_potion(menu: Node = null) -> bool:
+	if (not _can_use() and not _can_use_menu(menu, false)) or _use_remaining > 0.0 or energy_potion_count <= 0:
+		return false
+	_publishing = true
+	var restored: float = _player.restore_energy(20.0, menu)
+	_publishing = false
+	if restored <= 0.0:
+		feedback.emit("能量已满，星蓝药剂未消耗")
+		return false
+	energy_potion_count -= 1
+	_use_remaining = use_cooldown
+	_publish_state()
+	item_used.emit(Catalog.ENERGY_POTION)
+	feedback.emit("使用星蓝药剂 · 恢复 %s 点能量" % str(restored).trim_suffix(".0"))
 	return true

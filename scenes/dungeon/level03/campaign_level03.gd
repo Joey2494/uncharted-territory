@@ -1,5 +1,5 @@
 extends "res://scenes/dungeon/level03/level03_preview.gd"
-## 潮汐白盒的正式战役适配层。机关、敌人和碰撞仍由原地图裁定。
+## 潮汐地图的正式战役适配层。机关与碰撞由原地图裁定，敌人使用字远模块。
 signal room_changed(room_name: String, visited_count: int)
 signal progression_feedback(message: String)
 signal exit_reached
@@ -52,9 +52,13 @@ func is_exit_open() -> bool: return _exit_gate.is_open()
 func is_exit_opening() -> bool: return not is_exit_open() and _progress.is_complete(&"G")
 func is_player_in_exit_area() -> bool: return _exit_recorded or _exit_area.overlaps_body(_player)
 
-## 无 Boss 关卡明确提供自己的通关权限；I 泄压、G 清场和实体出口均不可省略。
+## Boss 死亡不能替代机关与清场权限；I 泄压、G 清场和实体出口均不可省略。
 func is_completion_ready() -> bool:
 	return _storage == Storage.RELEASED and _progress.is_complete(&"G")
+
+## 宿主在 Boss 死亡时调用；仅按本关完整条件开放，不绕过执刑官或泄压。
+func unlock_exit() -> bool:
+	return is_completion_ready()
 
 func _finish(won: bool) -> void:
 	if _terminal or not _run_active: return
@@ -68,7 +72,7 @@ func _finish(won: bool) -> void:
 	exit_reached.emit()
 
 func get_completion_snapshot() -> Dictionary:
-	return {"completion_summary": "最终守卫已清除 · 成功抵达远航出口",
+	return {"completion_summary": "沙缚王与最终守卫已清除 · 成功抵达远航出口",
 		"puzzle_name": "潮汐机关", "reward_name": "溢流花园奖励",
 		"puzzle_solved": _storage == Storage.RELEASED, "reward_claimed": _inventory.has_claimed(REWARD_ID)}
 

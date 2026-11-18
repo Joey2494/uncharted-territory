@@ -3,13 +3,14 @@ extends RefCounted
 
 const Catalog = preload("res://data/item_catalog.gd")
 const ICONS := {
+	Catalog.ENERGY_POTION: preload("res://assets/ui/energy_potion.svg"),
 	Catalog.HEALTH_POTION: preload("res://assets/ui/potion.svg"),
 	Catalog.ATTACK_RUNE: preload("res://assets/ui/attack_rune.svg"),
 	Catalog.GUARD_RUNE: preload("res://assets/ui/guard_rune.svg"),
 	Catalog.FIREARM: preload("res://assets/ui/gun.svg"),
 	Catalog.AMMO: preload("res://assets/ui/ammo.svg"),
 }
-const TINTS := [Color("9dbd8a"), Color("d6b46b"), Color("80c9cb"), Color("d4d9df"), Color("dbab7d")]
+const TINTS := [Color("9dbd8a"), Color("d6b46b"), Color("80c9cb"), Color("d4d9df"), Color("dbab7d"), Color("74bbff")]
 
 
 static func item_id(key: StringName) -> int:
@@ -66,6 +67,9 @@ static func backpack(inventory: Node3D, menu: Node) -> Array[Dictionary]:
 			usable = false
 		elif product.id == Catalog.GUARD_RUNE and inventory.guard_active:
 			label = "守护已生效"
+			usable = false
+		elif product.id == Catalog.ENERGY_POTION and inventory.get_parent().energy >= inventory.get_parent().max_energy:
+			label = "能量已满"
 			usable = false
 		elif product.id == Catalog.HEALTH_POTION and inventory.get_parent().hp >= inventory.get_parent().max_hp:
 			label = "生命值已满"

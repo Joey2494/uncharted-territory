@@ -68,5 +68,6 @@ func try_fire() -> bool:
 	projectile.global_position = _player.global_position + Vector3.UP * 0.95
 	projectile.scale = Vector3.ONE * 0.4
 	projectile.launch(direction.normalized(), _player.get_attack_damage(damage), projectile_speed, max_distance, _player)
+	ability.record_attack()
 	fired.emit(projectile)
 	return true

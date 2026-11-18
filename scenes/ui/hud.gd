@@ -182,6 +182,11 @@ func _update_combat_cooldowns() -> void:
 		elif _combat_player.energy < _combat_player.get_spell_cost():
 			skill_block = "能量不足"
 	skill_cooldown.update_cooldown(_combat_skill.get_cooldown_remaining(), _combat_skill.get_cooldown_duration(), skill_block)
+	if ability.prepared_remaining > 0.0 and not _combat_player.is_dead():
+		skill_cooldown.icon.self_modulate = Color("ffe294")
+		skill_cooldown.get_node("%AbilityName").text = "法术 · 整备"
+	else:
+		skill_cooldown.get_node("%AbilityName").text = "法术攻击"
 
 
 func update_energy_bar(current: float, maximum: float) -> void:

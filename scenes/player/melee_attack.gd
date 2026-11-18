@@ -33,6 +33,7 @@ var _elapsed: float = 0.0
 var _cooldown_remaining: float = 0.0
 var _hit_targets: Dictionary = {}
 var _current_damage: int = 1
+var _attack_serial: int = 0
 
 
 func _ready() -> void:
@@ -67,6 +68,7 @@ func try_attack() -> bool:
 	if attacker.has_method("get_attack_damage"):
 		_current_damage = attacker.get_attack_damage(attack_damage)
 	_elapsed = 0.0
+	_attack_serial += 1
 	_cooldown_remaining = maxf(
 		attack_cooldown, windup_duration + active_duration + recovery_duration
 	)
@@ -158,7 +160,10 @@ func _detect_hits() -> void:
 		hit_detected.emit(receiver, _current_damage)
 		var accepted: bool = false
 		if is_instance_valid(receiver) and receiver.has_method("take_direct_damage"):
-			accepted = receiver.call("take_direct_damage", _current_damage, attacker.global_position) == true
+			if receiver.has_method("get_spell_cost"):
+				accepted = receiver.call("take_direct_damage", _current_damage, attacker.global_position, "%s:%s" % [get_instance_id(), _attack_serial]) == true
+			else:
+				accepted = receiver.call("take_direct_damage", _current_damage, attacker.global_position) == true
 		elif is_instance_valid(receiver) and receiver.has_method("take_damage"):
 			accepted = receiver.call("take_damage", _current_damage) == true
 		if accepted:

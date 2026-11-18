@@ -20,7 +20,7 @@ func run() -> void:
 	await real_victory_next()
 	if "--baseline" not in OS.get_cmdline_user_args():
 		for id in CHARACTERS.IDS: await replay_current(id)
-		await locked_next()
+		await next_without_completion()
 		for action in ["levels", "menu"]: await final_level(action)
 		await unsaved_unlock()
 		for action in ["next", "replay"]: await load_failure_retry(action)
@@ -63,7 +63,7 @@ func real_victory_next() -> void:
 	await create_timer(1.2).timeout
 	await go(Vector3(30,0.05,-45))
 	check(host.get_run_state() == host.RunState.VICTORY and host.get_node("MenuNavigation").progress.is_unlocked(&"level2"), "real first-level victory unlocks the next level before settlement")
-	check(not host.get_node("MenuNavigation").progress.is_unlocked(&"level3"), "real first-level victory cannot unlock the third level")
+	check(host.get_node("MenuNavigation").progress.is_unlocked(&"level3") and not host.get_node("MenuNavigation").progress.is_completed(&"level2"), "test build opens the third level without fabricating second-level completion")
 	var before := scene_changes
 	var profile_before := FileAccess.get_file_as_string(PROFILE.override_path)
 	var screen: Control = host._hud.get_result_screen()
@@ -101,20 +101,18 @@ func replay_current(role: String) -> void:
 	check(host._player.hp == host._player.max_hp and host._items.potion_count == 0 and host._elapsed_seconds < 2 and not host._boss_defeated, role+": new run resets health, supplies, timer and victory state")
 	check(host.get_node("MenuNavigation").progress.is_completed(StringName("level%d" % level)) and FileAccess.get_file_as_string(PROFILE.override_path) == profile_before, role+": Again retains completion, unlocks and persistent character data")
 
-func locked_next() -> void:
+func next_without_completion() -> void:
 	await boot("lan")
 	settle(false)
 	var before := scene_changes
 	var screen: Control = host._hud.get_result_screen()
 	for i in 8: screen.get_node("%NextLevelButton").pressed.emit()
-	await frames(3)
-	check(scene_changes == before and not host._transition_queued and not CHARACTERS.start_pending and host.get_run_state() == host.RunState.VICTORY, "locked Next stays on settlement without taking a transition lock")
-	check(screen.get_node("%ProgressLabel").text.contains("尚未解锁"), "locked Next provides a visible explanation")
-	screen.get_node("%LevelSelectButton").pressed.emit()
 	await frames(10)
 	host = current_scene
 	var nav: Node = host.get_node("MenuNavigation")
-	check(nav.level_select.visible and nav.level_select.get_level_button(&"level2").disabled, "locked Next retains a working return-to-levels action without bypassing unlocks")
+	check(scene_changes == before+1 and host.level_id == 2 and host.get_run_state() == host.RunState.PLAYING, "test build accepts Next once without previous completion")
+	check(nav.progress.completed.is_empty(), "unrestricted Next does not fabricate completed levels")
+	check_direct("lan")
 
 func final_level(action: String) -> void:
 	await boot("astra", 3)

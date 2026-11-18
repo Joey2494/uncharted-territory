@@ -2,6 +2,7 @@ extends Node3D
 ## 白盒平面几何。地板拼片的公共边保留通行，其余边生成实体围栏。
 
 const FONT = preload("res://scenes/ui/dungeon_font.tres")
+var _stone := preload("res://scenes/dungeon/level03/tide_stone_visuals.gd").new()
 
 const ROOMS := {
 	&"A": Rect2(-6, 19, 12, 10),
@@ -63,7 +64,8 @@ func build(rooms: Node3D) -> void:
 		room.bounds = rect
 		room.position = _point(rect.get_center(), 0)
 		rooms.add_child(room)
-		label(room, "%s  %s" % [id, ROOM_NAMES[id]], Vector3(0, 0.09, -rect.size.y * 0.5 + 1.3), Color("e7f0ed"), true)
+		var room_label := label(room, "%s  %s" % [id, ROOM_NAMES[id]], Vector3(-rect.size.x * 0.5 + 1.0, 0.09, -rect.size.y * 0.5 + 1.3), Color("e7f0ed"), true)
+		room_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		var color := Color("59616a") if id in [&"A", &"B", &"G", &"J"] else Color("5f594b")
 		if id in [&"E", &"F", &"H"]:
 			color = Color("475e60")
@@ -184,6 +186,12 @@ func box(parent: Node3D, location: Vector3, size: Vector3, color: Color, solid :
 	mesh.material = _material(color)
 	visual.mesh = mesh
 	node.add_child(visual)
+	if solid and (location.y < 0.0 or size.x < 0.4 or size.z < 0.4):
+		visual.hide()
+		_stone.dress(node, size, location.y < 0.0)
+	elif solid:
+		visual.hide()
+		_stone.dress_prop(node, size)
 	return node
 
 
