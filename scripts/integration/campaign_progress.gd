@@ -50,9 +50,8 @@ func _init(save_path: String = "user://campaign_progress.cfg") -> void:
 			_last_played = StringName(played.back())
 
 func is_unlocked(id: StringName) -> bool:
-	var index := LEVEL_IDS.find(String(id))
-	# 已游玩记录兼容旧档；新关卡必须有前一关完成记录。
-	return index == 0 or (index > 0 and (LEVEL_IDS[index - 1] in completed or String(id) in played))
+	# 测试版全部正式关卡开放；通关和最近游玩仍按真实行为记录。
+	return String(id) in LEVEL_IDS
 func has_played(id: StringName) -> bool: return String(id) in played
 func is_completed(id: StringName) -> bool: return String(id) in completed
 func recommended_level() -> StringName:

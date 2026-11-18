@@ -329,4 +329,3 @@ func _sector_mesh(radius: float, degrees: float) -> ImmediateMesh:
 
 func cancel_combat() -> void:
 	_warning.hide()
-

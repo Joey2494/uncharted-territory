@@ -56,6 +56,7 @@ func _ready() -> void:
 	collision_mask=3 # World + player; enemies avoid one another in the encounter layout.
 	add_to_group("camera_targets")
 	add_to_group("l3_enemies")
+	set_meta("is_elite",enemy_id in ["tomb_sword","chain_jailer"])
 	set_meta("camera_radius",2.0 if is_boss() else 1.2)
 	set_meta("camera_height",4.2 if is_boss() else 3.1)
 	var shape:=CollisionShape3D.new()

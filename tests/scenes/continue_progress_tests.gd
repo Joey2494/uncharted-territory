@@ -74,7 +74,7 @@ func test_records() -> void:
 	legacy.set_value("campaign","last_played","level2")
 	legacy.save(prefix+"unplayed.cfg")
 	var unplayed := PROGRESS.new(prefix+"unplayed.cfg")
-	check(unplayed.get_last_played_level()==&"level1" and not unplayed.is_unlocked(&"level2"),"unplayed recent metadata cannot bypass level unlocks")
+	check(unplayed.get_last_played_level()==&"level1" and not unplayed.has_played(&"level2") and unplayed.is_unlocked(&"level2"),"test access does not fabricate recent play from unplayed metadata")
 	unplayed.mark_played(0)
 	unplayed.mark_played(99)
 	check(unplayed.played==["level1"] and unplayed.get_last_played_level()==&"level1","invalid gameplay level IDs cannot corrupt recency or unlocks")

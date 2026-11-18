@@ -30,7 +30,7 @@ func test_session_state() -> void:
 	var path := prefix+"missing/campaign.cfg"
 	var original: RefCounted = PROGRESS.new(path)
 	var earlier: RefCounted = PROGRESS.new(path)
-	check(not original.is_unlocked(&"level2"), "new session keeps level two locked")
+	check(original.is_unlocked(&"level2") and original.completed.is_empty(), "new test session opens level two without fabricating completion")
 	original.mark_played(1)
 	original.complete(1)
 	check(not original.message.is_empty() and not FileAccess.file_exists(path), "fixture produces a real save failure")
@@ -42,7 +42,7 @@ func test_session_state() -> void:
 	check(restored.is_unlocked(&"level2") and restored.completed == ["level1"], "progress survives releasing every old progress wrapper")
 	check(restored.played == ["level1"] and restored.get_last_played_level() == &"level1" and not restored.message.is_empty(), "new instances retain recent play and the unsaved warning")
 	var separate: RefCounted = PROGRESS.new(prefix+"separate.cfg")
-	check(not separate.is_unlocked(&"level2") and separate.played.is_empty() and separate.message.is_empty(), "different save paths cannot inherit session unlocks")
+	check(separate.completed.is_empty() and separate.played.is_empty() and separate.message.is_empty(), "different save paths cannot inherit session progress")
 	check(DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(path.get_base_dir())) == OK, "test storage becomes writable")
 	var stale := ConfigFile.new()
 	stale.set_value("campaign", "completed", [])
@@ -71,7 +71,7 @@ func test_scene_flow() -> void:
 	PROFILE.unlock_character("lan")
 	await boot()
 	var nav: Node = host.get_node("MenuNavigation")
-	check(not nav.progress.is_unlocked(&"level2"), "fresh campaign does not bypass the level unlock rule")
+	check(nav.progress.is_unlocked(&"level2") and nav.progress.completed.is_empty(), "fresh test campaign opens level two without completion")
 	await select_level(&"level1")
 	check(host._player.character_id == "lan" and host.get_run_state() == host.RunState.PLAYING, "selected Lan starts the first level normally despite failed progress saving")
 	host._player._invulnerability_remaining = 1000.0

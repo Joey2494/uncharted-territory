@@ -4,7 +4,7 @@ const DOSSIERS = preload("res://scenes/ui/character_dossiers.gd")
 const PROFILE = preload("res://scripts/integration/player_profile.gd")
 const PROGRESS = preload("res://scripts/integration/campaign_progress.gd")
 const ICON_PATHS := {
-	"knight":"res://assets/ui/weapon_equipped.svg",
+	"knight":"res://assets/ui/energy.svg",
 	"lan":"res://assets/ui/skill_focus.svg",
 	"iron":"res://assets/ui/skill_counter.svg",
 	"astra":"res://assets/ui/skill_gravity.svg",
@@ -12,7 +12,7 @@ const ICON_PATHS := {
 var host: Node
 var checks := 0
 var failures := 0
-const OUT := "D:/My File/Game/Team Game/output/skill-consistency-2026-11-13"
+const OUT := "res://.godot/skill-consistency"
 
 class Target extends CharacterBody3D:
 	var damage := 0
@@ -26,6 +26,7 @@ class Target extends CharacterBody3D:
 
 func _initialize() -> void: run.call_deferred()
 func run() -> void:
+	DirAccess.make_dir_recursive_absolute(OUT)
 	PROFILE.override_path = test_save_path("skill-consistency-profile")
 	PROGRESS.override_path = test_save_path("skill-consistency-campaign")
 	PROFILE.set_coins(1000)
@@ -106,7 +107,10 @@ func check_behavior(id: String) -> void:
 	var feedback: Array[String] = []
 	ability.feedback.connect(func(text: String) -> void: feedback.append(text))
 	if id == "knight":
-		check(not ability.try_activate() and not host._hud.get_node("%CharacterCooldown").visible, "Knight has no invented independent active ability")
+		host._player.energy = host._player.max_energy
+		check(not ability.try_activate(), "Knight rejects supply at full energy")
+		host._player.energy -= 15.0
+		check(ability.try_activate() and is_equal_approx(host._player.energy,host._player.max_energy-5.0) and is_equal_approx(ability.cooldown_remaining,12.0) and host._hud.get_node("%CharacterCooldown").visible, "Knight supply restores ten energy and starts its twelve-second cooldown")
 		return
 	check(ability.try_activate() and feedback.back() == configuration.name, id+": activation feedback uses the same configured name")
 	var expected_duration: float = {"lan":4.0,"iron":1.2,"astra":0.25}[id]
@@ -128,7 +132,7 @@ func check_behavior(id: String) -> void:
 			check(not host._player.take_direct_damage(2,host._player.global_position+ability._guard_direction*2) and ability.blocked_hits == 1, "Iron still blocks front-facing direct hits")
 			check(host._player.take_direct_damage(1,host._player.global_position-ability._guard_direction*2), "Iron still takes rear hits, as the front-only description implies")
 			ability._finish_guard(true)
-			check(target.damage == 3 and target.controls == [0.5] and is_equal_approx(ability.get_cooldown_remaining(),10.0), "Iron keeps its block-enhanced counter and half-second precise control")
+			check(target.damage == 3 and target.controls == [0.5] and is_equal_approx(ability.get_cooldown_remaining(),8.0), "Iron keeps its block-enhanced counter, half-second precise control and approved eight-second cooldown")
 			target.queue_free()
 		"astra":
 			check(host._player.try_dodge() and not ability.is_casting() and is_equal_approx(ability.get_cooldown_remaining(),1.0), "Astra dodge still interrupts the cast")

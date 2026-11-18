@@ -228,7 +228,7 @@ func _check_restart() -> void:
 	player = level.get_node("Player")
 	await _settle()
 	_check(level.get_storage_state() == 0 and _blocked(&"BG") and not _blocked(&"BC"), "新局恢复低水位和闸门初态")
-	_check(level.get_node("Enemies").get_child_count() == 4 and not level.get_node("Progress").is_complete(&"C"), "新局刷新四个战斗房")
+	_check(level.get_node("Enemies").get_child_count() == 8 and not level.get_node("Progress").is_complete(&"C"), "新局刷新四个战斗房的八名字远敌人")
 	_check(player.get_node("ItemInventory").rune_count == 0 and not level.is_victorious(), "新局没有保留奖励或结算状态")
 
 

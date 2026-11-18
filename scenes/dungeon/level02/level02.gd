@@ -40,6 +40,9 @@ var _stopped := false
 var _exit_recorded := false
 
 func _ready() -> void:
+	# 运行时以到达平台确定出生点，避免导出场景中的旧 Player 变换落在平台外。
+	player.global_position = $Regions/Arrival.to_global(Vector3(0, 0.05, 2))
+	player.velocity = Vector3.ZERO
 	progress.room_completed.connect(_on_room_completed)
 	_configured = progress.define_room(ARRIVAL)
 	_configured = _configure(HUB, $Regions/Hub, ARRIVAL, [$Enemies/Hub1, $Enemies/Hub2],

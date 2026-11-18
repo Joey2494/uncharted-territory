@@ -28,12 +28,13 @@ func _physics_process(delta: float) -> void:
 	elapsed += delta
 	var targets := targets_in_radius(source, global_position, 2.5)
 	for target in targets:
-		if target.has_method("apply_control"):
+		if target.has_method("apply_control") and target.has_method("apply_slow") and not target.is_in_group("bosses") and not (target.has_method("is_boss") and target.is_boss()):
 			target.apply_slow(0.1)
 			var direction: Vector3 = global_position - target.global_position
 			direction.y = 0.0
 			if direction.length() > 0.4:
-				target.move_and_collide(direction.normalized() * minf(delta * 0.6, direction.length()))
+				var pull_speed := 0.3 if target.get_meta("is_elite", false) or target.is_in_group("elite_enemies") else 0.6
+				target.move_and_collide(direction.normalized() * minf(delta * pull_speed, direction.length()))
 	while _ticks < mini(int(elapsed), int(lifetime)):
 		_ticks += 1
 		for target in targets:
@@ -54,7 +55,9 @@ static func targets_in_radius(actor: Node3D, center: Vector3, radius: float) -> 
 	var space := actor.get_world_3d().direct_space_state
 	for hit in space.intersect_shape(query, 64):
 		var target := hit.collider as Node3D
-		if target == null or not target.has_method("take_damage"):
+		if target == null or not target.has_method("take_damage") or result.has(target):
+			continue
+		if target.has_method("is_dead") and target.is_dead():
 			continue
 		var ray := PhysicsRayQueryParameters3D.create(center + Vector3.UP * 0.8, target.global_position + Vector3.UP * 0.8, 1)
 		if space.intersect_ray(ray).is_empty():

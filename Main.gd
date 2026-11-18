@@ -22,7 +22,7 @@ func _enter_tree() -> void:
 @onready var _player: CharacterBody3D = $DungeonTest/Player
 @onready var _hud: Control = $UILayer/HUD
 @onready var _items: Node3D = $DungeonTest/Player/ItemInventory
-@onready var _boss: CharacterBody3D = $DungeonTest.get_node_or_null("Boss" if level_id == 2 else "RuinGatekeeper")
+@onready var _boss: CharacterBody3D = _dungeon.get_campaign_boss() if _dungeon.has_method("get_campaign_boss") else _dungeon.get_node_or_null("Boss" if level_id == 2 else "RuinGatekeeper")
 @onready var _boss_bar: Control = $UILayer/BossHealthBar
 @onready var _rune_puzzle: Node3D = $DungeonTest.get_node_or_null("RunePuzzle")
 @onready var _start_screen: Control = $UILayer/StartScreen
@@ -46,6 +46,11 @@ var _settled := false
 
 
 func _ready() -> void:
+	# 官方导出模板禁用命令行场景覆盖；从正式入口一次性交给既有白名单自检。
+	if "--week09-test" in OS.get_cmdline_user_args() and not get_tree().has_meta("package_self_test_started"):
+		get_tree().set_meta("package_self_test_started", true)
+		get_tree().change_scene_to_file.call_deferred("res://tools/export/PackageEntry.tscn")
+		return
 	PROFILE.ensure_loaded()
 	# 本局金币从 0 开始；只有通关结算时才写入永久钱包。
 	_items.gold = 0
@@ -95,7 +100,7 @@ func _ready() -> void:
 	_items.feedback.connect(_hud.show_item_message)
 	_hud.use_potion_requested.connect(_items.try_use_potion)
 	_hud.use_rune_requested.connect(_items.try_use_rune)
-	# 潮汐关沿用现有守卫，不要求用虚构 Boss 填补生命周期接口。
+	# 地图可提供动态生成的真实首领；无首领的地图仍可使用自身完成协议。
 	if _boss != null:
 		_boss_bar.update_hp(_boss.hp, _boss.max_hp)
 		_boss_name = _boss.boss_name
@@ -174,7 +179,7 @@ func _on_boss_died() -> void:
 	_boss_bar.show_defeated()
 	_dungeon.unlock_exit()
 	if not _dungeon.is_exit_opening() and not _dungeon.is_exit_open():
-		_hud.show_item_message("已击败%s · 进入大厅解除出口封印" % _boss_name)
+		_hud.show_item_message("已击败%s · 完成泄压并清除其余守卫" % _boss_name if level_id == 3 else "已击败%s · 进入大厅解除出口封印" % _boss_name)
 
 
 ## 以世界真正开始开门的事件提示，不能把提前击败Boss误报为出口已解锁。
@@ -194,6 +199,8 @@ func _on_exit_reached() -> void:
 	# 有 Boss 的地图保持原权限；无 Boss 的地图必须明确提供完成条件。
 	var authorized: bool = _boss_defeated if not _boss_name.is_empty() else (_dungeon.has_method("is_completion_ready") and _dungeon.is_completion_ready())
 	if not authorized:
+		return
+	if _dungeon.has_method("is_completion_ready") and not _dungeon.is_completion_ready():
 		return
 	if not _dungeon.is_exit_open() or not _dungeon.is_player_in_exit_area():
 		return

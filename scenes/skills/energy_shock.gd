@@ -17,6 +17,12 @@ var _cooldown_remaining: float = 0.0
 var _effect_remaining: float = 0.0
 var _action_lock_remaining: float = 0.0
 
+func _ready() -> void:
+	_caster.died.connect(func() -> void:
+		_effect_remaining = 0.0
+		_action_lock_remaining = 0.0
+		_update_effect())
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("skill_1") and not event.is_echo():
@@ -47,7 +53,8 @@ func try_cast() -> bool:
 	# and restart lifecycle. Spawn at body centre so the muzzle cannot skip walls.
 	_caster.get_parent().add_child(projectile)
 	projectile.global_position = _caster.global_position + Vector3.UP * 0.95
-	projectile.launch(direction, _caster.get_attack_damage(damage), projectile_speed, max_distance, _caster)
+	var bonus: int = _caster.get_node("CharacterAbility").consume_prepared_shot()
+	projectile.launch(direction, _caster.get_attack_damage(damage + bonus), projectile_speed, max_distance, _caster)
 	_cooldown_remaining = get_cooldown_duration()
 	_action_lock_remaining = 0.18
 	_effect_remaining = release_effect_duration

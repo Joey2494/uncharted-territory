@@ -2,7 +2,7 @@ extends Node
 ## 导出模板不接受 --script；测试包只允许白名单自检，不接受外部脚本路径。
 const SUITES := ["test_secret_door", "test_room_progress", "test_gate_lifecycle",
 	"test_gate_integration", "test_level02_layout",
-	"test_energy_relay", "test_level02_integration", "test_level02_navigation",
+	"test_energy_relay", "test_level02_integration", "test_level02_navigation", "test_level02_spawn",
 	"test_campaign_flow", "test_export_presentation", "capture_campaign"]
 
 func _ready() -> void:

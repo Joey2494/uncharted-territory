@@ -23,6 +23,7 @@ func _ready() -> void:
 	_attack.attack_enabled = false
 	attack_distance = 0.0
 	$HealthLabel.elite = attack_kind == 1
+	set_meta("is_elite", attack_kind == 1)
 	$HealthLabel.update_hp(hp, max_hp)
 	_warning = Node3D.new()
 	add_child(_warning)

@@ -5,6 +5,13 @@ var failed := 0
 
 
 func _initialize() -> void:
+	var profile = preload("res://scripts/integration/player_profile.gd")
+	profile.override_path = "res://.godot/fixture_creature_tests.cfg"
+	if FileAccess.file_exists(profile.override_path): DirAccess.remove_absolute(profile.override_path)
+	profile.ensure_loaded()
+	profile.set_coins(430)
+	for character in ["lan", "iron", "astra"]: profile.unlock_character(character)
+
 	_run.call_deferred()
 
 

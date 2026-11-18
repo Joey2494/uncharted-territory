@@ -11,10 +11,19 @@ enum Storage { EMPTY, STORED, RELEASED }
 
 const Layout = preload("res://scenes/dungeon/level03/tide_layout.gd")
 const Station = preload("res://scenes/dungeon/level03/tide_station.gd")
-const Encounter = preload("res://scenes/dungeon/components/combat_room_encounter.gd")
+const Encounter = preload("res://scenes/dungeon/level03/tide_enemy_encounter.gd")
 const Gate = preload("res://scenes/dungeon/components/ProgressionGate.tscn")
-const Enemy = preload("res://scenes/enemies/MeleeEnemy.tscn")
+const EnemyFactory = preload("res://addons/ziyuan_level03/factory.gd")
+const CoinPickup = preload("res://scenes/items/coin_pickup.gd")
 const REWARD_ID := "level03_overflow_garden"
+
+# 沿原有四个战斗房递进；位置避开台体、矮掩体、门洞和文字。
+const ENEMY_ROSTER := {
+	&"C": [["bone_axe", Vector3(-2, 0.05, -3)], ["bone_axe", Vector3(3, 0.05, -2)]],
+	&"E": [["bone_axe", Vector3(-3, 0.05, -3.5)], ["bone_spike", Vector3(3.5, 0.05, -4.5)]],
+	&"F": [["bone_spike", Vector3(3.5, 0.05, -4)], ["tomb_sword", Vector3(-3, 0.05, 2)]],
+	&"G": [["chain_jailer", Vector3(-3.5, 0.05, 1)], ["sand_king", Vector3(2, 0.05, -3.5)]],
+}
 
 # 每条路在房间接缝单独封场；可重置挡板处在走廊中段。
 const PUZZLE_BARRIERS := {
@@ -63,6 +72,8 @@ var _won := false
 var _exit_gate: StaticBody3D
 var _exit_area: Area3D
 var _station_lamps: Dictionary = {}
+var _campaign_boss: CharacterBody3D
+var _summons: Array[Node3D] = []
 
 @onready var _layout := $Layout
 @onready var _player := $Player
@@ -84,7 +95,6 @@ func _ready() -> void:
 	_create_encounters()
 	_create_exit()
 	_refresh_world()
-	$Camera3D.set_safe_frame(Rect2(0.10, 0.22, 0.80, 0.63))
 	_player.died.connect(_finish.bind(false))
 	_inventory.grant_reward("level03_maintenance_supply", {_inventory.HEALTH_POTION: 2})
 	feedback.emit("靠近检修沙盘按 E，了解潮位如何改变通路。")
@@ -317,10 +327,13 @@ func _create_stations() -> void:
 	_layout.label($Rooms/B, "高水位 E →", Vector3(7.2, 0.09, -1.7), Color("b4f2ff"), true)
 	_layout.label($Rooms/B, "↑ G 中心闸门", Vector3(0, 0.09, -6.2), Color("f9dc9d"), true)
 	_layout.label($Rooms/B, "F 高架 ↗", Vector3(7.2, 0.09, -6.8), Color("f9dc9d"), true)
-	_layout.label($Rooms/G, "最终守卫 · 白盒占位", Vector3(0, 0.09, 1.3), Color("ffc9a1"), true)
+	_layout.label($Rooms/G, "沙缚王与双链执刑官", Vector3(-5.8, 0.09, -5.7), Color("ffc9a1"), true)
 
 
 func _create_encounters() -> void:
+	var rewards := Node3D.new()
+	rewards.name = "EnemyRewards"
+	add_child(rewards)
 	for id in COMBAT_DOORS:
 		_progress.define_room(id, [], &"enemies")
 		var gates: Array = []
@@ -331,22 +344,68 @@ func _create_encounters() -> void:
 		if id == &"G":
 			gates.append(_exit_gate)
 		var room: Node3D = $Rooms.get_node(String(id))
-		var enemy = Enemy.instantiate()
-		enemy.name = "%s_Guard" % id
-		enemy.set_meta("room", id)
-		enemy.position = room.position + Vector3(1.5, 0, -3)
-		enemy.target_path = NodePath("../../Player")
-		enemy.max_hp = 5 if id == &"G" else 3
-		enemy.detection_range = 13.0
-		enemy.lose_range = 17.0
-		$Enemies.add_child(enemy)
+		var enemies: Array = []
+		for index in ENEMY_ROSTER[id].size():
+			var entry: Array = ENEMY_ROSTER[id][index]
+			var enemy := _spawn_enemy(entry[0], id, room.position + entry[1], "%s_Guard%d" % [id, index + 1])
+			enemies.append(enemy)
+			if enemy.is_boss():
+				_campaign_boss = enemy
+				enemy.add_to_group("bosses")
+				enemy.summon_requested.connect(_summon_requested.bind(enemy))
+				enemy.died.connect(_clear_summons)
 		var encounter := Encounter.new()
 		add_child(encounter)
-		if not encounter.configure(_player, room, _progress, id, [enemy], gates):
+		if not encounter.configure(_player, room, _progress, id, enemies, gates):
 			push_error("第三关战斗房配置失败：%s" % id)
 		encounter.battle_started.connect(_battle_started)
 		encounter.completed.connect(_battle_completed)
 		_encounters.append(encounter)
+
+
+func get_campaign_boss() -> CharacterBody3D:
+	return _campaign_boss if is_instance_valid(_campaign_boss) else null
+
+
+func _spawn_enemy(enemy_id: String, room_id: StringName, point: Vector3, node_name: String) -> CharacterBody3D:
+	var enemy := EnemyFactory.create(enemy_id, _player)
+	assert(enemy != null, "第三关敌人 ID 无效")
+	enemy.name = node_name
+	enemy.set_meta("room", room_id)
+	enemy.position = point
+	enemy.reward_source_id = "level03:%d:%s" % [get_instance_id(), node_name]
+	$Enemies.add_child(enemy)
+	enemy.reward_requested.connect(_enemy_reward.bind(enemy))
+	enemy.state_changed.connect(func(message: String) -> void:
+		if _run_active and not _terminal: feedback.emit(message))
+	return enemy
+
+
+func _enemy_reward(source_id: String, coins: int, enemy: Node3D) -> void:
+	if _terminal or not _run_active or not can_process() or _player.is_dead(): return
+	CoinPickup.spawn($EnemyRewards, enemy.global_position, coins, source_id)
+
+
+func _summon_requested(enemy_id: String, point: Vector3, source: CharacterBody3D) -> void:
+	if _terminal or not _run_active or not is_instance_valid(source) or not source.is_encounter_active(): return
+	var bounds: Rect2 = $Rooms/G.get_world_bounds().grow(-1.5)
+	# 首领靠近房边或门口时，援军仍在 G 内生成。
+	point.x = clampf(point.x, bounds.position.x, bounds.end.x)
+	point.z = clampf(point.z, bounds.position.y, bounds.end.y)
+	point.y = 0.05
+	var summon := _spawn_enemy(enemy_id, &"G", point, "G_Summon%d" % (_summons.size() + 1))
+	summon.set_meta("summoned", true)
+	_summons.append(summon)
+	summon.set_encounter_active(true)
+
+
+func _clear_summons() -> void:
+	# 召唤物不加入已封存的门锁名单；首领死亡或本局停止时直接回收，无回收奖励。
+	for summon in _summons:
+		if is_instance_valid(summon):
+			summon.set_encounter_active(false)
+			summon.queue_free()
+	_summons.clear()
 
 
 func _make_combat_gate(parent: Node3D, id: StringName, location: Vector3, across_x: bool, opened: bool, caption: String) -> StaticBody3D:
@@ -434,3 +493,7 @@ func stop_run() -> void:
 	_progress.stop_run()
 	for encounter in _encounters:
 		encounter.stop()
+	_clear_summons()
+	for child in $Enemies.get_children():
+		if child.is_in_group("l3_hazards") or child.is_in_group("l3_transient"):
+			child.queue_free()

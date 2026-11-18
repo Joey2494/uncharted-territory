@@ -17,9 +17,9 @@ func run() -> void:
 	PROFILE.set_coins(1000)
 	for role in ["lan", "iron", "astra"]: PROFILE.unlock_character(role)
 	var progress := PROGRESS.new()
-	check(not progress.is_unlocked(&"level3"), "新档锁定第三关")
+	check(progress.is_unlocked(&"level3") and progress.completed.is_empty(), "测试版新档直接开放第三关且不伪造通关")
 	progress.complete(1)
-	check(not progress.is_unlocked(&"level3"), "第一关胜利不能提前解锁第三关")
+	check(progress.is_unlocked(&"level3") and not progress.is_completed(&"level2"), "第三关不依赖第二关通关记录")
 	progress.complete(2)
 	check(progress.is_unlocked(&"level3") and progress.recommended_level() == &"level3", "第二关完成后推荐并解锁第三关")
 	var legacy := ConfigFile.new()
@@ -66,10 +66,10 @@ func second_to_third() -> void:
 	var nav: Node = host.get_node("MenuNavigation")
 	nav._open_levels()
 	check(nav.level_select.get_level_button(&"level3") != null, "正式选关目录包含第三关")
-	# 清除仅用于存档单元检查的完成记录，实际二关出口才应再次解锁。
+	# 清除单元检查记录，确认测试版选关不依赖完成记录。
 	nav.progress.completed.erase("level2")
 	nav.level_select.refresh_progress()
-	check(nav.level_select.get_level_button(&"level3").disabled, "二关未完成时第三关按钮锁定")
+	check(not nav.level_select.get_level_button(&"level3").disabled, "二关未完成时第三关按钮仍可用")
 	nav.level_select.get_level_button(&"level2").pressed.emit()
 	await frames(12)
 	host = current_scene
@@ -87,7 +87,7 @@ func second_to_third() -> void:
 			await go(map.get_node("Devices/Relay").global_position + Vector3(0, 0.05, 1.35))
 			check(host._items.try_interact_nearest(), "真实交互启动二关导能")
 		await create_timer(1.1).timeout
-	check(not host.get_node("MenuNavigation").progress.is_unlocked(&"level3"), "仅击败二关 Boss 不能解锁第三关")
+	check(not host.get_node("MenuNavigation").progress.is_completed(&"level2"), "仅击败二关 Boss 不能伪造二关通关记录")
 	var exit_point: Vector3 = map.get_node("ExitArea").global_position
 	exit_point.y = 0.05
 	await go(exit_point)
@@ -118,7 +118,9 @@ func use_station(id: StringName) -> void:
 
 func clear_room(id: StringName) -> void:
 	await go(host._dungeon.get_node("Rooms/" + id).global_position + Vector3(0, 0.05, 3))
-	check(host._dungeon.get_node("Enemies/" + id + "_Guard").take_damage(999), "实际伤害清除第三关 " + String(id))
+	for enemy in host._dungeon.get_node("Enemies").get_children():
+		if enemy.get_meta("room", &"") == id and not enemy.get_meta("summoned", false) and not enemy.is_dead():
+			check(enemy.take_damage(999), "实际伤害清除第三关 " + String(enemy.name))
 	await create_timer(0.45).timeout
 
 func third_route() -> void:
@@ -126,7 +128,7 @@ func third_route() -> void:
 	host._player._invulnerability_remaining = 1000.0
 	var wallet_before: int = PROFILE.coins
 	check(host._items.add_gold(37) and PROFILE.coins == wallet_before, "第三关本局金币独立于永久钱包")
-	check(host._boss == null and not host._boss_bar.visible, "第三关无虚构 Boss 或 Boss 血条")
+	check(host._boss != null and host._boss.enemy_id == "sand_king" and not host._boss_bar.visible, "第三关接入字远沙缚王，入场前隐藏 Boss 血条")
 	check(root.get_node("MusicManager").current_context == &"level_3", "第三关进入自己的游戏音乐上下文")
 	check(map.get_node_or_null("HUD") == null, "正式宿主不叠加独立白盒 HUD")
 	check(host._hud.visible and map.get_room_count() == 10 and map.get_visited_count() == 1, "共享 HUD 与第三关到达进度已绑定")
@@ -170,7 +172,7 @@ func third_route() -> void:
 	check(host.get_node("MenuNavigation").progress.is_completed(&"level3"), "第三关完成写入进度")
 	var result: Control = host._hud.get_result_screen()
 	check(result != null and not result.next_level_button.visible and not host.advance_to_next_level(), "第三关终局没有第四关按钮且拒绝越界跳转")
-	check(result.summary_label.text.contains("守卫") and not result.summary_label.text.contains("Boss") and result.get_node("%PuzzleLabel").text.contains("潮汐"), "结算如实显示守卫和潮汐机关")
+	check(result.summary_label.text.contains("沙缚王") and result.summary_label.text.contains("守卫") and result.get_node("%PuzzleLabel").text.contains("潮汐"), "结算如实显示沙缚王、守卫和潮汐机关")
 	check(not host._settled and PROFILE.coins == wallet_before and host._items.gold == 37 and host._settlement_id not in PROFILE.settled_runs, "第三关结算保存失败回滚钱包并保留本局金币")
 	check(result.get_node("%SettlementLabel").text.contains("金币保存失败") and result._retry.visible, "第三关结算显示金币失败文案和实际重试按钮")
 	check(result.get_node("%RewardLabel").text == "溢流花园奖励：未领取", "金币保存失败不覆盖第三关奖励名称和实际领取状态")
