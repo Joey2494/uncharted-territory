@@ -60,8 +60,7 @@ func _ready() -> void:
 	elif level_id == 3:
 		_start_screen.get_node("Center/Card/Padding/Content/Description").text = "第三关 · 潮汐回流工坊\n调节潮位、回流泄压，清除最终守卫后抵达远航出口。"
 		_start_screen.get_node("Center/Card/Padding/Content/Tagline").text = "循着潮汐与回流，开启远航之路。"
-	if level_id > 1:
-		_hud.get_node("LevelObjective").world = _dungeon
+	_hud.get_node("LevelObjective").world = _dungeon
 	_overlay.resume_requested.connect(_resume_playing)
 	_overlay.restart_requested.connect(_on_restart_requested)
 	_overlay.shop_requested.connect(_commerce.open_shop)
@@ -242,7 +241,10 @@ func _get_completion_snapshot() -> Dictionary:
 	if _dungeon.has_method("get_completion_snapshot"):
 		return _dungeon.get_completion_snapshot()
 	if _rune_puzzle != null:
-		return {"puzzle_solved": _rune_puzzle.is_solved(), "reward_claimed": _rune_puzzle.is_reward_claimed()}
+		var snapshot := {"puzzle_solved": _rune_puzzle.is_solved(), "reward_claimed": _rune_puzzle.is_reward_claimed()}
+		if level_id == 1 and preload("res://scenes/ui/castle_objective_presenter.gd").read(_dungeon).complete:
+			snapshot.completion_summary = "失落石堡 · 主线目标已全部完成"
+		return snapshot
 	if level_id == 2:
 		return {"puzzle_solved": _dungeon.puzzle.get_state() >= _dungeon.puzzle.State.OPEN,
 			"reward_claimed": _dungeon.puzzle.get_state() == _dungeon.puzzle.State.CLAIMED}
@@ -419,8 +421,9 @@ func _change_scene(destination: String) -> void:
 	var tree := get_tree()
 	var was_paused := tree.paused
 	_commerce.close_all()
-	tree.paused = false
-	var error := tree.reload_current_scene() if destination.is_empty() else tree.change_scene_to_file(destination)
+	tree.paused = true
+	var path := scene_file_path if destination.is_empty() else destination
+	var error: Error = await preload("res://scripts/integration/resource_transition.gd").change(tree,path)
 	if error != OK:
 		var failed_request := _transition_snapshot.duplicate(true)
 		CHARACTERS.selected_id = failed_request.character_id

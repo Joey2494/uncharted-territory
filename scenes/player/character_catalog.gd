@@ -33,17 +33,32 @@ static func ability_definition(id: String) -> Dictionary:
 	ability["cooldown"] = data.cooldown
 	match ability.kind:
 		"supply":
-			ability["description"] = "L恢复10能量，不超过上限；满能量拒绝使用，成功后冷却12秒。不重置J/K动作或冷却。"
+			ability["description"] = "按 L 立即恢复10能量，不超过上限；成功后冷却 %s 秒。满能量时无法使用，也不进入冷却；不重置 J/K 的动作或冷却。" % seconds(ability.cooldown)
 		"focus":
-			ability["description"] = "专注持续 %s 秒，缩短近战攻击与法术的攻击间隔，近战仍需完成完整动作；闪避不打断专注，效果结束后开始冷却。" % seconds(ability.duration)
+			ability["description"] = "按 L 专注 %s 秒：J近战间隔、K冷却除以1.3（初始约0.385 / 0.615秒），近战仍须完成完整动作。结束后冷却 %s 秒；不清除已有冷却，闪避不打断专注。" % [seconds(ability.duration), seconds(ability.cooldown)]
 		"counter":
-			ability["description"] = "举盾至多 %s 秒，抵御正面直击；松开或举盾结束时反击，格挡越多伤害越高，精准格挡附带 %s 秒控制。闪避会取消举盾。" % [seconds(ability.duration),seconds(ability.control_duration)]
+			ability["description"] = "按住 L 举盾，最多 %s 秒；锁定起始朝向，移速减半，期间不能 J/K。只格挡正面120°内可格挡的直击，成功时不损失护盾；背后攻击和地面持续伤害仍会受伤。\n松开 L 或到时反击：前方120°、2.5米内，基础伤害2，每次格挡+1，最多5，不穿墙。前0.6秒成功格挡后，本次反击对非首领敌人附加 %s 秒控制。反击后冷却 %s 秒；闪避会取消举盾，不反击并进入冷却。" % [seconds(ability.duration), seconds(ability.control_duration), seconds(ability.cooldown)]
 		"gravity":
-			ability["description"] = "短暂凝聚后，在前方形成持续 %s 秒的引力法阵，周期性造成伤害并减速、牵引敌人，消散时再次爆发；释放后开始冷却，闪避可中断凝聚。" % seconds(ability.field_duration)
+			ability["description"] = "按 L 凝聚 %s 秒，在当前面向前方最远6米处放置半径2.5米、持续 %s 秒的法阵，受墙体阻挡。凝聚时可移动，不能 J/K；成功放置后冷却 %s 秒。\n第1、2、3秒各造成1点伤害，结束再造成2点；目标须在范围内且无遮挡，全程命中才合计5点基础伤害。普通和精英敌人减速30%%并向中心牵引：普通敌人0.6米/秒，精英减半；首领不受减速或牵引。闪避中断凝聚或放置失败时只冷却1秒；成功放置后闪避不取消法阵。" % [seconds(ability.duration), seconds(ability.field_duration), seconds(ability.cooldown)]
 		_:
 			ability["description"] = "剑击与法术小球构成基础战技，兼顾近远交锋；没有独立主动技能。"
-	ability["description"] += "\n" + data.description.split("\n")[-1]
+	ability["description"] += "\n" + passive_description(id)
+	ability["description"] += "\nL 不消耗能量；伤害为无符文加成的基础值。"
 	return ability
+
+static func passive_description(id: String) -> String:
+	match id:
+		"lan":
+			return "整备射击：连续1.5秒未成功发动 J/K 后，获得一次 K 伤害+1（基础2→3），保留5秒，两次获取至少间隔6秒。成功释放 K 即消耗，未命中也消耗；J不消耗已就绪的强化，移动与闪避不打断整备。"
+		"iron":
+			return "稳固阵地：用 J近战在2.5米内击杀战斗房中的普通或精英敌人，回1护盾，每房最多实际回复2点，不超过上限。召唤物和首领不触发；满盾不消耗额度，重进房间不刷新；K或反击击杀不触发。"
+		"astra":
+			return "清房回能：每间战斗房（含首领房）首次完成时额外回5能量，不超过上限；满能量时不储存奖励。重进已清房间不重复回复；K仍消耗5能量。"
+	return "无额外被动。"
+
+static func cooldown_text(id: String) -> String:
+	var timing := {"knight":"成功后", "lan":"专注结束后", "iron":"反击或取消后", "astra":"放置成功后"}
+	return "L · %s冷却 %s 秒" % [timing.get(id, timing.knight), seconds(definition(id).cooldown)]
 
 static func seconds(value: float) -> String:
 	return str(value).trim_suffix(".0")

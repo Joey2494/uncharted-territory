@@ -1,5 +1,6 @@
 [gd_scene format=3]
 
+[ext_resource type="Script" path="res://scripts/rendering/static_art_provider.gd" id="static_art"]
 [ext_resource type="Script" path="res://scenes/dungeon/level02/level02.gd" id="map"]
 [ext_resource type="Script" path="res://scenes/dungeon/level02/stone_region.gd" id="stone_region"]
 [ext_resource type="Script" path="res://scenes/dungeon/level02/stone_cover.gd" id="stone_cover"]
@@ -19,10 +20,12 @@
 
 [sub_resource type="Environment" id="Environment"]
 background_mode = 1
-background_color = Color(0.018, 0.024, 0.025, 1)
+background_color = Color(0.024, 0.029, 0.03, 1)
 ambient_light_source = 3
-ambient_light_color = Color(0.59, 0.67, 0.70, 1)
-ambient_light_energy = 0.58
+ambient_light_color = Color(0.57, 0.65, 0.69, 1)
+ambient_light_energy = 0.48
+reflected_light_source = 2
+tonemap_mode = 2
 
 [sub_resource type="BoxShape3D" id="ExitShape"]
 size = Vector3(5.4, 2.3, 3.2)
@@ -71,14 +74,22 @@ size = Vector3(0.52, 0.90, 0.52)
 [node name="Level02" type="Node3D"]
 script = ExtResource("map")
 
+[node name="StaticArtCache" type="Node" parent="."]
+script = ExtResource("static_art")
+family = "cave"
+
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment")
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
-rotation_degrees = Vector3(-58, -32, 0)
-light_color = Color(0.94, 0.97, 0.93, 1)
-light_energy = 1.05
+rotation_degrees = Vector3(-48, -38, 0)
+light_color = Color(0.95, 0.96, 0.95, 1)
+light_energy = 0.78
 shadow_enabled = true
+light_angular_distance = 8.0
+directional_shadow_max_distance = 85.0
+shadow_bias = 0.12
+shadow_normal_bias = 2.0
 
 [node name="Regions" type="Node3D" parent="."]
 

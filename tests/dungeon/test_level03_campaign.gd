@@ -52,6 +52,11 @@ func run() -> void:
 func frames(count: int = 8) -> void:
 	for i in count: await physics_frame
 
+	# Transitions now await real threaded resources, not a fixed frame budget.
+	var deadline := Time.get_ticks_msec()+15000
+	while root.get_node_or_null("LoadingScreen") != null and Time.get_ticks_msec() < deadline:
+		await process_frame
+
 func go(point: Vector3) -> void:
 	host._player.global_position = point
 	host._player.velocity = Vector3.ZERO
@@ -136,7 +141,7 @@ func third_route() -> void:
 	check(objective.has_all(["id", "title", "category", "progress", "completed"]), "第三关目标提供共享展示协议")
 	check(objective.completed is Array and objective.resource_summary.contains("低水位"), "常驻目标协议包含完成列表和潮汐资源状态")
 	await frames()
-	check(host._hud.get_node("LevelObjective/%ObjectiveResources").text.contains("导体在 C"), "共享 HUD 实际显示第三关持续资源状态")
+	check(host._hud.get_node("LevelObjective/%ObjectiveResources").text.contains("导体在沉沙库"), "共享 HUD 实际显示第三关持续资源状态")
 	await go(map.get_node("Rooms/J").global_position)
 	host._on_exit_reached()
 	check(host.get_run_state() == host.RunState.PLAYING, "提前到出口或伪发出口信号不能结算")
