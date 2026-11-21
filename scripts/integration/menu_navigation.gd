@@ -46,6 +46,7 @@ func _ready() -> void:
 		settings_screen.get_node("ControlsGuide").set_level_reference(host._dungeon.get_route_reference())
 		settings_screen.get_node("%ControlsGuideButton").text = "操作与路线"
 	level_select.back_requested.connect(_back_from_levels)
+	level_select.preview_requested.connect(_open_mirror_preview)
 	character_select.back_requested.connect(_back_to_menu)
 	character_select.character_confirmed.connect(_character_confirmed)
 	character_select.character_purchased.connect(func() -> void: host._start_screen.character_purchased.emit())
@@ -112,6 +113,13 @@ func _continue_campaign() -> void:
 
 func return_to_level_select() -> void:
 	host.request_scene_change("res://Main.tscn", {"show_levels": true})
+
+## 独立白盒从选关页试玩，保留最近一次正式战役的继续游戏目标。
+func _open_mirror_preview() -> void:
+	if host._run_state != host.RunState.MENU or not level_select.visible or load_error.visible:
+		return
+	host.request_scene_change("res://scenes/dungeon/level04/Level04Preview.tscn",
+		{"character_id": host._start_screen.selected_character_id})
 
 func _launch(id: StringName) -> void:
 	if host._transition_queued or host._run_state != host.RunState.MENU or not progress.is_unlocked(id): return

@@ -107,10 +107,23 @@ theme_override_constants/h_separation = 16
 theme_override_constants/v_separation = 16
 columns = 4
 
-[node name="BackButton" type="Button" parent="Center/Card/Padding/Content"]
+[node name="Actions" type="HBoxContainer" parent="Center/Card/Padding/Content"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="PreviewButton" type="Button" parent="Center/Card/Padding/Content/Actions"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
+size_flags_horizontal = 3
+mouse_default_cursor_shape = 2
+text = "试玩第四关 · 镜室白盒"
+
+[node name="BackButton" type="Button" parent="Center/Card/Padding/Content/Actions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+size_flags_horizontal = 3
 mouse_default_cursor_shape = 2
 text = "返回主菜单"
 
