@@ -11,11 +11,12 @@ config_version=5
 [application]
 
 config/name="未知之境"
-run/main_scene="res://Main.tscn"
+run/main_scene="res://scenes/ui/LoadingEntry.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
 [autoload]
 
+GameSettings="*res://scripts/settings/settings_service.gd"
 MusicManager="*res://scenes/audio/music_manager.gd"
 
 [display]

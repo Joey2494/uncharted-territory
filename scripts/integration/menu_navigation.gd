@@ -2,7 +2,7 @@ extends Node
 static var pending_level_select := false
 @onready var host = get_parent()
 var progress := preload("res://scripts/integration/campaign_progress.gd").new()
-var settings := preload("res://scripts/settings/game_settings.gd").new()
+var settings: RefCounted
 var level_select: Control
 var settings_screen: Control
 var character_select: Control
@@ -13,8 +13,7 @@ var _guide_from_pause := false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	settings.load_settings()
-	settings.apply(get_tree().root)
+	settings = get_node("/root/GameSettings").data
 	level_select = preload("res://scenes/ui/level_select.tscn").instantiate()
 	settings_screen = preload("res://scenes/ui/settings_screen.tscn").instantiate()
 	character_select = preload("res://scenes/ui/character_select.tscn").instantiate()

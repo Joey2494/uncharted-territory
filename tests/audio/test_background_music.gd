@@ -144,6 +144,8 @@ func test_game_flow() -> void:
 	check(unchanged,"all six existing effects retain their bus and polyphony")
 	check(host._player.get_node("EnergyShock").try_cast() and cues.count(&"spell")==1,"real spell still triggers its original sound once")
 	check(not host._player.get_node("EnergyShock").try_cast() and cues.count(&"spell")==1,"rejected spell still cannot duplicate its sound")
+	# Exercise HP damage rather than the knight's existing initial shield absorption.
+	host._player.shield = 0
 	check(host._player.take_damage(1) and cues.count(&"hurt")==1,"accepted damage still plays the original hurt cue")
 	host._items.potion_count = 1
 	check(host._items.try_use_potion() and cues.count(&"item_use")==1,"successful healing retains its gameplay and sound")
@@ -165,7 +167,7 @@ func test_game_flow() -> void:
 	host._on_exit_reached()
 	check(starts.size()==start_count+2,"repeated terminal events cannot replay the victory song")
 	host.advance_to_level02()
-	await frames(10)
+	if not await wait_scene("res://scenes/dungeon/Level02Run.tscn"): return
 	host = current_scene
 	check(host.level_id==2 and host._run_state==host.RunState.PLAYING and music.current_context==&"level_2","next-level settlement action starts gameplay and its level music directly")
 	check(starts.size()==start_count+3 and starts.back()==music.playlist.level_2,"next-level handoff switches once without an intermediate menu track")
@@ -190,9 +192,19 @@ func test_game_flow() -> void:
 	await delay(0.12)
 	check(host._run_state==host.RunState.VICTORY and music.current_context==&"victory","physical level-two exit selects victory music")
 	host.get_node("RunBindings").return_to_menu()
-	await frames(10)
+	if not await wait_scene("res://Main.tscn"): return
 	host = current_scene
 	check(host.level_id==1 and music.current_context==&"menu" and voice.get_instance_id()==voice_id and starts.size()==start_count+4,"return to main menu reuses settlement music on the same persistent voice")
+
+func wait_scene(path: String) -> bool:
+	var deadline := Time.get_ticks_msec()+45000
+	while Time.get_ticks_msec() < deadline:
+		await process_frame
+		if current_scene != null and current_scene.scene_file_path == path and root.get_node_or_null("LoadingScreen") == null:
+			await frames(4)
+			return true
+	check(false,"real threaded scene handoff completes: "+path)
+	return false
 
 func silent_track(seconds: float) -> AudioStreamWAV:
 	var wave := AudioStreamWAV.new()

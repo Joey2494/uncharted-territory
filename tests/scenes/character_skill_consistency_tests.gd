@@ -12,7 +12,7 @@ const ICON_PATHS := {
 var host: Node
 var checks := 0
 var failures := 0
-const OUT := "res://.godot/skill-consistency"
+var OUT := OS.get_environment("GODOT_TEST_OUTPUT_DIR") if not OS.get_environment("GODOT_TEST_OUTPUT_DIR").is_empty() else "res://.godot/skill-consistency"
 
 class Target extends CharacterBody3D:
 	var damage := 0
@@ -55,7 +55,26 @@ func preview_roles() -> void:
 		check(skill_tooltip.contains(DOSSIERS.entry(id).effect), id+": dossier skill tooltip updates with the displayed character")
 		var configuration := CATALOG.ability_definition(id)
 		check(skill_tooltip.contains(configuration.description) and DOSSIERS.entry(id).skill_name == configuration.name, id+": dossier presentation comes from the canonical ability configuration")
-		check(selector.get_node("%SkillCooldown").text == ("冷却 %s 秒" % CATALOG.seconds(configuration.cooldown) if configuration.active else "无独立主动技能"), id+": dossier cooldown/active classification matches the actual configuration")
+		check(selector.get_node("%SkillCooldown").text == CATALOG.cooldown_text(id), id+": dossier cooldown states both the actual duration and when it starts")
+		selector.get_node("%MechanicsButton").pressed.emit()
+		check(selector.get_node("%MechanicsOverlay").visible and selector.get_node("%MechanicsText").text.contains(configuration.description), id+": clickable mechanics includes the same active and passive effects as the actual player/HUD")
+		var before: String = selector.get_selected_id()
+		var right := InputEventKey.new()
+		right.keycode = KEY_RIGHT
+		right.pressed = true
+		root.push_input(right)
+		check(selector.get_selected_id() == before, id+": reading mechanics cannot accidentally cycle the selected character")
+		var tab := InputEventKey.new()
+		tab.keycode = KEY_TAB
+		tab.pressed = true
+		root.push_input(tab)
+		check(selector.get_node("%MechanicsOverlay").is_ancestor_of(root.gui_get_focus_owner()), id+": keyboard focus remains in the mechanics panel")
+		if "--capture" in OS.get_cmdline_user_args(): await capture("mechanics-"+id)
+		var escape := InputEventKey.new()
+		escape.keycode = KEY_ESCAPE
+		escape.pressed = true
+		root.push_input(escape)
+		check(not selector.get_node("%MechanicsOverlay").visible and selector.visible and selector.get_node("%MechanicsButton").has_focus(), id+": Escape returns to the same selection and restores focus")
 		if "--capture" in OS.get_cmdline_user_args():
 			await capture("dossier-"+id)
 			selector.get_node("%InfoScroll").ensure_control_visible(selector.get_node("%SkillTitleRow"))
@@ -160,19 +179,27 @@ func check_behavior(id: String) -> void:
 func scene_handoffs() -> void:
 	host.get_node("MenuNavigation").progress.complete(1)
 	check(host.request_scene_change("res://scenes/dungeon/Level02Run.tscn",{"character_id":"lan","start_run":true}), "cross-level handoff accepts the current role")
-	await frames(10)
-	host = current_scene
+	await wait_for_handoff()
 	check(host.level_id == 2 and host._player.character_id == "lan", "cross-level handoff preserves the actual selected player")
 	check_hud("lan")
 	host.get_node("RunBindings").return_to_menu()
-	await frames(10)
-	host = current_scene
+	await wait_for_handoff()
 	check_hud("lan")
 	host._start_screen.get_node("%ContinueButton").pressed.emit()
-	await frames(10)
-	host = current_scene
+	await wait_for_handoff()
 	check(host.level_id == 2 and host.get_run_state() == host.RunState.PLAYING, "Continue still starts the recent level")
 	check_hud("lan")
+
+func wait_for_handoff() -> void:
+	# Resource transitions are asynchronous; ten frames can end before loading does.
+	var previous := host
+	for i in 600:
+		await frames(1)
+		if current_scene != previous:
+			await frames(3)
+			host = current_scene
+			return
+	host = current_scene
 
 func make_target(at: Vector3) -> Target:
 	var target := Target.new()

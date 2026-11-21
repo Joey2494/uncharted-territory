@@ -94,6 +94,7 @@ func _ready() -> void:
 	_create_stations()
 	_create_encounters()
 	_create_exit()
+	if _layout.has_method("finish_tomb"): _layout.finish_tomb(self)
 	_refresh_world()
 	_player.died.connect(_finish.bind(false))
 	_inventory.grant_reward("level03_maintenance_supply", {_inventory.HEALTH_POTION: 2})

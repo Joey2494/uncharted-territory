@@ -1,5 +1,6 @@
 @tool
 extends RefCounted
+const Cache = preload("res://scripts/rendering/static_art_cache.gd")
 ## Static, collision-free silk dressing. Positions are local to one wall anchor.
 ## Single-surface batches remain compatible with the existing wall fade.
 
@@ -40,19 +41,20 @@ var _thread_material: StandardMaterial3D
 var _body_material: StandardMaterial3D
 var _veil_material: StandardMaterial3D
 static var _silk_texture: NoiseTexture2D
-const SILK := Color(0.61,0.63,0.61)
-const OLD_SILK := Color(0.42,0.45,0.43)
+const SILK := Color(0.43,0.415,0.365)
+const OLD_SILK := Color(0.30,0.295,0.26)
 
 func corner(label: String, signs: Vector2, density: float, index: int, maximum_reach: float) -> Node3D:
 	_begin(label, index)
 	_root.set_meta("habitat_kind","corner")
 	var sx := signs.x
 	var sz := signs.y
+	var anchor := _rng.randf_range(2.70,3.16)
 	var reach := minf(maximum_reach,lerpf(1.4,3.5,density)*_rng.randf_range(0.88,1.08))
 	# A ragged wall web and a separate open ceiling canopy, never a solid roof.
-	_web(Vector3(0,2.92,0),Vector3(-sx*reach,0,0),Vector3(0,-reach*0.72,0),0.72+density*0.22)
+	_web(Vector3(0,anchor,0),Vector3(-sx*reach,0,0),Vector3(0,-reach*_rng.randf_range(0.60,0.82),0),0.65+density*0.22)
 	if density > 0.35 or index < 2:
-		_web(Vector3(0,3.04,0),Vector3(-sx*reach,-0.35,0),Vector3(0,-0.55,-sz*reach),0.62)
+		_web(Vector3(0,anchor+0.12,0),Vector3(-sx*reach,-0.35,0),Vector3(0,-0.55,-sz*reach*_rng.randf_range(0.76,1.0)),0.56)
 		_root.set_meta("ceiling_web",true)
 		for i in 3:
 			var t := _rng.randf_range(0.2,0.8)
@@ -61,10 +63,10 @@ func corner(label: String, signs: Vector2, density: float, index: int, maximum_r
 	if density > 0.48 and index % 2 == 0:
 		_web(Vector3(0,2.70,0),Vector3(0,0,-sz*reach*0.72),Vector3(0,-1.4,0),0.64)
 	if (density > 0.55 and index < 2) or (label == "Arrival" and index == 1):
-		var center := Vector3(-sx*0.65,1.75,-sz*0.65)
-		var size := Vector3(0.27+density*0.12,0.64+density*0.30,0.25+density*0.10)
+		var center := Vector3(-sx*_rng.randf_range(0.56,0.87),anchor*0.55,-sz*_rng.randf_range(0.56,0.87))
+		var size := Vector3(0.27+density*0.12,0.64+density*0.30,0.25+density*0.10)*_rng.randf_range(0.78,1.10)
 		_cocoon(center,size,Basis(Vector3.FORWARD,_rng.randf_range(-0.14,0.14)),true)
-		_strand([Vector3(-sx*0.10,3.03,-sz*0.10),center+Vector3(0,size.y,0)],0.016,SILK)
+		_strand([Vector3(-sx*0.10,anchor+0.10,-sz*0.10),center+Vector3(0,size.y,0)],0.016,SILK)
 		_root.set_meta("hanging_cocoon",true)
 	var nest_here := (index in [1,2] if label == "Boss" else index == (2 if label == "Antechamber" else 1))
 	if density > 0.72 and nest_here:
@@ -112,9 +114,7 @@ func _begin(label: String, salt: int) -> void:
 	_veils = Surface.new()
 	if _thread_material == null:
 		_thread_material = _material("Weathered silk filaments")
-		_thread_material.emission_enabled = true
-		_thread_material.emission = Color(0.20,0.23,0.19)
-		_thread_material.emission_energy_multiplier = 0.10
+		_thread_material.emission_enabled = false
 		_body_material = _material("Dusty cocoon silk")
 		_body_material.albedo_texture = _cocoon_texture()
 		_body_material.uv1_scale = Vector3(1.0,2.0,1.0)
@@ -124,14 +124,16 @@ func _begin(label: String, salt: int) -> void:
 		_veil_material.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_DISABLED
 		_veil_material.render_priority = -1
 
-func _cocoon_texture() -> NoiseTexture2D:
+func _cocoon_texture() -> Texture2D:
+	var baked := Cache.texture("cave","cocoon")
+	if baked != null: return baked
 	if _silk_texture == null:
 		var noise := FastNoiseLite.new()
 		noise.seed = 1049
 		noise.frequency = 0.12
 		noise.fractal_octaves = 3
 		var colors := Gradient.new()
-		colors.colors = PackedColorArray([Color(0.59,0.60,0.56),Color(0.97,0.98,0.95)])
+		colors.colors = PackedColorArray([Color(0.45,0.43,0.37),Color(0.78,0.755,0.66)])
 		_silk_texture = NoiseTexture2D.new()
 		_silk_texture.width = 256
 		_silk_texture.height = 256
@@ -146,6 +148,7 @@ func _material(label: String) -> StandardMaterial3D:
 	material.vertex_color_use_as_albedo = true
 	material.cull_mode = BaseMaterial3D.CULL_DISABLED
 	material.roughness = 0.97
+	material.metallic_specular = 0.12
 	return material
 
 func _finish() -> Node3D:
@@ -189,17 +192,23 @@ func _web(hub: Vector3, a: Vector3, b: Vector3, fullness: float) -> void:
 	var spokes := _rng.randi_range(12,16)
 	var rings := _rng.randi_range(6,8)
 	var grid: Array = []
+	var angles: Array[float] = []
+	for spoke in range(spokes+1):
+		var t := float(spoke)/spokes
+		angles.append(t*PI*0.5+sin(t*PI)*_rng.randf_range(-0.028,0.028))
+	var spacing := _rng.randf_range(0.82,1.24)
 	for ring in range(rings+1):
 		var row: Array[Vector3] = []
-		var radius := float(ring)/float(rings)
+		var radius := pow(float(ring)/float(rings),spacing)
 		for spoke in range(spokes+1):
-			var angle := float(spoke)/float(spokes)*PI*0.5
-			var jitter := _rng.randf_range(-0.024,0.024)*radius
+			var angle := angles[spoke]
+			var jitter := _rng.randf_range(-0.036,0.036)*radius
 			var point := hub+(a*cos(angle)+b*sin(angle))*(radius+jitter)
 			point.y -= sin(angle*2.0)*radius*0.13
 			row.append(point)
 		grid.append(row)
 	for spoke in range(spokes+1):
+		if spoke > 1 and spoke < spokes-1 and _rng.randf() < 0.12: continue
 		var line: Array = []
 		for ring in range(rings+1): line.append(grid[ring][spoke])
 		_strand(line,0.014 if spoke%4 == 0 else 0.009,SILK.darkened(_rng.randf_range(0.0,0.22)))
@@ -236,7 +245,7 @@ func _ellipsoid(center: Vector3, radii: Vector3, pose: Basis, color: Color, tape
 			_bodies.triangle(d-SIDES-1,d,d-1)
 
 func _cocoon(center: Vector3, radii: Vector3, pose: Basis, hanging: bool) -> void:
-	_ellipsoid(center,radii,pose,Color(0.76,0.77,0.73),true)
+	_ellipsoid(center,radii,pose,Color(0.65,0.64,0.57),true)
 	for layer in 3:
 		var line: Array = []
 		var turns := (13.7 if hanging else 11.3)+float(layer)*0.65
@@ -247,7 +256,7 @@ func _cocoon(center: Vector3, radii: Vector3, pose: Basis, hanging: bool) -> voi
 			var envelope := sin(polar)*(1.0-0.14*cos(polar))*(1.0+0.035*sin(angle*3.0+polar*7.0))*1.018
 			var point := Vector3(cos(angle)*radii.x*envelope,cos(polar)*radii.y,sin(angle)*radii.z*envelope)
 			line.append(center+pose*point)
-		_strand(line,0.006,Color(0.64,0.65,0.62))
+		_strand(line,0.006,Color(0.42,0.415,0.37))
 	for i in 3:
 		var angle := TAU*float(i)/3.0
 		var path: Array = []
@@ -272,7 +281,7 @@ func _nest(center: Vector3, radius: float) -> void:
 	for i in 5:
 		var egg_at := center+Vector3(-radius*0.57+_rng.randf_range(-0.18,0.16),0.25+float(i%2)*0.10,radius*0.38+_rng.randf_range(-0.18,0.14))
 		var size := _rng.randf_range(0.85,1.18)
-		_ellipsoid(egg_at,Vector3(0.12,0.17,0.11)*size,Basis(Vector3.FORWARD,_rng.randf_range(-0.2,0.2)),Color(0.74,0.75,0.71))
+		_ellipsoid(egg_at,Vector3(0.12,0.17,0.11)*size,Basis(Vector3.FORWARD,_rng.randf_range(-0.2,0.2)),Color(0.62,0.62,0.55))
 	for i in 12:
 		var angle := float(i)/12.0*TAU
 		var start := center+Vector3(cos(angle)*radius*0.4,0.23,sin(angle)*radius*0.4)
