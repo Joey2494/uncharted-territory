@@ -153,7 +153,12 @@ func third_route() -> void:
 	await clear_room(&"E")
 	await clear_room(&"F")
 	await use_station(&"charge")
+	await use_station(&"tide")
+	check(map.get_hud_objective().title.contains("升高水位"), "提前降潮但未开手柄时先提示升潮才能到达 F")
+	await use_station(&"tide")
 	await use_station(&"highwalk")
+	await go(map.get_node("Rooms/H").global_position + Vector3(0, 0.05, 2))
+	check(map.get_hud_objective().category == "支线任务" and map.get_hud_objective().title.contains("西返 F"), "花园提示可选奖励和明确返程方向")
 	await use_station(&"tide")
 	await use_station(&"director")
 	# 最终守卫允许测试定位；泄压仍是不可绕过的独立胜利条件。

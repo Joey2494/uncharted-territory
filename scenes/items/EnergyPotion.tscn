@@ -1,0 +1,32 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/items/HealthPotion.tscn" id="bottle"]
+
+[sub_resource type="StandardMaterial3D" id="Starlight"]
+albedo_color = Color(0.12, 0.51, 0.98, 1)
+emission_enabled = true
+emission = Color(0.02, 0.18, 0.47, 1)
+roughness = 0.32
+
+[node name="EnergyPotion" instance=ExtResource("bottle")]
+item_type = 5
+
+[node name="Bottle" parent="Visuals" index="0"]
+material_override = SubResource("Starlight")
+
+[node name="Neck" parent="Visuals" index="1"]
+material_override = SubResource("Starlight")
+
+[node name="CrossVertical" parent="Visuals" index="3"]
+rotation = Vector3(0, 0, -0.48)
+position = Vector3(-0.022, 0.06, 0.225)
+
+[node name="CrossHorizontal" parent="Visuals" index="4"]
+rotation = Vector3(0, 0, -0.48)
+position = Vector3(0.023, -0.055, 0.225)
+
+[node name="Halo" parent="." index="2"]
+material_override = SubResource("Starlight")
+
+[node name="NameLabel" parent="." index="3"]
+modulate = Color(0.55, 0.85, 1, 1)

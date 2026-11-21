@@ -96,7 +96,6 @@ func _ready() -> void:
 	_create_exit()
 	_refresh_world()
 	_player.died.connect(_finish.bind(false))
-	_inventory.grant_reward("level03_maintenance_supply", {_inventory.HEALTH_POTION: 2})
 	feedback.emit("靠近检修沙盘按 E，了解潮位如何改变通路。")
 
 
@@ -327,6 +326,10 @@ func _create_stations() -> void:
 	_layout.label($Rooms/B, "高水位 E →", Vector3(7.2, 0.09, -1.7), Color("b4f2ff"), true)
 	_layout.label($Rooms/B, "↑ G 中心闸门", Vector3(0, 0.09, -6.2), Color("f9dc9d"), true)
 	_layout.label($Rooms/B, "F 高架 ↗", Vector3(7.2, 0.09, -6.8), Color("f9dc9d"), true)
+	_layout.label($Rooms/C, "← D 折流廊", Vector3(-4.9, 0.1, -1.3), Color("f9dc9d"), true)
+	_layout.label($Rooms/C, "↑ I 泄压井", Vector3(1.3, 0.1, -5.6), Color("a3e9e1"), true)
+	_layout.label($Rooms/F, "← 高架回 B", Vector3(-4.6, 0.1, 1.6), Color("f9dc9d"), true)
+	_layout.label($Rooms/F, "支线 H 花园 →", Vector3(4.0, 0.1, 1.6), Color("b4f2ff"), true)
 	_layout.label($Rooms/G, "沙缚王与双链执刑官", Vector3(-5.8, 0.09, -5.7), Color("ffc9a1"), true)
 
 

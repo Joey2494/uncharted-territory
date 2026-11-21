@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scenes/dungeon/level03/level03_preview.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player/PlayerKnight.tscn" id="2"]
@@ -6,6 +6,10 @@
 [ext_resource type="Script" path="res://scenes/dungeon/components/room_progress_controller.gd" id="4"]
 [ext_resource type="Script" path="res://scenes/dungeon/level03/tide_layout.gd" id="5"]
 [ext_resource type="Script" path="res://scenes/dungeon/level03/tide_hud.gd" id="6"]
+
+[ext_resource type="PackedScene" path="res://scenes/items/HealthPotion.tscn" id="arrival_potion"]
+[ext_resource type="PackedScene" path="res://scenes/items/EnergyPotion.tscn" id="workshop_potion"]
+[ext_resource type="PackedScene" path="res://scenes/items/GuardRune.tscn" id="gate_rune"]
 
 [sub_resource type="Environment" id="Environment_preview"]
 background_mode = 1
@@ -27,6 +31,17 @@ script = ExtResource("5")
 [node name="CombatGates" type="Node3D" parent="."]
 
 [node name="Stations" type="Node3D" parent="."]
+
+[node name="Supplies" type="Node3D" parent="."]
+
+[node name="ArrivalPotion" parent="Supplies" instance=ExtResource("arrival_potion")]
+position = Vector3(3.1, 0, 23.4)
+
+[node name="WorkshopPotion" parent="Supplies" instance=ExtResource("workshop_potion")]
+position = Vector3(21.8, 0, -25)
+
+[node name="GateRune" parent="Supplies" instance=ExtResource("gate_rune")]
+position = Vector3(-5.2, 0, -15.4)
 
 [node name="Enemies" type="Node3D" parent="."]
 
