@@ -1,5 +1,5 @@
 extends SceneTree
-## 正式第三关直接复用第一关的脚本、参数与跟随构图，使用隔离存档验证。
+## 第三关沿用第一关基础视角，并验证战斗房间构图，使用隔离存档验证。
 ## 实战截图另由 test_level03_enemy_integration.gd -- --capture 验证。
 const Profile = preload("res://scripts/integration/player_profile.gd")
 const Progress = preload("res://scripts/integration/campaign_progress.gd")
@@ -42,7 +42,7 @@ func run() -> void:
 	var reference: Camera3D = first.get_node("Camera3D")
 	var preview: Node3D = load("res://scenes/dungeon/level03/Level03Preview.tscn").instantiate()
 	var preview_camera: Camera3D = preview.get_node("Camera3D")
-	check(preview_camera.get_script() == reference.get_script(), "独立预览直接复用第一关相机脚本")
+	check(preview_camera.get_script().get_base_script() == reference.get_script(), "预览镜头继承共享跟随相机")
 	for key in ["pitch_degrees","minimum_distance","fov","near","far","follow_speed","zoom_speed","actor_padding"]:
 		check(is_equal_approx(float(preview_camera.get(key)),float(reference.get(key))), "预览相机参数与第一关相同：" + key)
 	preview.free()
@@ -59,8 +59,8 @@ func run() -> void:
 		camera = map.get_node("Camera3D")
 		for enemy in map.get_node("Enemies").get_children(): enemy.set_physics_process(false)
 		await frames()
-		check(camera.get_script() == reference.get_script(), "%s 正式入口直接使用第一关相机" % size)
-		check(not host.get_node("UILayer/ResponsiveLayout").compact_combat_layout and not host._commerce.external_shortcut_layout, "第三关使用第一关的 HUD 与取景布局配置")
+		check(camera.get_script().get_base_script() == reference.get_script(), "%s 正式入口接入第三关镜头" % size)
+		check(host.get_node("UILayer/ResponsiveLayout").compact_combat_layout and host._commerce.external_shortcut_layout, "第三关紧凑 HUD 为战斗预留稳定可视区")
 		check(is_equal_approx(camera.rotation_degrees.x,-reference.pitch_degrees), "实际俯角与第一关一致")
 		for key in ["pitch_degrees","minimum_distance","fov","near","far","follow_speed","zoom_speed","actor_padding"]:
 			check(is_equal_approx(float(camera.get(key)),float(reference.get(key))), "正式入口参数与第一关相同：" + key)
