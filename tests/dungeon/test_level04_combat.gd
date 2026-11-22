@@ -150,29 +150,49 @@ func run() -> void:
 	check(names()==["chain_jailer","bone_spike"],"终战执刑官及一名远程近卫")
 	verify_spawn()
 	var jailer: CharacterBody3D = combat._jailer
+	check(jailer.max_hp == 28,"穹顶执刑官限定耐久")
+	check(combat.boss_guard()==jailer and combat._enemies[1].max_hp==9,"血条仅绑定主敌，远程近卫保留旧数值")
+	check(jailer.begin_attack(),"执刑官进入重击预告")
+	var telegraph: Node3D = jailer._warning.get_child(-1)
+	var windup_time: float = jailer._remaining
+	jailer.take_direct_damage(2,player.global_position)
+	check(jailer.hp==jailer.max_hp-2 and jailer.state==jailer.State.WINDUP and jailer._remaining==windup_time and not telegraph.is_queued_for_deletion(),"正常命中扣血，已亮起的重击预警与时钟保持")
+	await frames(62)
+	check(jailer.state==jailer.State.STRIKE,"受击的预告仍兑现重击")
 	var cover_ray := PhysicsRayQueryParameters3D.create(at("I",-3,0)+Vector3.UP,at("I",3,0)+Vector3.UP,1)
 	check(not level.get_world_3d().direct_space_state.intersect_ray(cover_ray).is_empty(),"穹顶中央仪器真实阻断弹道")
 	check(combat.operate_shutter() and combat._sweeps.I.side==1,"选择期可以切换至东侧")
 	combat.update_room("I",3.02)
 	check(combat.operate_shutter() and combat._sweeps.I.side==1,"锁定后扳杆仅预约，不能改本轮")
 	player._invulnerability_remaining=300
-	jailer.take_damage(11)
+	jailer.take_damage(ceili(jailer.max_hp*0.5)-2)
 	combat.update_room("I",0.05)
 	check(not combat.half_announced,"半血推进等待锁定扫光结束")
 	combat.update_room("I",3.1)
 	check(combat._sweeps.I.side==1 and combat._queued_side==0,"扳杆预约只在下一轮开始时兑现")
+	# 采自基础骑士持续进攻时的实跑位置：玩家占住石岛北沿第一个绕行点。
+	jailer.global_position = at("I",-1.269,-2.444)
+	player.global_position = at("I",-0.448,-2.664)
+	var blocked_at := Vector2(player.position.x,player.position.z)
 	combat.update_room("I",0.016)
 	check(combat.half_announced and jailer.advancing and not combat._sweeps.I.active,"半血预告与扫光互斥")
+	var marked: Node = jailer._warning.get_child(-1)
+	var half_hp: int = jailer.hp
+	jailer.take_direct_damage(2,player.position)
+	check(jailer.hp==half_hp-1 and not marked.is_queued_for_deletion(),"举链承受部分直击伤害，推进路线仍可见")
 	var start := jailer.global_position
 	await frames(55)
 	check(jailer.global_position.distance_to(start)<0.25,"半血预告留出反应窗口")
-	await frames(360)
-	check(jailer.global_position.distance_to(at("I",5.4,2.0))<1.1 and not jailer.advancing,"执刑官实际绕岛推进至扳杆侧")
+	for i in 455:
+		if not jailer.advancing: break
+		await physics_frame
+	check(jailer.global_position.distance_to(at("I",5.4,2.0))<1.1 and not jailer.advancing,"执刑官实际绕岛推进至扳杆侧 %s · 玩家 %s" % [jailer.position,player.position])
+	check(blocked_at.distance_to(Vector2(player.position.x,player.position.z))>0.12,"堵路角色在真实碰撞范围内让出举链行进线")
 	combat.update_room("I",0.016)
 	check(combat._sweeps.I.active and not jailer.advancing,"推进后恢复选侧阶段且不重复推进")
 	jailer.take_damage(999)
 	combat.update_room("I",0.016)
-	check(not combat.is_clear("I") and combat.enemy_count()==1,"击败主敌不能跳过存活近卫")
+	check(not combat.is_clear("I") and combat.enemy_count()==1 and combat.boss_guard()==null,"击败主敌收回血条且不能跳过存活近卫")
 	kill_guards()
 	combat.update_room("I",0.016)
 	check(clears==["B","D","F","H","I"] and not combat._sweeps.I.active,"终战完整名单清除后停光")

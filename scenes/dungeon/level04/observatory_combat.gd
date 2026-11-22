@@ -117,6 +117,9 @@ func is_clear(room: String) -> bool:
 func enemy_count() -> int:
 	return _enemies.size()
 
+func boss_guard() -> CharacterBody3D:
+	return _jailer if is_instance_valid(_jailer) else null
+
 func shutter_available() -> bool:
 	return not _stopped and active_room == "I" and not _advance_paused_light and _sweeps.I.active
 
@@ -231,7 +234,7 @@ func _handle_half_health(light: Node3D) -> bool:
 		light.stop()
 		var target := _at("I",Vector2(5.4,2.0),0)
 		_jailer.announce_advance(target)
-		feedback.emit("执刑官正向东侧扳杆推进 · 顶光暂歇")
+		feedback.emit("执刑官举链开道 · 让出东侧扳杆路线，收链后反击")
 		return true
 	return false
 
