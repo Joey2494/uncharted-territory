@@ -38,6 +38,7 @@ func run() -> void:
 			if mat != null and mat.albedo_color.a > 0.99: restored += 1
 	print("south rim / restored island pieces = %d of %d" % [restored,visible_surfaces])
 	passed = passed and restored == 5
+	root.get_node("MusicManager").stop_music()
 	level.queue_free()
 	for i in 3: await process_frame
 	quit(0 if passed else 1)
