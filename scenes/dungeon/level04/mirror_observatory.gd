@@ -1,180 +1,210 @@
 extends Node3D
-## 日晷观测站。主遮光闸供给北出口和支线光源；镜面方向决定真实的可视光路。
+## 第四关独立试玩。门、支线和终点共用同一局的物理与进度状态。
 const CHARACTERS := preload("res://scenes/player/character_catalog.gd")
 const STATION := preload("res://scenes/dungeon/level03/tide_station.gd")
-const GATE := preload("res://scenes/dungeon/components/ProgressionGate.tscn")
-const REWARD := "level04_starlight_register"
-const MIRRORS := [Vector2(15, 2), Vector2(15, -4)]
-const SOURCE := Vector2(10, 2)
-const TABLET := Vector2(15, 6.55)
-const RECEIVER := Vector2(23.4, -4)
-const MIRROR_BOUNDS := Rect2(9, -7, 16, 14)
-const GOLD := Color("#feb84e")
-const CYAN := Color("#7ff1e4")
+const CATALOG := preload("res://data/item_catalog.gd")
+const PLAN := preload("res://scenes/dungeon/level04/observatory_plan.gd")
+const MAIN := ["A","B","C","E","F","H","I","J"]
+const EDGES := PLAN.LINKS
+const NAMES := PLAN.NAMES
 
 signal feedback(message: String)
 signal completed
+signal failed
 
-var powered := false
-var inscription_lit := false
-var finished := false
-var _solved := false
-var _turns := [2, 0]  # 接通电源时北向光抵达乙镜背面。
-var _mirror_heads: Array[Node3D] = []
-var _main_gate: StaticBody3D
-var _vault_gate: StaticBody3D
-var _tablet: Label3D
-var _iris: MeshInstance3D
-var _receiver: MeshInstance3D
-var _reward_mesh: MeshInstance3D
-var _reward_label: Label3D
-
+@onready var player := $Player
 @onready var layout := $Layout
-@onready var beams := $Beams
 @onready var inventory := $Player/ItemInventory
+@onready var combat := $Combat
+@onready var puzzles := $Puzzles
+@onready var mail := $Mail
+@onready var commerce := $CommerceLayer
+var current_room := ""
+var visited := {}
+var finished := false
+var won := false
+var elapsed := 0.0
+var _gate_state := {}
+var _labels := {}
 
 func _enter_tree() -> void:
-	# 读取菜单已选择的角色；独立预览进程默认为骑士，不触发档案读写。
 	$Player.character_id = CHARACTERS.selected_id
 
 func _ready() -> void:
-	$Camera3D.set_safe_frame(Rect2(0.05, 0.15, 0.9, 0.75))
+	$Camera3D.set_safe_frame(Rect2(0.04,0.18,0.91,0.74))
+	var music := get_node_or_null("/root/MusicManager")
+	if music: music.play_level(4)
 	layout.build()
-	_main_gate = _gate("SolarGate", Vector3(0, 0, -8), "开启前厅遮光闸")
-	_vault_gate = _gate("VaultGate", Vector3(20, 0, -7), "双镜供能")
-	var shutter := _station(&"power", Vector2(-2.5, 4), "升起遮光闸")
-	layout.block(shutter, Vector3(0, 0.8, 0), Vector3(0.26, 0.85, 0.24), GOLD).rotation.z = -0.48
-	for i in MIRRORS.size():
-		var name_id := "alpha" if i == 0 else "beta"
-		var station := _station(StringName(name_id), MIRRORS[i], "转动甲镜" if i == 0 else "转动乙镜")
-		var head := Node3D.new()
-		station.add_child(head)
-		head.position.y = 1.16
-		layout.block(head, Vector3.ZERO, Vector3(1.12, 0.74, 0.1), Color("#34556c"))
-		# 单面镜以薄亮面区分背板；局部 +Z 为受光面。
-		layout.block(head, Vector3(0, 0, 0.07), Vector3(1.03, 0.65, 0.03), CYAN, true)
-		_mirror_heads.append(head)
-	var reward := _station(&"claim", Vector2(20, -10), "领取星图符文")
-	_reward_mesh = layout.block(reward, Vector3(0, 0.92, 0), Vector3(0.52, 0.52, 0.52), GOLD, true)
-	_reward_mesh.rotation_degrees.z = 45
-	layout.block(layout, Vector3(SOURCE.x, 1, SOURCE.y), Vector3(0.48, 0.55, 0.55), GOLD, true)
-	layout.block(layout, Vector3(TABLET.x, 0.74, TABLET.y), Vector3(1.55, 1.45, 0.28), Color("#284356"))
-	_tablet = layout.caption(layout, "南壁 · 无字星盘", Vector3(TABLET.x, 1.65, TABLET.y))
-	_receiver = layout.block(layout, Vector3(RECEIVER.x, 0.94, RECEIVER.y), Vector3(0.52, 0.8, 0.82), Color("#41536d"))
-	_iris = layout.block(layout, Vector3(RECEIVER.x - 0.32, 0.95, RECEIVER.y), Vector3(0.13, 0.95, 0.96), Color("#a88654"))
-	layout.caption(layout, "封印透镜", Vector3(RECEIVER.x, 1.75, RECEIVER.y))
-	_refresh_optics()
+	puzzles.setup(self)
+	combat.setup(self)
+	mail.setup(self)
+	for data in [["left","D",-4.0,2.0,"左链轮"],["right","D",-4.0,-2.0,"右链轮"],
+			["supply","H",3.0,5.5,"急救药箱"],["shutter","I",6.0,0.0,"百叶换向杆"]]:
+		var at: Vector3 = layout.room_center(data[1]) + Vector3(data[2],0,data[3])
+		var station := add_station(data[0], at, data[4])
+		var handle = layout.block(station, Vector3(0,0.85,0),Vector3(0.22,0.56,0.22),Color("#e1aa63"))
+		handle.rotation.z = -0.42
+	var pad: Vector3 = layout.room_center("J") + Vector3(0,0.025,-1.8)
 
-func _gate(title: String, point: Vector3, hint: String) -> StaticBody3D:
-	var gate := GATE.instantiate() as StaticBody3D
-	gate.name = title
-	gate.position = point
-	gate.locked_message = hint
-	add_child(gate)
-	return gate
+	layout.caption(layout,"登台离站",pad+Vector3(0,0.8,-0.8))
 
-func _station(id: StringName, point: Vector2, hint: String) -> Node3D:
+	combat.feedback.connect(note)
+	combat.battle_started.connect(_battle_started)
+	combat.battle_cleared.connect(_battle_cleared)
+	player.died.connect(_die)
+	player.feedback.connect(note)
+	inventory.feedback.connect(note)
+	commerce.bind_inventory(inventory, func() -> bool: return not finished and not puzzles.modal_open())
+	commerce.external_pause_state = func() -> bool: return $HUD/Overlay.visible and not finished
+	commerce.set_run_active(true)
+	_refresh_gates()
+	_record_location()
+
+func _battle_started(id: String) -> void:
+	layout.seal_room(id,true)
+	note("%s封场 · 清除守卫" % NAMES[id])
+
+func _battle_cleared(id: String) -> void:
+	layout.seal_room(id,false)
+	_refresh_gates()
+	inventory.grant_reward("observatory_encounter_"+id,{},12 if id != "I" else 25)
+	note("%s清场 · 获得补给金币" % NAMES[id])
+
+func _refresh_gates() -> void:
+	for edge: String in EDGES:
+		var opened := true
+		match edge:
+			"BC": opened = combat.is_clear("B")
+			"EF","EK": opened = puzzles.calibrated
+			"FG","FH": opened = combat.is_clear("F")
+			"HI","HL": opened = combat.is_clear("H")
+			"IJ": opened = combat.is_clear("I")
+		if _gate_state.get(edge) != opened:
+			_gate_state[edge] = opened
+			layout.set_passage(edge[0],edge[1],opened)
+
+func add_station(id: StringName, point: Vector3, hint: String) -> Node3D:
 	var station := STATION.new()
 	station.name = id
 	station.action = id
 	station.level = self
 	station.caption = hint
-	station.position = Vector3(point.x, 0, point.y)
+	station.position = point
 	$Stations.add_child(station)
-	layout.solid(station, Vector3(0, 0.34, 0), Vector3(1.12, 0.68, 1.12), Color("#3e5566")).name = "Body"
-	var caption: Label3D = layout.caption(station, hint, Vector3(0, 1.93, 0))
-	if id == &"claim":
-		_reward_label = caption
-		caption.hide()
-		_vault_gate.opened.connect(func(_id: StringName): caption.show())
+	layout.solid(station,Vector3(0,0.27,0),Vector3(0.86,0.54,0.86),Color("#364c59")).name = "Body"
+	var label: Label3D = layout.caption(station,hint,Vector3(0,1.65,0))
+	label.pixel_size = 0.006
+	label.visible = false
+	_labels[station] = label
 	return station
 
 func station_available(id: StringName) -> bool:
-	if finished or not can_process(): return false
+	if finished or not is_node_ready() or not can_process() or player.is_dead(): return false
+	if String(id).begins_with("p_"): return puzzles.available(id)
+	if String(id).begins_with("mail_"): return mail.available(id)
 	match id:
-		&"power": return not powered
-		&"alpha", &"beta": return powered and not _solved
-		&"claim": return vault_open() and not reward_claimed()
+		&"left",&"right": return combat.is_clear("D") and combat.active_room == ""
+		&"supply": return not inventory.has_claimed("observatory_aid")
+		&"shutter": return combat.shutter_available()
 	return false
 
 func use_station(id: StringName) -> bool:
 	if not station_available(id): return false
+	if String(id).begins_with("p_"):
+		var used: bool = puzzles.interact(id)
+		_refresh_gates()
+		return used
+	if String(id).begins_with("mail_"): return mail.interact(id)
 	match id:
-		&"power":
-			powered = true
-			_main_gate.open_gate()
-			feedback.emit("遮光闸已升起。北行可离站；东侧镜室的日光也已接通。")
-		&"alpha", &"beta":
-			var index := 0 if id == &"alpha" else 1
-			_turns[index] = (_turns[index] + 1) % 4
-		&"claim":
-			if not inventory.grant_reward(REWARD, {inventory.ATTACK_RUNE: 1}): return false
-			_reward_mesh.hide()
-			_reward_label.text = "星图已归档"
-			feedback.emit("获得星图符文。沿西廊返回，北行离站。")
-	_refresh_optics()
-	return true
+		&"left",&"right":
+			var side := -1 if id == &"left" else 1
+			if not combat.set_cage(side):
+				note("吊笼暂不能移位，请先让出停靠区。")
+				return false
+			if combat.requested_cage_side != combat.cage_side:
+				note("已挂好链轮，吊笼将在停靠区腾空后落下。")
+			else:
+				note("吊笼已降在%s廊。" % ("左" if side < 0 else "右"))
+			if combat.is_clear("F") and not inventory.has_claimed("observatory_rigging"):
+				claim("observatory_rigging",{CATALOG.GUARD_RUNE:1},"检修完成 · 获得守护符文")
+			return true
+		&"supply": return claim("observatory_aid",{CATALOG.HEALTH_POTION:1},"已收起生命药剂 · R 使用")
+		&"shutter": return combat.operate_shutter()
+	return false
 
-func reward_claimed() -> bool:
-	return inventory.has_claimed(REWARD)
+func claim(key: String, items: Dictionary, success: String) -> bool:
+	if inventory.grant_reward(key,items):
+		note(success)
+		return true
+	note("背包已满，物资仍留在原处。")
+	return false
 
-func vault_open() -> bool:
-	return _vault_gate != null and _vault_gate.is_open()
+func note(message: String) -> void:
+	feedback.emit(message)
 
-## 计算镜面的实际法线。第一面将东向入射光导向南壁或乙镜，第二面可将光导向接收器。
-func _normal(index: int) -> Vector2:
-	var initial := Vector2(1, 1) if index == 0 else Vector2(1, -1)
-	return initial.normalized().rotated(_turns[index] * PI / 2.0)
+func optional_done(id: String) -> bool:
+	match id:
+		"D": return combat.cage_side != 0
+		"G": return mail.chosen()
+		"K": return puzzles.mirror_claimed
+		"L": return puzzles.film_claimed
+	return false
 
-func _refresh_optics() -> void:
-	for child in beams.get_children():
-		beams.remove_child(child)
-		child.queue_free()
-	for i in MIRRORS.size():
-		var normal := _normal(i)
-		_mirror_heads[i].rotation.y = atan2(normal.x, normal.y)
-	if not powered: return
-	var origin := SOURCE
-	var direction := Vector2.RIGHT
-	# 两面平面镜至多需要三段光。用同一交点驱动可见光束与受光判定。
-	for _bounce in 3:
-		var edge := MIRROR_BOUNDS.end if direction.x + direction.y > 0 else MIRROR_BOUNDS.position
-		var nearest := absf(edge.x - origin.x) if absf(direction.x) > 0.5 else absf(edge.y - origin.y)
-		var hit := -1
-		var targets := [MIRRORS[0], MIRRORS[1], TABLET, RECEIVER]
-		for i in targets.size():
-			var diff: Vector2 = targets[i] - origin
-			var distance := diff.dot(direction)
-			if distance > 0.01 and distance < nearest and absf(diff.cross(direction)) < 0.01:
-				nearest = distance
-				hit = i
-		var end := origin + direction * nearest
-		layout.beam(beams, origin, end, GOLD if _bounce == 0 else CYAN)
-		if hit == 2:
-			if not inscription_lit:
-				inscription_lit = true
-				_tablet.text = "北星折向日出 →"
-				_receiver.material_override = layout.material(CYAN, true)
-				create_tween().tween_property(_iris, "position:y", 0.15, 0.4)
-				feedback.emit("南壁显影「先引北星，再照日出」。封印透镜已露出。")
-			break
-		if hit == 3:
-			if inscription_lit and not _solved:
-				_solved = true
-				_vault_gate.open_gate()
-				feedback.emit("透镜聚光。镜室北壁的星图柜已解封。")
-			elif not inscription_lit:
-				feedback.emit("透镜仍有遮罩。先让光线照亮南壁的无字星盘。")
-			break
-		if hit < 0: break
-		var normal := _normal(hit)
-		if direction.dot(normal) >= 0: break
-		direction = direction.bounce(normal).round()
-		origin = end
+func optional_count() -> int:
+	var count := 0
+	for id in ["D","G","K","L"]:
+		if optional_done(id): count += 1
+	return count
 
-func _physics_process(_delta: float) -> void:
-	if finished or not powered or not _main_gate.is_open(): return
-	var p: Vector3 = $Player.position
-	if absf(p.x) <= 4.5 and p.z <= -13.25 and p.z >= -16.9 and absf(p.y) <= 1.3:
+func side_hint() -> String:
+	match current_room:
+		"D": return "支线 · 检修左右链轮，选择 F 的掩体位置"
+		"G": return "支线 · 当场取药，或寄到穹顶领取双份物资"
+		"K": return "支线 · 用两面单向镜照亮星图"
+		"L": return "支线 · 用三张试片找出按下快门的人"
+	return ""
+
+func objective() -> String:
+	if combat.active_room != "":
+		return "%s · 清场   场内守卫 %d" % [NAMES[combat.active_room],combat.enemy_count()]
+	if not combat.is_clear("B"): return "北行去 B 装卸场，清除守卫"
+	if not puzzles.calibrated: return "在 E 记录室读曝光盘，校准三位密码柜"
+	if not combat.is_clear("F"): return "前往 F 栈道，绕过隔墙迎击守卫"
+	if not combat.is_clear("H"): return "去 H 试车场，看一次无伤示范后进入内场"
+	if not combat.is_clear("I"): return "去 I 主穹顶，击败执刑官与近卫"
+	return "穿过北门，在 J 升降台中央离站"
+
+func _record_location() -> void:
+	current_room = layout.room_at(player.position)
+	if current_room != "": visited[current_room] = true
+
+func _physics_process(delta: float) -> void:
+	if finished or player.is_dead(): return
+	elapsed += delta
+	_record_location()
+	var encounter_room := current_room
+	match current_room:
+		"D": if not combat.is_clear("B"): encounter_room = ""
+		"F": if not combat.is_clear("B") or not puzzles.calibrated: encounter_room = ""
+		"H": if not combat.is_clear("F"): encounter_room = ""
+		"I": if not combat.is_clear("H"): encounter_room = ""
+	combat.update_room(encounter_room,delta)
+	if finished: return
+	mail.advance(delta)
+	_refresh_gates()
+	for station: Node3D in _labels:
+		_labels[station].visible = player.position.distance_squared_to(station.position) < 18.0
+	var point: Vector3 = player.position - layout.room_center("J")
+	if current_room == "J" and combat.is_clear("I") and layout.passage_open("I","J") and absf(point.x) < 1.9 and absf(point.z+1.8) < 1.3 and absf(point.y) < 1.2:
 		finished = true
+		won = true
+		combat.stop()
+		commerce.finish_run()
 		completed.emit()
+
+func _die() -> void:
+	if finished: return
+	finished = true
+	combat.stop()
+	commerce.finish_run()
+	failed.emit()

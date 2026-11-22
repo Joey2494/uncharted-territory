@@ -1,11 +1,25 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scenes/dungeon/level04/mirror_observatory.gd" id="1"]
 [ext_resource type="Script" path="res://scenes/dungeon/level04/observatory_layout.gd" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/player/PlayerKnight.tscn" id="3"]
-[ext_resource type="Script" path="res://scenes/dungeon/follow_camera.gd" id="4"]
+[ext_resource type="Script" path="res://scenes/dungeon/level04/observatory_camera.gd" id="4"]
 [ext_resource type="Script" path="res://scenes/dungeon/level04/observatory_hud.gd" id="5"]
 [ext_resource type="Font" path="res://scenes/ui/dungeon_font.tres" id="6"]
+
+[ext_resource type="Script" path="res://scenes/dungeon/level04/observatory_combat.gd" id="7"]
+[ext_resource type="Script" path="res://scenes/dungeon/level04/observatory_puzzles.gd" id="8"]
+[ext_resource type="Script" path="res://scenes/dungeon/level04/observatory_mail.gd" id="9"]
+[ext_resource type="PackedScene" path="res://scenes/ui/CommerceLayer.tscn" id="10"]
+
+[sub_resource type="StyleBoxFlat" id="Slate"]
+bg_color = Color(0.045, 0.088, 0.11, 0.93)
+border_width_left = 3
+border_color = Color(0.83, 0.64, 0.39, 1)
+content_margin_left = 11.0
+content_margin_right = 11.0
+content_margin_top = 6.0
+content_margin_bottom = 6.0
 
 [sub_resource type="Environment" id="Env"]
 background_mode = 1
@@ -24,12 +38,23 @@ script = ExtResource("1")
 [node name="Layout" type="Node3D" parent="."]
 script = ExtResource("2")
 
-[node name="Beams" type="Node3D" parent="."]
+[node name="Puzzles" type="Node3D" parent="."]
+script = ExtResource("8")
+
+[node name="Combat" type="Node3D" parent="."]
+script = ExtResource("7")
+
+[node name="Mail" type="Node3D" parent="."]
+script = ExtResource("9")
+
+[node name="CommerceLayer" parent="." instance=ExtResource("10")]
+external_pause = true
+
 
 [node name="Stations" type="Node3D" parent="."]
 
 [node name="Player" parent="." instance=ExtResource("3")]
-position = Vector3(0, 0.05, 11)
+position = Vector3(0, 0.05, 2)
 
 [node name="Camera3D" type="Camera3D" parent="."]
 current = true
@@ -52,7 +77,8 @@ script = ExtResource("5")
 [node name="Readout" type="PanelContainer" parent="HUD"]
 offset_left = 12.0
 offset_top = 12.0
-offset_right = 402.0
+offset_right = 335.0
+theme_override_styles/panel = SubResource("Slate")
 theme = SubResource("FontTheme")
 mouse_filter = 2
 
@@ -64,8 +90,18 @@ mouse_filter = 2
 theme_override_colors/font_color = Color(1, 0.82, 0.52, 1)
 text = "第四关   日晷观测站"
 
+[node name="Vitals" type="Label" parent="HUD/Readout/Rows"]
+theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.71, 0.88, 0.86, 1)
+
 [node name="Goal" type="Label" parent="HUD/Readout/Rows"]
 autowrap_mode = 3
+
+[node name="Side" type="Label" parent="HUD/Readout/Rows"]
+visible = false
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.52, 0.81, 0.78, 1)
 
 [node name="Message" type="Label" parent="HUD/Readout/Rows"]
 visible = false
@@ -83,7 +119,46 @@ anchor_bottom = 1.0
 offset_left = 14.0
 offset_top = -39.0
 theme = SubResource("FontTheme")
-text = "WASD 移动     E 操作     Esc 暂停"
+text = "WASD 移动   E 操作   J 攻击   K 法术   空格闪避"
+
+[node name="Boss" type="PanelContainer" parent="HUD"]
+visible = false
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = -122.0
+offset_right = 122.0
+offset_top = -94.0
+offset_bottom = -46.0
+mouse_filter = 2
+theme = SubResource("FontTheme")
+theme_override_styles/panel = SubResource("Slate")
+
+[node name="Rows" type="VBoxContainer" parent="HUD/Boss"]
+mouse_filter = 2
+
+[node name="Name" type="Label" parent="HUD/Boss/Rows"]
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 15
+
+[node name="Health" type="ProgressBar" parent="HUD/Boss/Rows"]
+custom_minimum_size = Vector2(0, 8)
+show_percentage = false
+mouse_filter = 2
+
+[node name="MapButton" type="Button" parent="HUD"]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -132.0
+offset_right = -14.0
+offset_top = -54.0
+offset_bottom = -14.0
+focus_mode = 0
+theme = SubResource("FontTheme")
+text = "路线图 · Tab"
 
 [node name="Overlay" type="ColorRect" parent="HUD"]
 visible = false
@@ -98,10 +173,11 @@ anchor_left = 0.5
 anchor_right = 0.5
 anchor_top = 0.5
 anchor_bottom = 0.5
-offset_left = -190.0
-offset_right = 190.0
-offset_top = -118.0
-offset_bottom = 118.0
+offset_left = -212.0
+offset_right = 212.0
+offset_top = -275.0
+alignment = 1
+offset_bottom = 275.0
 theme_override_constants/separation = 10
 
 [node name="Title" type="Label" parent="HUD/Overlay/Card"]
@@ -115,6 +191,9 @@ horizontal_alignment = 1
 
 [node name="Resume" type="Button" parent="HUD/Overlay/Card"]
 text = "继续探索"
+
+[node name="Backpack" type="Button" parent="HUD/Overlay/Card"]
+text = "本局背包"
 
 [node name="Restart" type="Button" parent="HUD/Overlay/Card"]
 text = "重新进入观测站"

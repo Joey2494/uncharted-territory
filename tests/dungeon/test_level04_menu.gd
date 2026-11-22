@@ -43,14 +43,29 @@ func run() -> void:
 		check(current_scene.scene_file_path == PREVIEW, "连按只进入白盒一次")
 		if current_scene.scene_file_path == PREVIEW:
 			check(current_scene.get_node("Player").character_id == "lan", "白盒沿用已选角色")
-			current_scene.use_station(&"power")
+			current_scene.inventory.add_item(0, 1)
 			var preview_id := current_scene.get_instance_id()
+			await tap(KEY_TAB)
+			check(paused and current_scene.get_node("HUD").map.is_visible_in_tree(), "Tab 打开实际路线图并暂停")
+			await tap(KEY_TAB)
+			check(not paused, "Tab 可关闭有焦点的路线图")
+			await tap(KEY_P)
+			check(paused and current_scene.commerce.shop.visible, "同一局打开商城")
+			await tap(KEY_ESCAPE)
+			check(not paused and not current_scene.commerce.shop.visible, "关闭商城恢复当前房间")
+			await pause_preview()
+			current_scene.get_node("HUD/Overlay/Card/Backpack").pressed.emit()
+			await frames(2)
+			check(paused and current_scene.commerce.backpack.visible, "暂停内可打开本局背包")
+			await tap(KEY_ESCAPE)
+			check(paused and current_scene.get_node("HUD/Overlay").visible, "离开背包返回原暂停菜单")
+			await pause_preview()
 			await pause_preview()
 			var restart := current_scene.get_node("HUD/Overlay/Card/Restart") as Button
 			check(restart.is_visible_in_tree(), "暂停菜单可以重开白盒")
 			restart.pressed.emit()
 			await frames()
-			check(current_scene.get_instance_id() != preview_id and not current_scene.powered and not paused, "重开后恢复未供能的可操作场景")
+			check(current_scene.get_instance_id() != preview_id and current_scene.inventory.potion_count == 0 and current_scene.visited.size() == 1 and not paused, "重开后恢复初始背包和探索进度的可操作场景")
 			await return_from_preview()
 		check(current_scene.scene_file_path == "res://Main.tscn", "回到战役宿主")
 		if current_scene.scene_file_path == "res://Main.tscn":
@@ -70,9 +85,12 @@ func run() -> void:
 	quit(1 if failures else 0)
 
 func pause_preview() -> void:
+	await tap(KEY_ESCAPE)
+
+func tap(key: Key) -> void:
 	var cancel := InputEventKey.new()
-	cancel.keycode = KEY_ESCAPE
-	cancel.physical_keycode = KEY_ESCAPE
+	cancel.keycode = key
+	cancel.physical_keycode = key
 	cancel.pressed = true
 	Input.parse_input_event(cancel)
 	await frames(2)

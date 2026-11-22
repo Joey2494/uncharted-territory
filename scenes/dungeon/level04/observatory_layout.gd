@@ -10,6 +10,7 @@ const MAIN := Color("#dda969")
 const SIDE := Color("#68d9cd")
 const HALF_BRIDGE := 2.5
 var _gates: Dictionary = {}
+var _room_seals: Dictionary = {}
 var _materials: Dictionary = {}
 
 func build() -> void:
@@ -45,9 +46,33 @@ func set_passage(a: String, b: String, open: bool) -> void:
 	gate.set_combat_locked(not open)
 	if open: gate.open_gate()
 
+## 战斗闸落在房间边界。玩家跨过内线后不能退到连接桥中射击。
+func seal_room(id: String, locked: bool) -> void:
+	for link: String in PLAN.LINKS:
+		if not link.contains(id): continue
+		var other := link.replace(id,"")
+		var key := id + other
+		var gate = _room_seals.get(key)
+		if gate == null:
+			if not locked: continue
+			var at := PLAN.doorway(id,other)
+			gate = GATE.instantiate()
+			gate.name = "Seal_" + key
+			gate.gate_id = StringName(key)
+			gate.initially_open = true
+			gate.show_lock_label = false
+			gate.position = Vector3(at.x,0,at.y)
+			gate.rotation.y = PI/2 if room_center(id).x != room_center(other).x else 0.0
+			add_child(gate)
+			_room_seals[key] = gate
+		gate.set_combat_locked(locked)
+
 func passage_open(a: String, b: String) -> bool:
 	var gate = _gates.get(_key(a, b))
-	return gate != null and gate.is_open()
+	if gate == null or not gate.is_open(): return false
+	for key: String in [a+b,b+a]:
+		if _room_seals.has(key) and not _room_seals[key].is_open(): return false
+	return true
 
 func _build_room(id: String) -> void:
 	var room := Node3D.new()
