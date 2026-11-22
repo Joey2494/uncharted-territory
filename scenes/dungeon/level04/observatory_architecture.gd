@@ -53,12 +53,14 @@ static func dress(layout) -> void:
 
 	var dome: Node3D = layout.get_node("I")
 	_threshold(layout,dome,Vector2(0,5.5),Vector2(1,0),"前方封场 · 可先返回",false)
-	# 穹顶仪器座的碰撞挡住投射物；日轮与黄道圈只作仪器的上部轮廓。
-	_disc(layout,dome,Vector3(0,0.87,0),2.30,1.74,STONE,true)
-	_disc(layout,dome,Vector3(0,1.78,0),2.34,0.12,BRONZE,false)
-	_ring(layout,dome,Vector3(0,2.32,0),1.43,0.095,COPPER).rotation.x = 1.02
-	_ring(layout,dome,Vector3(0,2.32,0),1.42,0.075,CYAN).rotation.z = 1.20
-	_disc(layout,dome,Vector3(0,2.05,0),0.39,0.56,COPPER,false)
+	# 相机以射线命中的实体为单位淡化其子网格。日轮与双环随仪器座一起淡出；
+	# 仪器座仍保留完整碰撞，能阻挡投射物和角色。
+	var island := _disc(layout,dome,Vector3(0,0.87,0),2.30,1.74,STONE,true)
+	island.name = "InstrumentIsland"
+	_disc(layout,island,Vector3(0,0.91,0),2.34,0.12,BRONZE,false)
+	_ring(layout,island,Vector3(0,1.45,0),1.43,0.095,COPPER).rotation.x = 1.02
+	_ring(layout,island,Vector3(0,1.45,0),1.42,0.075,CYAN).rotation.z = 1.20
+	_disc(layout,island,Vector3(0,1.18,0),0.39,0.56,COPPER,false)
 	for p: Vector2 in [Vector2(-7.4,1.55),Vector2(7.4,-2)]:
 		layout.solid(dome,Vector3(p.x,0.82,p.y),Vector3(1.4,1.64,1.35),STONE)
 	var j: Node3D = layout.get_node("J")
