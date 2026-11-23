@@ -89,8 +89,9 @@ func update_product(data: Dictionary) -> void:
 	_name_label.text = str(data.get("name","物品"))
 	_category.text = str(data.get("category",""))
 	_summary.text = str(data.get("summary",""))
+	tooltip_text = _summary.text
 	_price.text = "%d 金币" % maxi(int(data.get("price",0)),0)
-	_owned.text = "已持有 %d" % maxi(int(data.get("owned",0)),0)
+	_owned.text = "E 比较后装备" if data.get("category", "") == "装备" else "已持有 %d" % maxi(int(data.get("owned",0)),0)
 	_buy.text = str(data.get("purchase_label","购买"))
 	_buy.disabled = not data.get("can_buy",false)
 

@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3]
+[gd_scene load_steps=24 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/hud.gd" id="1_hud"]
 [ext_resource type="Texture2D" path="res://assets/ui/weapon_empty.svg" id="2_empty"]
@@ -16,6 +16,8 @@
 
 [ext_resource type="Script" path="res://scenes/ui/tutorial_prompt.gd" id="14_tutorial"]
 [ext_resource type="Script" path="res://scenes/ui/hotbar.gd" id="15_hotbar"]
+
+[ext_resource type="Texture2D" path="res://assets/ui/switch_weapon.svg" id="17_switch"]
 
 [ext_resource type="Script" path="res://scenes/ui/skill_cluster.gd" id="16_cluster"]
 
@@ -186,7 +188,7 @@ theme_override_constants/separation = 6
 layout_mode = 2
 mouse_filter = 2
 theme_override_font_sizes/font_size = 11
-text = "技能能量"
+text = "法力"
 theme_override_colors/font_color = Color(0.68, 0.64, 0.53, 1)
 
 
@@ -276,43 +278,6 @@ mouse_filter = 2
 custom_minimum_size = Vector2(0, 5)
 theme_override_constants/separation = 4
 
-[node name="WeaponBadge" type="PanelContainer" parent="Panel/Padding/Content/LowerRow"]
-unique_name_in_owner = true
-layout_mode = 2
-mouse_filter = 2
-custom_minimum_size = Vector2(86, 0)
-theme_override_styles/panel = SubResource("Style_weapon")
-
-[node name="Padding" type="MarginContainer" parent="Panel/Padding/Content/LowerRow/WeaponBadge"]
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/margin_left = 7
-theme_override_constants/margin_right = 7
-
-[node name="Row" type="HBoxContainer" parent="Panel/Padding/Content/LowerRow/WeaponBadge/Padding"]
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/separation = 6
-
-[node name="WeaponIcon" type="TextureRect" parent="Panel/Padding/Content/LowerRow/WeaponBadge/Padding/Row"]
-unique_name_in_owner = true
-layout_mode = 2
-mouse_filter = 2
-custom_minimum_size = Vector2(22, 22)
-size_flags_vertical = 4
-self_modulate = Color(0.72, 0.62, 0.37, 1)
-texture = ExtResource("2_empty")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="WeaponLabel" type="Label" parent="Panel/Padding/Content/LowerRow/WeaponBadge/Padding/Row"]
-unique_name_in_owner = true
-layout_mode = 2
-mouse_filter = 2
-theme_override_font_sizes/font_size = 12
-text = "已装备"
-
-
 [node name="WeaponHint" type="Label" parent="Panel"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -390,38 +355,38 @@ text = "0"
 theme_override_colors/font_color = Color(0.90, 0.79, 0.55, 1)
 
 
-[node name="AmmoCell" type="HBoxContainer" parent="ResourcesPanel/Padding/Content/Counters"]
+[node name="WeaponCell" type="HBoxContainer" parent="ResourcesPanel/Padding/Content/Counters"]
 layout_mode = 2
 mouse_filter = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
-[node name="AmmoIcon" type="TextureRect" parent="ResourcesPanel/Padding/Content/Counters/AmmoCell"]
+[node name="WeaponIcon" type="TextureRect" parent="ResourcesPanel/Padding/Content/Counters/WeaponCell"]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 custom_minimum_size = Vector2(24, 24)
 size_flags_vertical = 4
-self_modulate = Color(0.77, 0.65, 0.39, 1)
-texture = ExtResource("12_ammo")
+self_modulate = Color(1, 1, 1, 1)
+texture = ExtResource("2_empty")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Readout" type="VBoxContainer" parent="ResourcesPanel/Padding/Content/Counters/AmmoCell"]
+[node name="Readout" type="VBoxContainer" parent="ResourcesPanel/Padding/Content/Counters/WeaponCell"]
 layout_mode = 2
 mouse_filter = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 0
 
-[node name="Caption" type="Label" parent="ResourcesPanel/Padding/Content/Counters/AmmoCell/Readout"]
+[node name="WeaponLabel" type="Label" parent="ResourcesPanel/Padding/Content/Counters/WeaponCell/Readout"]
+unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
-theme_override_font_sizes/font_size = 11
-text = "弹药"
-theme_override_colors/font_color = Color(0.64, 0.60, 0.51, 1)
+theme_override_font_sizes/font_size = 12
+text = "当前武器"
+theme_override_colors/font_color = Color(0.90, 0.79, 0.55, 1)
 
-
-[node name="AmmoLabel" type="Label" parent="ResourcesPanel/Padding/Content/Counters/AmmoCell/Readout"]
+[node name="AmmoLabel" type="Label" parent="ResourcesPanel/Padding/Content/Counters/WeaponCell/Readout"]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
@@ -566,3 +531,17 @@ layout_mode = 2
 size_flags_horizontal = 3
 ability_name = "角色技能"
 input_hint = "L"
+
+[node name="SwitchCooldown" parent="CooldownBar" instance=ExtResource("7_cooldown")]
+unique_name_in_owner = true
+layout_mode = 2
+ability_name = "切换武器"
+input_hint = "I"
+ability_icon = ExtResource("17_switch")
+
+[node name="ReplenishCooldown" parent="CooldownBar" instance=ExtResource("7_cooldown")]
+unique_name_in_owner = true
+layout_mode = 2
+ability_name = "补给"
+input_hint = "K"
+ability_icon = ExtResource("12_ammo")

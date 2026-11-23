@@ -1,5 +1,6 @@
 extends Control
 const CATALOG = preload("res://scenes/player/character_catalog.gd")
+const WEAPONS = preload("res://scenes/weapons/weapon_catalog.gd")
 const PROFILE = preload("res://scripts/integration/player_profile.gd")
 const DOSSIERS = preload("res://scenes/ui/character_dossiers.gd")
 const STAT_RANGES = preload("res://scenes/ui/character_stat_ranges.gd")
@@ -21,6 +22,8 @@ func _ready() -> void:
 	%NextButton.pressed.connect(_cycle.bind(1))
 	%ConfirmButton.pressed.connect(_confirm)
 	%UnlockButton.pressed.connect(_purchase)
+	%SkillJump.pressed.connect(func() -> void: _jump_to(%SkillTitleRow))
+	%WeaponsJump.pressed.connect(func() -> void: _jump_to(%WeaponSection))
 	%BackButton.pressed.connect(func() -> void: back_requested.emit())
 	visibility_changed.connect(_update_preview)
 	_update_preview()
@@ -62,11 +65,14 @@ func _refresh() -> void:
 	%SpeedStat.tooltip_text += "\n疾跑速度：%.1f 米/秒" % data.run
 	%CharacterCounter.text = "%02d / %02d" % [_index + 1, CATALOG.IDS.size()]
 	%SkillName.text = ability.name
+	%SkillDescription.text = _highlight_stat_values(ability.description)
+	%PassiveDescription.text = _highlight_stat_values(ability.passive_description)
+	_refresh_weapons(id)
 	%SkillIcon.texture = ability.icon
-	%SkillTitleRow.tooltip_text = "%s\n%s\n初始能量 %d" % [ability.name, ability.description, int(data.energy)]
-	%SkillCooldown.text = "冷却 %s 秒" % CATALOG.seconds(ability.cooldown) if ability.active else "无独立主动技能"
+	%SkillTitleRow.tooltip_text = "%s\n%s\n初始法力 %d" % [ability.name, ability.description, int(data.energy)]
+	%SkillCooldown.text = _highlight_stat_values("冷却 %s 秒" % CATALOG.seconds(ability.cooldown)) if ability.active else "无独立主动技能"
 	%InfoScroll.scroll_vertical = 0
-	%ActionLabel.text = {"knight":"沉身蓄力 · 破势斜斩", "lan":"双刃交错突袭", "iron":"迅捷举盾 · 沉劲重击", "astra":"蓝光流转 · 奥术凝聚"}[id]
+	%ActionLabel.text = {"knight":"沉身蓄力 · 破势斜斩", "lan":"移动瞄准 · 专注射击", "iron":"迅捷举盾 · 沉劲重击", "astra":"蓝光流转 · 奥术凝聚"}[id]
 	%ConfirmButton.disabled = not owned
 	%UnlockButton.visible = not owned
 	%UnlockButton.text = "解锁角色 · %d 金币" % PROFILE.PRICES.get(id, 0)
@@ -142,7 +148,7 @@ func _layout_page() -> void:
 	_layout_pending = false
 	var portrait := size.y > size.x * 1.25
 	var margin := 28.0 if size.x < 1000 else 64.0
-	var info_width := size.x - margin*2 if portrait else clampf(size.x*0.34,320,440)
+	var info_width := size.x - margin*2 if portrait else clampf(size.x*0.40,320,520)
 	var panel_top := 110.0
 	var panel_height := minf(560,maxf(532,size.y*0.42)) if portrait else size.y-panel_top-84
 	%CharacterName.add_theme_font_size_override("font_size",30 if size.x < 1000 else 32)
@@ -165,3 +171,75 @@ func _layout_page() -> void:
 func _place(control: Control, at: Vector2, dimensions: Vector2) -> void:
 	control.position = at
 	control.size = dimensions
+
+func _jump_to(section: Control) -> void:
+	%InfoScroll.scroll_vertical = roundi(section.position.y)
+
+func _refresh_weapons(id: String) -> void:
+	for old in %WeaponCards.get_children():
+		%WeaponCards.remove_child(old)
+		old.queue_free()
+	for index in 2:
+		var weapon_id: String = WEAPONS.LOADOUTS[id][index]
+		var data: Dictionary = WEAPONS.definition(weapon_id)
+		var card := PanelContainer.new()
+		card.name = weapon_id
+		card.mouse_filter = Control.MOUSE_FILTER_PASS
+		var style := StyleBoxEmpty.new()
+		style.content_margin_top = 8
+		style.content_margin_bottom = 12
+		card.add_theme_stylebox_override("panel",style)
+		%WeaponCards.add_child(card)
+		var content := VBoxContainer.new()
+		content.add_theme_constant_override("separation",6)
+		content.mouse_filter = Control.MOUSE_FILTER_PASS
+		card.add_child(content)
+		var header := HBoxContainer.new()
+		header.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		header.add_theme_constant_override("separation",10)
+		content.add_child(header)
+		var icon := TextureRect.new()
+		icon.texture = load("res://assets/weapons/icons/"+weapon_id+".svg")
+		icon.custom_minimum_size = Vector2(34,34)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		header.add_child(icon)
+		var title := Label.new()
+		title.text = ("主武器 · " if index == 0 else "备用武器 · ")+data.name
+		title.add_theme_font_size_override("font_size",16)
+		title.add_theme_color_override("font_color",Color("ead39e"))
+		header.add_child(title)
+		var description := RichTextLabel.new()
+		description.name = "WeaponDescription"
+		description.bbcode_enabled = true
+		description.fit_content = true
+		description.scroll_active = false
+		description.text = _highlight_stat_values(WEAPONS.description(weapon_id,id))
+		description.add_theme_font_size_override("normal_font_size",14)
+		description.add_theme_color_override("default_color",Color("e5c17c"))
+		description.add_theme_constant_override("line_separation",3)
+		description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		description.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		content.add_child(description)
+
+func _highlight_stat_values(value: String) -> String:
+	# Actual attributes use the summary's gray; calculation factors stay gold.
+	var numbers := RegEx.new()
+	numbers.compile("[0-9]+(?:\\.[0-9]+)?(?:%|°)?")
+	var calculation := RegEx.new()
+	calculation.compile("(?:÷|除以|×|乘以)\\s*$")
+	var ordinals := RegEx.new()
+	ordinals.compile("第\\s*[0-9]+(?:\\s*/\\s*[0-9]+)*\\s*秒")
+	var ordinal_spans := ordinals.search_all(value)
+	var output := ""
+	var cursor := 0
+	for number in numbers.search_all(value):
+		var start: int = number.get_start()
+		var end: int = number.get_end()
+		var explanatory := calculation.search(value.left(start)) != null
+		for span in ordinal_spans:
+			if start >= span.get_start() and end <= span.get_end(): explanatory = true
+		output += value.substr(cursor,start-cursor)
+		output += number.get_string() if explanatory else "[color=#b3b3a6]"+number.get_string()+"[/color]"
+		cursor = end
+	return output+value.substr(cursor)

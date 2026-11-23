@@ -20,6 +20,7 @@ const BLOCKED_COLOR := Color("817b70")
 
 var _fill: StyleBoxFlat
 var _mask: ShaderMaterial
+var _layout_state_text := ""
 var _frame: StyleBoxFlat
 
 
@@ -66,6 +67,7 @@ func update_cooldown(remaining: float, duration: float, blocked_reason: String =
 	_frame.border_color = READY_COLOR if available else Color("66573b")
 	_frame.shadow_color = Color(0.73, 0.60, 0.35, 0.18) if available else Color(0, 0, 0, 0.45)
 	_frame.shadow_size = 5 if available else 3
+	if state_label.text != _layout_state_text: _layout_badge()
 
 func configure_ability(display_name: String, display_icon: Texture2D, description: String) -> void:
 	ability_name = display_name
@@ -88,20 +90,30 @@ func set_badge_size(diameter: float) -> void:
 		_layout_badge()
 
 func _layout_badge() -> void:
-	var diameter := minf(size.x, size.y)
-	_frame.set_corner_radius_all(roundi(diameter * 0.5))
-	var extent := Vector2.ONE * (diameter - 4)
+	if _frame == null: return
+	var diameter := minf(size.x,size.y)
+	_frame.set_corner_radius_all(roundi(diameter*0.5))
+	var inner := diameter-4.0
 	%ActivateButton.position = Vector2.ZERO
-	%ActivateButton.size = extent
+	%ActivateButton.size = Vector2.ONE*inner
 	%CooldownMask.position = Vector2.ZERO
-	%CooldownMask.size = extent
-	var icon_size := diameter * 0.32
-	icon.position = Vector2((extent.x - icon_size) * 0.5, diameter * 0.32)
-	icon.size = Vector2.ONE * icon_size
-	%InputHint.add_theme_font_size_override("font_size", 12 if input_hint == "Space" else (24 if diameter > 90 else 18))
-	%InputHint.position = Vector2(0, diameter * 0.08)
-	%InputHint.size = Vector2(extent.x, diameter * 0.24)
-	state_label.add_theme_font_size_override("font_size", 10 if diameter < 60 else (11 if diameter < 70 else 12))
-	state_label.clip_text = true
-	state_label.position = Vector2(0, diameter * 0.70)
-	state_label.size = Vector2(extent.x, 18)
+	%CooldownMask.size = Vector2.ONE*inner
+	# Three disjoint bands sit inside the circle's chords, including font descent.
+	_fit_label(%InputHint,Vector2(inner*0.72,inner*0.24),14 if input_hint == "Space" else mini(26,roundi(inner*0.23)))
+	%InputHint.position = Vector2(inner*0.14,inner*0.09)
+	var icon_size := inner*0.24
+	icon.position = Vector2((inner-icon_size)*0.5,inner*0.37)
+	icon.size = Vector2.ONE*icon_size
+	_fit_label(state_label,Vector2(inner*0.64,inner*0.21),mini(14,roundi(inner*0.15)))
+	state_label.position = Vector2(inner*0.18,inner*0.66)
+	_layout_state_text = state_label.text
+
+func _fit_label(label: Label, bounds: Vector2, preferred: int) -> void:
+	var font := label.get_theme_font("font")
+	var font_size := preferred
+	while font_size > 8 and (font.get_height(font_size) > bounds.y or font.get_string_size(label.text,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size).x > bounds.x):
+		font_size -= 1
+	label.add_theme_font_size_override("font_size",font_size)
+	label.clip_text = true
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.size = bounds

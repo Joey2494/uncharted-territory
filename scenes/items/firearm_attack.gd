@@ -32,6 +32,9 @@ func _ready() -> void:
 
 
 func _on_weapon_changed(item_id: int, _ammunition: int) -> void:
+	if _player.has_node("WeaponLoadout"):
+		_gun.hide()
+		return
 	_gun.visible = item_id == Catalog.FIREARM
 	var sword := _player.get_node_or_null("Visuals/Model/Knight/Rig_Medium/Skeleton3D/RightHandWeapon") as Node3D
 	if sword != null:
@@ -47,6 +50,7 @@ func get_cooldown_remaining() -> float:
 
 
 func try_fire() -> bool:
+	if _player.has_node("WeaponLoadout"): return _player.get_node("WeaponLoadout").try_attack()
 	if not is_node_ready() or not can_process() or _remaining > 0.0 or _player.is_dead() or _player.is_dodging():
 		return false
 	var ability := _player.get_node("CharacterAbility")

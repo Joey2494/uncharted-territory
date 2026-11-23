@@ -1,5 +1,10 @@
 extends Button
 ## Long ability effects wrap inside the viewport; short legacy hints stay native.
+func _has_point(point: Vector2) -> bool:
+	# Adjacent arc controls have intersecting bounding boxes, but disjoint circles.
+	# Only the visible circular area should receive clicks or tooltips.
+	return point.distance_to(size*0.5) <= minf(size.x,size.y)*0.5
+
 func _make_custom_tooltip(for_text: String) -> Object:
 	if not for_text.contains("\n"): return null
 	var panel := PanelContainer.new()

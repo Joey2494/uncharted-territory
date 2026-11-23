@@ -46,12 +46,12 @@ func _refresh_inventory(_snapshot: Dictionary) -> void:
 	hud.update_gold(items.gold)
 	hud.gold_label.text = "本局 %d" % items.gold
 	hud.gold_label.tooltip_text = "待结算 %d · 永久钱包 %d\n本局可购买道具；剩余金币仅通关后入账，死亡或退出不保留。" % [items.gold, Profile.coins]
-	hud.update_ammo(items.ammo)
 	hud.update_guard_rune(&"active" if items.guard_active else (&"ready" if items.guard_count > 0 else &"none"), 1 if items.guard_active else items.guard_count)
 	var slots: Array = []
-	for product in Catalog.get_products():
-		slots.append({"id": StringName(product.key), "icon": Presenter.ICONS[product.id], "count": items.get_count(product.id), "tint": Presenter.TINTS[product.id]})
-	slots.append({})
+	for id in [Catalog.HEALTH_POTION, Catalog.ATTACK_RUNE, Catalog.GUARD_RUNE, Catalog.ENERGY_POTION]:
+		var product := Catalog.get_item(id)
+		slots.append({"id": StringName(product.key), "icon": Presenter.ICONS[id], "count": items.get_count(id), "tint": Presenter.TINTS[id]})
+	slots.append({}) # Fifth slot is reserved until another usable item is defined.
 	hud.set_hotbar_data(slots)
 
 func _use_hotbar(_index: int, key: StringName) -> void:
@@ -66,8 +66,10 @@ func _combat_action(action: StringName, pressed: bool) -> void:
 	match action:
 		&"attack":
 			if pressed: player.get_node("MeleeAttack").try_attack()
-		&"skill_1":
-			if pressed: player.get_node("EnergyShock").try_cast()
+		&"skill_1", &"switch_weapon":
+			if pressed: player.get_node("WeaponLoadout").try_switch()
+		&"reload_weapon":
+			if pressed: player.get_node("WeaponLoadout").try_replenish()
 		&"dodge":
 			if pressed: player.try_dodge()
 		&"character_skill":

@@ -75,6 +75,23 @@ theme_override_styles/panel = SubResource("DossierFrame")
 mouse_filter = 2
 theme_override_constants/separation = 6
 
+[node name="DetailsNavigation" type="HBoxContainer" parent="Card/InfoCard/Body"]
+theme_override_constants/separation = 8
+
+[node name="SkillJump" type="Button" parent="Card/InfoCard/Body/DetailsNavigation"]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0,32)
+theme_override_font_sizes/font_size = 14
+text = "L 技能数值"
+
+[node name="WeaponsJump" type="Button" parent="Card/InfoCard/Body/DetailsNavigation"]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0,32)
+theme_override_font_sizes/font_size = 14
+text = "专属武器"
+
 [node name="InfoScroll" type="ScrollContainer" parent="Card/InfoCard/Body"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0,100)
@@ -187,11 +204,56 @@ mouse_filter = 2
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(0.83,0.76,0.61,1)
 
-[node name="SkillCooldown" type="Label" parent="Card/InfoCard/Body/InfoScroll/InfoPanel/SkillTitleRow/SkillDetails"]
+[node name="SkillCooldown" type="RichTextLabel" parent="Card/InfoCard/Body/InfoScroll/InfoPanel/SkillTitleRow/SkillDetails"]
 unique_name_in_owner = true
 mouse_filter = 2
-theme_override_font_sizes/font_size = 12
-theme_override_colors/font_color = Color(0.63,0.65,0.61,1)
+theme_override_font_sizes/normal_font_size = 12
+theme_override_colors/default_color = Color(0.898,0.757,0.486,1)
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+
+[node name="SkillDescription" type="RichTextLabel" parent="Card/InfoCard/Body/InfoScroll/InfoPanel"]
+unique_name_in_owner = true
+mouse_filter = 2
+theme_override_font_sizes/normal_font_size = 15
+theme_override_constants/line_separation = 4
+autowrap_mode = 2
+theme_override_colors/default_color = Color(0.898,0.757,0.486,1)
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+
+[node name="PassiveTitle" type="Label" parent="Card/InfoCard/Body/InfoScroll/InfoPanel"]
+mouse_filter = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.83,0.76,0.61,1)
+text = "配装与被动"
+
+[node name="PassiveDescription" type="RichTextLabel" parent="Card/InfoCard/Body/InfoScroll/InfoPanel"]
+unique_name_in_owner = true
+mouse_filter = 2
+theme_override_font_sizes/normal_font_size = 14
+theme_override_constants/line_separation = 4
+autowrap_mode = 2
+theme_override_colors/default_color = Color(0.898,0.757,0.486,1)
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+
+[node name="WeaponsDivider" type="HSeparator" parent="Card/InfoCard/Body/InfoScroll/InfoPanel"]
+
+[node name="WeaponSection" type="Label" parent="Card/InfoCard/Body/InfoScroll/InfoPanel"]
+unique_name_in_owner = true
+mouse_filter = 2
+theme_override_font_sizes/font_size = 17
+theme_override_colors/font_color = Color(0.94,0.82,0.58,1)
+text = "专属双武器 · I 切换"
+
+[node name="WeaponCards" type="VBoxContainer" parent="Card/InfoCard/Body/InfoScroll/InfoPanel"]
+unique_name_in_owner = true
+mouse_filter = 2
+theme_override_constants/separation = 12
 
 [node name="SummaryDivider" type="HSeparator" parent="Card/InfoCard/Body/InfoScroll/InfoPanel"]
 

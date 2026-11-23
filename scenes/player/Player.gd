@@ -154,6 +154,8 @@ func _get_move_direction() -> Vector3:
 func try_dodge() -> bool:
 	if not is_node_ready() or not can_process() or _dead or is_dodging() or _dodge_cooldown_remaining > 0.0 or not is_on_floor():
 		return false
+	if not _attack.can_chain_cast() or (has_node("WeaponLoadout") and $WeaponLoadout.action_remaining > 0):
+		return false
 	_dodge_direction = _get_move_direction()
 	if _dodge_direction.is_zero_approx():
 		_dodge_direction = -visuals.global_basis.z

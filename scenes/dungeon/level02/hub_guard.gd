@@ -43,8 +43,8 @@ func _update_pursuit(delta: float) -> void:
 	if waypoint == origin:
 		waypoint = _first_waypoint(origin, _outside_obstacle(goal))
 	var direction := (waypoint - origin).normalized()
-	velocity.x = direction.x * move_speed
-	velocity.z = direction.y * move_speed
+	velocity.x = direction.x * move_speed * (0.7 if _slow_remaining > 0 else 1.0)
+	velocity.z = direction.y * move_speed * (0.7 if _slow_remaining > 0 else 1.0)
 	_visuals.rotation.y = lerp_angle(previous_yaw, atan2(-direction.x, -direction.y), 1.0 - exp(-turn_speed * delta))
 
 func _flat(point: Vector3) -> Vector2:

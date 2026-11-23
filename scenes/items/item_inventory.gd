@@ -33,6 +33,8 @@ var potion_count: int = 0
 var rune_count: int = 0
 var guard_count: int = 0
 var gold: int = 0
+var pistol_ammo: int = 0
+var coil_ammo: int = 0
 var ammo: int = 0
 var owns_firearm: bool = false
 var equipped_weapon: int = Catalog.MELEE
@@ -49,6 +51,9 @@ var _elapsed: float = 0.0
 
 func _ready() -> void:
 	_player.died.connect(_on_player_died)
+	if _player.character_id == "lan":
+		pistol_ammo = 16
+		coil_ammo = 12
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -66,12 +71,13 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("use_guard_rune"):
 		try_use_guard()
 		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("switch_weapon"):
-		if _can_use() and not owns_firearm:
-			feedback.emit("尚未获得手炮 · 可先在商城购买")
-		else:
-			try_equip(Catalog.MELEE if equipped_weapon == FIREARM else FIREARM)
+	elif event.is_action_pressed("use_energy_potion"):
+		try_use_energy_potion()
 		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("switch_weapon"):
+		_player.get_node("WeaponLoadout").try_switch()
+		get_viewport().set_input_as_handled()
+
 
 
 func _physics_process(delta: float) -> void:
@@ -243,6 +249,8 @@ func _on_player_died() -> void:
 
 func get_count(item_id: int) -> int:
 	match item_id:
+		Catalog.PISTOL_AMMO: return pistol_ammo
+		Catalog.COIL_AMMO: return coil_ammo
 		Catalog.ENERGY_POTION: return energy_potion_count
 		HEALTH_POTION: return potion_count
 		ATTACK_RUNE: return rune_count
@@ -254,7 +262,7 @@ func get_count(item_id: int) -> int:
 
 func get_snapshot() -> Dictionary:
 	return {
-		"gold": gold, "items": {Catalog.ENERGY_POTION: energy_potion_count, HEALTH_POTION: potion_count, ATTACK_RUNE: rune_count,
+		"gold": gold, "items": {Catalog.PISTOL_AMMO:pistol_ammo,Catalog.COIL_AMMO:coil_ammo,Catalog.ENERGY_POTION: energy_potion_count, HEALTH_POTION: potion_count, ATTACK_RUNE: rune_count,
 		GUARD_RUNE: guard_count, FIREARM: get_count(FIREARM), Catalog.AMMO: ammo},
 		"equipped_weapon": equipped_weapon, "ammo": ammo, "guard_active": guard_active,
 		"attack_multiplier": get_multiplier(), "buff_remaining": _buff_remaining,
@@ -290,15 +298,25 @@ func _can_receive(items: Dictionary, coins: int) -> bool:
 			added_ammo += Catalog.INITIAL_AMMO
 		elif get_count(item_id) > Catalog.MAX_STACK - quantity:
 			return false
+	if _player.has_node("WeaponLoadout"):
+		var pistol_added := int(items.get(Catalog.PISTOL_AMMO,0))+int(items.get(Catalog.AMMO,0))
+		var coil_added := int(items.get(Catalog.COIL_AMMO,0))+int(items.get(FIREARM,0))*12
+		return pistol_ammo <= Catalog.MAX_STACK-pistol_added and coil_ammo <= Catalog.MAX_STACK-coil_added
 	return ammo <= Catalog.MAX_STACK - added_ammo
 
 
 func _receive(items: Dictionary, coins: int) -> void:
 	gold += coins
+	pistol_ammo += int(items.get(Catalog.PISTOL_AMMO,0))
+	coil_ammo += int(items.get(Catalog.COIL_AMMO,0))
+	if _player.has_node("WeaponLoadout"):
+		pistol_ammo += int(items.get(Catalog.AMMO,0))
+		coil_ammo += int(items.get(FIREARM,0))*12
 	energy_potion_count += int(items.get(Catalog.ENERGY_POTION, 0))
 	potion_count += int(items.get(HEALTH_POTION, 0))
 	rune_count += int(items.get(ATTACK_RUNE, 0))
 	guard_count += int(items.get(GUARD_RUNE, 0))
+	if _player.has_node("WeaponLoadout"): return
 	ammo += int(items.get(Catalog.AMMO, 0))
 	if items.has(FIREARM):
 		# A second weapon reward becomes ammunition without creating two weapons.
@@ -323,6 +341,7 @@ func add_gold(amount: int, source_id: String = "") -> bool:
 func get_purchase_error(item_id: int, quantity: int = 1, menu: Node = null) -> String:
 	if not _can_use() and not _can_use_menu(menu, true):
 		return "当前无法购买"
+	if _player.has_node("WeaponLoadout") and item_id in [FIREARM,Catalog.AMMO]: return "请购买对应的手枪弹或磁芯弹"
 	var product := Catalog.get_item(item_id)
 	if product.is_empty() or quantity <= 0 or quantity > 99:
 		return "无效商品或数量"
@@ -391,6 +410,9 @@ func consume_guard() -> bool:
 
 
 func try_equip(item_id: int, menu: Node = null) -> bool:
+	if _player.has_node("WeaponLoadout"):
+		feedback.emit("角色专属武器不可替换")
+		return false
 	if (not _can_use() and not _can_use_menu(menu, false)) or (item_id != Catalog.MELEE and item_id != FIREARM):
 		return false
 	if item_id == FIREARM and not owns_firearm:
@@ -428,3 +450,12 @@ func try_use_energy_potion(menu: Node = null) -> bool:
 	item_used.emit(Catalog.ENERGY_POTION)
 	feedback.emit("使用星蓝药剂 · 恢复 %s 点能量" % str(restored).trim_suffix(".0"))
 	return true
+
+func try_load_magazine(item_id: int, missing: int) -> int:
+	if not _can_use() or missing <= 0 or item_id not in [Catalog.PISTOL_AMMO,Catalog.COIL_AMMO]: return 0
+	var loaded := mini(missing,get_count(item_id))
+	if loaded <= 0: return 0
+	if item_id == Catalog.PISTOL_AMMO: pistol_ammo -= loaded
+	else: coil_ammo -= loaded
+	_publish_state()
+	return loaded

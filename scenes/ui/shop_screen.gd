@@ -39,7 +39,7 @@ func set_shop_data(gold: int, products: Array) -> void:
 
 func show_shop(back_label: String = "返回主菜单") -> void:
 	%BackButton.text = back_label
-	show_feedback("选择商品购买，物品将放入背包。",true)
+	show_feedback("购买补给与两种独立弹药，物品收入背包。",true)
 	show()
 	var target: Button = %BackButton
 	for id in _ids:

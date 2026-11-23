@@ -1,5 +1,5 @@
 extends Node3D
-## Owns only character abilities. Movement, damage, animations and K remain shared.
+## Owns only character abilities. Movement, damage and weapon combat remain separate.
 
 signal feedback(message: String)
 const CATALOG = preload("res://scenes/player/character_catalog.gd")
@@ -64,6 +64,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func try_activate() -> bool:
 	if not is_node_ready() or not can_process() or actor.is_dead() or actor.is_dodging() or remaining > 0.0 or cooldown_remaining > 0.0:
+		return false
+	if not actor.get_node("MeleeAttack").can_chain_cast() or actor.get_node("WeaponLoadout").action_remaining > 0:
 		return false
 	match actor.character_id:
 		"knight":

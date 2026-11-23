@@ -31,6 +31,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func try_cast() -> bool:
+	if _caster.has_node("WeaponLoadout"): return false
 	if not is_node_ready() or not can_process() or _cooldown_remaining > 0.0:
 		return false
 	if _caster.is_dead() or _caster.is_dodging() or projectile_scene == null or _caster.get_node("CharacterAbility").is_guarding():
