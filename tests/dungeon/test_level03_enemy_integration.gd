@@ -32,7 +32,11 @@ func run() -> void:
 	host = current_scene
 	var map: Node3D = host._dungeon
 	check(host._player.max_hp == 5 and host._player.max_energy == 50, "正式入口保持俞的角色属性，不采用原型实验室属性")
-	check(map.get_node("Enemies").get_child_count() == 8, "四个战斗房登记八名正式敌人")
+	check(map.get_node("Enemies").get_child_count() == 8, "五个单一兵种战斗房登记八名正式敌人")
+	for room in map.ENEMY_ROSTER:
+		var species: Dictionary = {}
+		for entry in map.ENEMY_ROSTER[room]: species[entry[0]] = true
+		check(species.size() == 1, "每个战斗房只有一种敌人：" + String(room))
 	var ids: Array = []
 	for enemy in map.get_node("Enemies").get_children():
 		ids.append(enemy.enemy_id)
@@ -83,8 +87,7 @@ func run() -> void:
 	await go(map.get_node("Rooms/G").global_position + Vector3(0, 0.05, 3))
 	var boss: Node3D = host._boss
 	check(boss.is_encounter_active() and host._boss_bar.visible and host._boss_bar.title_label.text == "沙缚王", "G 入场显示真实沙缚王血条")
-	check(boss.take_damage(45) and map._summons.size() == 2 and map.get_node("Progress").get_total_enemies(&"G") == 2, "半血召唤两名斥候，不破坏封存的静态清场名单")
-	check(map._summons.all(func(enemy: Node3D) -> bool: return enemy.is_encounter_active() and enemy.get_meta("room") == &"G"), "援军绑定本局玩家和 G 房间并立即参战")
+	check(boss.take_damage(boss.max_hp / 2) and boss._phase_two and map._summons.is_empty() and map.get_node("Progress").get_total_enemies(&"G") == 1, "半血只加速招式，Boss 房保持单一兵种")
 	if "--capture" in OS.get_cmdline_user_args():
 		# 测试刚从 E 定点移动到 G；截图从稳定构图开始。
 		map.get_node("Camera3D").reset_follow()
@@ -106,10 +109,9 @@ func run() -> void:
 	var reward_count: int = map.get_node("EnemyRewards").get_child_count()
 	check(boss.take_damage(999), "正式首领可死亡")
 	await frames(3)
-	check(map._summons.is_empty() and map.get_node("Enemies").get_children().filter(func(n: Node) -> bool: return n.get_meta("summoned", false)).is_empty(), "Boss 死亡回收两名援军")
+	check(map._summons.is_empty(), "Boss 全程不产生异种援军")
 	check(map.get_node("EnemyRewards").get_child_count() == reward_count + 1, "回收援军不额外掉钱，Boss 仅生成一次奖励")
-	check(host._boss_defeated and not map.get_node("Progress").is_complete(&"G") and not map.is_exit_open(), "仅 Boss 死亡不能绕过存活执刑官或打开出口")
-	check(map.get_node("Enemies/G_Guard1").take_damage(999), "击败剩余执刑官")
+	check(host._boss_defeated and map.get_node("Progress").is_complete(&"G") and not map.is_completion_ready(), "Boss 死亡不能绕过 I 的清场和泄压")
 	await frames(24)
 	await go(map.get_node("Rooms/J").global_position)
 	host._on_exit_reached()

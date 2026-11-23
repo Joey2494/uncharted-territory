@@ -1,7 +1,7 @@
 extends "res://scenes/dungeon/follow_camera.gd"
 ## 进入战斗前沿通道切到房间构图；封场内敌人移位、死亡或召援都不会触发升降。
 const Layout = preload("res://scenes/dungeon/level03/tide_layout.gd")
-const ARENAS := [&"C", &"E", &"F", &"G"]
+const ARENAS := [&"C", &"E", &"F", &"I", &"G"]
 const APPROACH := 8.0
 const ZOOM_UNITS_PER_SECOND := 12.0
 
@@ -57,7 +57,7 @@ func _sample_arena() -> void:
 	var centre := room.get_center()
 	var map := get_parent() as Node3D
 	_arena_focus = map.to_global(Vector3(centre.x, 1.4, centre.y))
-	# 统一计入整间房的地面预警和该房最高角色，包含首领召唤前后的身形。
+	# 固定覆盖完整战斗房与最高角色，不随敌人攻击、移动或死亡改变缩放。
 	var height := 5.0 if nearest == &"G" else 3.8
 	var points := PackedVector3Array()
 	for x: float in [room.position.x, room.end.x]:

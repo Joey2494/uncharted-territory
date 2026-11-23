@@ -66,12 +66,11 @@ func run() -> void:
 	commerce.open_backpack()
 	await frames()
 	actor.energy = 12.5
-	actor._energy_recovery_delay = 1.0
 	var hp: int = actor.hp
 	var shield: int = actor.shield
 	check(items.try_use_item(Catalog.ENERGY_POTION, commerce), "backpack can use potion while paused")
 	check(actor.energy == 32.5 and actor.hp == hp and actor.shield == shield, "potion restores exactly 20 energy only")
-	check(actor._energy_recovery_delay == 1.0 and items.energy_potion_count == 0, "instant potion bypasses natural regen wait and consumes one")
+	check(items.energy_potion_count == 0, "instant potion consumes one without enabling passive recovery")
 	commerce.close_all()
 	await frames()
 	items._use_remaining = 0.0

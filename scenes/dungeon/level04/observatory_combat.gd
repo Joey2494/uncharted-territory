@@ -4,16 +4,16 @@ signal battle_started(room: String)
 signal battle_cleared(room: String)
 signal feedback(message: String)
 
-const FACTORY := preload("res://addons/ziyuan_level03/factory.gd")
-const GUARD := preload("res://scenes/dungeon/level04/observatory_guard.gd")
+const FACTORY := preload("res://addons/ziyuan_level04/factory.gd")
+const WITCH := preload("res://scenes/dungeon/level04/observatory_witch.gd")
 const CRATE := preload("res://scenes/dungeon/level04/observatory_crate.gd")
 const SWEEP := preload("res://scenes/dungeon/level04/observatory_sweep.gd")
 const ROSTERS := {
-	"B": [["bone_axe",Vector2(-6,1)],["bone_axe",Vector2(6,-1)],["bone_spike",Vector2(-1,-5)]],
-	"D": [["tomb_sword",Vector2(-3.5,3.8)],["bone_spike",Vector2(-4.8,-3.5)]],
-	"F": [["bone_spike",Vector2(-4,-3)],["bone_spike",Vector2(4,-3)]],
-	"H": [["bone_spike",Vector2(4,-3)],["bone_axe",Vector2(-4,0.5)]],
-	"I": [["chain_jailer",Vector2(-4,-2)],["bone_spike",Vector2(5,-3.5)]],
+	"B": [["dawn_shade",Vector2(-6,1)],["dawn_shade",Vector2(6,-1)]],
+	"D": [["sun_puppet",Vector2(-3.5,3.8)],["sun_puppet",Vector2(-4.8,-3.5)]],
+	"F": [["iron_thistle",Vector2(-4,-3)],["iron_thistle",Vector2(4,-3)]],
+	"H": [["raven_roost",Vector2(4,-3)]],
+	"I": [["witch",Vector2(-4,-2)],["iron_thistle",Vector2(5,-3.5)]],
 }
 const REINFORCEMENTS := {"F": Vector2(3,-4.8), "H": Vector2(-3.5,-4)}
 const CAGE_SIZE := Vector3(1.8,1.7,1.5)
@@ -43,11 +43,26 @@ var _advance_paused_light := false
 var _paths: AStarGrid2D
 var _next_side := -1
 var _queued_side := 0
+var _minions: Array[CharacterBody3D] = []
+var _generation := 0
+var _blind: ColorRect
+var _blind_layer: CanvasLayer
+var _blind_left := 0.0
+var _blind_duration := 1.0
 
 func setup(level: Node3D) -> void:
 	_level = level
 	_layout = level.layout
 	_player = level.get_node("Player")
+	_blind_layer = CanvasLayer.new()
+	_blind_layer.layer = 1 # World effect below authored combat HUD and menus.
+	add_child(_blind_layer)
+	_blind = ColorRect.new()
+	_blind.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_blind.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_blind.color = Color(1.0,0.91,0.71,0.0)
+	_blind_layer.add_child(_blind)
+	_blind.hide()
 	for spec in [["A",Vector2(-2.6,0)],["B",Vector2(-2.2,0)],["B",Vector2(0,0)]]:
 		var crate := CRATE.new()
 		add_child(crate)
@@ -137,6 +152,7 @@ func operate_shutter() -> bool:
 
 func update_room(room: String, delta: float) -> void:
 	if _stopped or not can_process() or _player.is_dead(): return
+	_tick_blind(delta)
 	_try_place_cage()
 	if active_room != "":
 		_tick_battle(delta)
@@ -176,36 +192,44 @@ func _begin_battle(room: String) -> void:
 		_sweeps[room].begin(_next_side,false)
 		feedback.emit("百叶运行 · 琥珀光选侧，红光锁定，白光扫过")
 
-## 战役 HUD 在玩家进场前订阅真正的执刑官；入场前隐藏模型、碰撞及战斗处理。
+## 战役 HUD 预先订阅女巫；封门前保持休眠，模型和碰撞均隐藏。
 func prepare_dome_boss() -> void:
 	for spec in ROSTERS["I"]:
-		if spec[0] == "chain_jailer":
+		if spec[0] == "witch":
 			prepared_dome_boss = _create_guard("I", spec[0], spec[1])
 			prepared_dome_boss.hide()
 			prepared_dome_boss.collision_layer = 0
 			prepared_dome_boss.collision_mask = 0
-			prepared_dome_boss.get_node("HealthLabel").hide()
 			return
 
 func _create_guard(room: String, kind: String, xz: Vector2) -> CharacterBody3D:
 	var guard := FACTORY.create(kind)
-	guard.set_script(GUARD)
-	guard.enemy_id = kind
-	guard.encounter = self
+	if kind == "witch":
+		guard.set_script(WITCH)
+		guard.encounter = self
+		guard.add_to_group("bosses")
 	guard.bind_target(_player)
 	_spawn_serial += 1
 	guard.name = "%s_Guard%d" % [room,_spawn_serial]
 	guard.set_meta("room",room)
+	guard.set_meta("combat_room_key","%d:%s" % [get_instance_id(),room])
+	guard.reward_source_id = "observatory:%s:%d" % [room,_spawn_serial]
+	guard.arena_center = _layout.room_center(room)
+	guard.arena_size = Vector2(22,18) if room != "I" else Vector2(26,22)
 	guard.position = _at(room,xz,0.06)
 	add_child(guard)
-	# 保留既有招式与血量，为多敌叠加降低每次失误的代价。
-	guard.definition.damage = 2 if kind in ["chain_jailer","tomb_sword"] else 1
 	guard.died.connect(_on_guard_dead.bind(guard))
+	guard.reward_requested.connect(_grant_enemy_reward)
+	if kind == "witch":
+		guard.summon_requested.connect(_queue_minion)
+		guard.minions_dissolved.connect(_clear_minions)
+	else:
+		guard.status_requested.connect(_status_requested)
 	return guard
 
 func _spawn(kind: String, xz: Vector2) -> void:
 	var guard: CharacterBody3D
-	if kind == "chain_jailer" and is_instance_valid(prepared_dome_boss):
+	if kind == "witch" and is_instance_valid(prepared_dome_boss):
 		guard = prepared_dome_boss
 		guard.collision_layer = 4
 		guard.collision_mask = 3
@@ -214,7 +238,7 @@ func _spawn(kind: String, xz: Vector2) -> void:
 		guard = _create_guard(active_room,kind,xz)
 	_enemies.append(guard)
 	guard.set_encounter_active(true)
-	if kind == "chain_jailer":
+	if kind == "witch":
 		_jailer = guard
 		if guard == prepared_dome_boss: guard.start_dome_encounter()
 
@@ -259,15 +283,15 @@ func _handle_half_health(light: Node3D) -> bool:
 		light.stop()
 		var target := _at("I",Vector2(5.4,2.0),0)
 		_jailer.announce_advance(target)
-		_jailer.state_changed.emit("举链开道")
-		feedback.emit("执刑官举链开道 · 让出东侧扳杆路线，收链后反击")
+		_jailer.state_changed.emit("移步开道")
+		feedback.emit("女巫移步开道 · 百叶暂歇，绕至东侧扳杆")
 		return true
 	return false
 
 func _warn_reinforcement(duration: float) -> void:
 	_warning_left = duration
 	_markers[active_room].show()
-	feedback.emit("标记门已亮 · 长剑墓卫即将入场")
+	feedback.emit("标记门已亮 · %s即将入场" % ("白芒尖蓟" if active_room == "F" else "群鸦归巢"))
 
 func _release_reinforcement() -> void:
 	var spawn_xz: Vector2 = REINFORCEMENTS[active_room]
@@ -276,7 +300,7 @@ func _release_reinforcement() -> void:
 		var spot := spawn_xz + Vector2(dx,0)
 		var target := _at(active_room,spot,0.06)
 		if _player.global_position.distance_to(target) < 1.15: continue
-		_spawn("tomb_sword",spot)
+		_spawn("iron_thistle" if active_room == "F" else "raven_roost",spot)
 		_reinforced = true
 		_warning_left = -1
 		_markers[active_room].hide()
@@ -285,16 +309,68 @@ func _release_reinforcement() -> void:
 
 func _finish_battle() -> void:
 	var room := active_room
+	_clear_minions()
+	_clear_blind()
 	if _sweeps.has(room): _sweeps[room].stop()
 	_cleared[room] = true
+	_player.get_node("CharacterAbility").complete_combat_room("%d:%s" % [get_instance_id(),room])
 	active_room = ""
 	battle_cleared.emit(room)
 
 func stop() -> void:
 	_stopped = true
+	_generation += 1
+	_clear_minions()
+	_clear_blind()
 	for light in _sweeps.values(): light.stop()
 	for marker in _markers.values(): marker.hide()
 	for guard in _enemies: guard.set_encounter_active(false)
+	if is_instance_valid(prepared_dome_boss): prepared_dome_boss.set_encounter_active(false)
+
+func _grant_enemy_reward(source_id: String, coins: int) -> void:
+	# Enemy drops and room-completion supplies have distinct, idempotent IDs.
+	if not _stopped: _level.inventory.grant_reward(source_id,{},coins)
+
+func _queue_minion(kind: String, point: Vector3) -> void:
+	_spawn_minion.call_deferred(_generation,kind,point)
+
+func _spawn_minion(generation: int, kind: String, point: Vector3) -> void:
+	if generation != _generation or _stopped or active_room != "I" or _player.is_dead(): return
+	if not is_instance_valid(_jailer) or not _jailer.is_encounter_active(): return
+	var minion := FACTORY.create(kind,_player)
+	if minion == null: return
+	minion.set_meta("is_summoned",true)
+	add_child(minion)
+	minion.global_position = point
+	minion.set_encounter_active(true)
+	_minions.append(minion)
+	_jailer.register_minion(minion)
+
+func _clear_minions() -> void:
+	_generation += 1
+	for minion in _minions:
+		if is_instance_valid(minion):
+			minion.set_encounter_active(false)
+			minion.queue_free()
+	_minions.clear()
+
+func _status_requested(target: Node3D, status_id: String, duration: float, strength: float) -> void:
+	if _stopped or target != _player or _player.is_dead() or status_id != "dawn_blind": return
+	_blind_left = maxf(_blind_left,minf(duration,1.2))
+	_blind_duration = _blind_left
+	_blind.color.a = clampf(strength,0.0,0.48)
+	_blind.show()
+
+func _tick_blind(delta: float) -> void:
+	_blind_left = maxf(0.0,_blind_left-delta)
+	if _blind_left <= 0.0: _clear_blind()
+	else: _blind.modulate.a = minf(1.0,_blind_left/maxf(0.01,_blind_duration*0.35))
+
+func _clear_blind() -> void:
+	_blind_left = 0.0
+	if is_instance_valid(_blind):
+		_blind.hide()
+		_blind.modulate.a = 1.0
 
 ## 仅在敌人被墙挡住时生成该场地的可行走网格；按身体宽度排除窄缝，地面射线排除地板以外的格点。
 func _build_paths() -> void:

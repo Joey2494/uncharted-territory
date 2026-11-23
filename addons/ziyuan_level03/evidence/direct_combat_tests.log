@@ -1,0 +1,73 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS four enemy types and one boss registered
+PASS damage is bounded and nondecreasing at bone_axe
+PASS bone_axe exposes merge contract
+PASS bone_axe starts dormant
+PASS bone_axe uses zero windup and faster recovery
+PASS bone_axe enters strike immediately
+PASS bone_axe creates no attack range or telegraph mesh
+PASS damage is bounded and nondecreasing at bone_spike
+PASS bone_spike exposes merge contract
+PASS bone_spike starts dormant
+PASS bone_spike uses zero windup and faster recovery
+PASS bone_spike enters strike immediately
+PASS bone_spike creates no attack range or telegraph mesh
+PASS damage is bounded and nondecreasing at tomb_sword
+PASS tomb_sword exposes merge contract
+PASS tomb_sword starts dormant
+PASS tomb_sword uses zero windup and faster recovery
+PASS tomb_sword enters strike immediately
+PASS tomb_sword creates no attack range or telegraph mesh
+PASS damage is bounded and nondecreasing at chain_jailer
+PASS chain_jailer exposes merge contract
+PASS chain_jailer starts dormant
+PASS chain_jailer uses zero windup and faster recovery
+PASS chain_jailer enters strike immediately
+PASS chain_jailer creates no attack range or telegraph mesh
+PASS damage is bounded and nondecreasing at sand_king
+PASS sand_king exposes merge contract
+PASS sand_king starts dormant
+PASS sand_king uses zero windup and faster recovery
+PASS sand_king enters strike immediately
+PASS sand_king creates no attack range or telegraph mesh
+PASS all five enemies emit only actual attack starts
+PASS axe direct attack accepted
+PASS strike damage follows actual swing instead of attack selection
+PASS axe cleave deals one actual damage
+PASS one axe strike cannot hit twice
+PASS ordinary hit reacts visually but does not stun-lock an active strike
+PASS roll blocks direct strike
+PASS control interrupts ordinary attack
+PASS control duration does not run a second hurt countdown
+PASS front sword armor halves direct damage
+PASS rear strike bypasses armor
+PASS sword recovery doubles received damage
+PASS sword physical thrust deals two damage
+PASS chain inner pocket is safe
+PASS chain outer ring deals two damage
+PASS swept chain hits across a long frame and immediately reverses without windup
+PASS double chain ends in one short recovery without range display
+PASS bone hunter fires three real projectiles
+PASS ranged enemy repositions during recovery instead of waiting in place
+PASS bone projectile swept collision deals one damage
+PASS dormant source cleans its projectiles
+PASS stone pillar blocks the central bone projectile
+PASS boss closes to actual stomp range rather than wasting a distant stomp
+PASS mummy bandage cone deals two damage
+PASS sidestepping locked flying sand curses avoids damage
+PASS sand curse launches three visible projectiles without instant ground damage
+PASS flying sand curse deals three damage and slow on accepted hit
+PASS dodging a sand curse prevents both damage and slow
+PASS boss half-health transition changes cadence without mixed-species summons
+PASS phase two shortens actual attack animation without adding windup
+PASS phase two also shortens recovery
+PASS death and reward request are idempotent
+PASS death animation releases boss actor
+PASS gallery contains all five silhouettes
+PASS returning from gallery resets a real encounter
+PASS pause freezes player and enemies
+PASS stale summon request cannot enter another encounter
+PASS player death stops enemy combat immediately
+PASS retry after death recreates the requested encounter
+LEVEL03_TEST_RESULT passed=70 failed=0

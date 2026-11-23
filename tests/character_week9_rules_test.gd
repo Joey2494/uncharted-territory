@@ -83,15 +83,14 @@ func run() -> void:
 	check(ability.try_activate() and spell.get_cooldown_remaining() == spell_cd and spell.is_action_locked(), "supply preserves K cooldown and lock")
 	check(knight.energy == 30.0, "supply restores exactly 10 after five-energy K")
 	knight.energy = 10.0
-	knight._energy_recovery_delay = 1.0
 	knight._physics_process(0.5)
-	check(knight.energy == 10.0, "regen waits one second")
+	check(knight.energy == 10.0, "idle time does not regenerate energy")
 	knight._physics_process(1.0)
-	check(knight.energy == 12.5, "regen uses only elapsed time after delay")
+	check(knight.energy == 10.0, "energy stays spent after a longer idle interval")
 	knight.shield = 1
 	knight.hp = 3
 	knight.heal(99)
-	check(knight.hp == 5 and knight.shield == 1 and knight.energy == 12.5, "healing changes health only")
+	check(knight.hp == 5 and knight.shield == 1 and knight.energy == 10.0, "healing changes health only")
 	knight.queue_free()
 	await frames()
 
@@ -186,9 +185,8 @@ func run() -> void:
 	ability = astra.get_node("CharacterAbility")
 	check(astra.hp == 4 and astra.shield == 1 and astra.max_energy == 60.0 and astra.get_spell_cost() == 5.0, "Astra resources and uniform five-energy K")
 	astra.energy = 20.0
-	astra._energy_recovery_delay = 1.0
 	ability.complete_combat_room("boss_room")
-	check(astra.energy == 25.0 and astra._energy_recovery_delay == 1.0, "clear reward ignores regeneration delay")
+	check(astra.energy == 25.0, "clear reward explicitly restores five energy")
 	ability.complete_combat_room("boss_room")
 	check(astra.energy == 25.0, "room reward cannot repeat")
 	astra.energy = 60.0

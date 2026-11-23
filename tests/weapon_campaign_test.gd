@@ -15,7 +15,7 @@ func check(value: bool, message: String) -> void:
 		failures += 1
 		print("FAIL ",message)
 func run() -> void:
-	for path in ["res://Main.tscn","res://scenes/dungeon/Level02Run.tscn","res://scenes/dungeon/Level03Run.tscn"]:
+	for path in ["res://Main.tscn","res://scenes/dungeon/Level02Run.tscn","res://scenes/dungeon/Level03Run.tscn","res://scenes/dungeon/Level04Run.tscn"]:
 		change_scene_to_file(path)
 		await frames(8)
 		var host := current_scene

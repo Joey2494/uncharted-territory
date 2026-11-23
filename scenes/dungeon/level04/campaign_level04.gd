@@ -1,5 +1,5 @@
 extends "res://scenes/dungeon/level04/mirror_observatory.gd"
-## 将观测站的实际房间、执刑官、通路和结局交给共用战役宿主。
+## 将观测站的实际房间、袍冠女巫、通路和结局交给共用战役宿主。
 signal room_changed(room_name: String, visited_count: int)
 signal progression_feedback(message: String)
 signal exit_reached
@@ -55,7 +55,7 @@ func is_completion_ready() -> bool: return combat.is_clear("I")
 func is_exit_open() -> bool: return is_completion_ready() and layout.passage_open("I","J")
 func is_exit_opening() -> bool: return is_completion_ready() and not is_exit_open()
 
-## 宿主在执刑官倒下时调用，守卫名单清空前保持实体北门封锁。
+## 宿主在女巫倒下时调用，尖蓟近卫清除前保持实体北门封锁。
 func unlock_exit() -> bool: return is_completion_ready()
 
 func is_modal_open() -> bool:

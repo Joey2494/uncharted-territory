@@ -70,6 +70,8 @@ static func goal(world: Node3D, status: Dictionary, level: int) -> Dictionary:
 		destinations = {"hub_arrival":["Regions/Hub","分流中庭"],"hub":["Regions/Hub","分流中庭"],"relay_arrival":["Regions/Relay","导能回廊"],"relay_guards":["Regions/Relay","导能回廊"],"relay":["Devices/Relay","导能回廊 · 导能核心"],"ante_arrival":["Regions/Antechamber","共鸣前厅"],"ante":["Regions/Antechamber","共鸣前厅"],"boss_arrival":["Regions/Boss","巨蝎大厅"],"boss":["Regions/Boss","巨蝎大厅"],"gate":["Gates/BossNorth","巨蝎大厅 · 北侧出口闸门"],"exit":["ExitArea","出口"]}
 	else:
 		destinations = {"control":["Stations/tide","中央潮井 · 潮位总控"],"c_guards":["Rooms/C","沉沙库"],"conductor":["Stations/conductor","沉沙库 · 导体托架"],"east":["Stations/director","折流廊 · 折流导向台"],"high":["Stations/tide","中央潮井 · 潮位总控"],"e_guards":["Rooms/E","浮栈战区"],"f_guards":["Rooms/F","蓄能工房"],"charge":["Stations/charge","蓄能工房 · 蓄能器"],"highwalk":["Stations/highwalk","蓄能工房 · 维修手柄"],"low":["Stations/tide","中央潮井 · 潮位总控"],"west":["Stations/director","折流廊 · 折流导向台"],"release":["Stations/release","干涸维修井 · 泄压装置"],"g_guards":["Rooms/G","中心闸庭"],"gate":["Barriers/GJ","远航出口 · 闸门"],"exit":["Rooms/ExitTrigger","远航出口"],"lower_first":["Stations/tide","中央潮井 · 潮位总控"]}
+	if level == 3:
+		destinations["i_guards"] = ["Rooms/I","干涸维修井"]
 	if not destinations.has(id): return {}
 	var entry: Array = destinations[id]
 	var node: Node3D = world.get_node_or_null(entry[0])

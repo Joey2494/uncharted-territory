@@ -9,6 +9,7 @@ func _ready() -> void:
 	for path in ["Body","Body/Head","ArmR","ArmL","LegR","LegL"]:
 		var node:=get_node_or_null(path) as Node3D
 		if node: _rest[path]=node.transform
+	pose(0,0,0,0)
 func _process(delta: float) -> void:
 	if preview_motion: pose(0,0,0.5,delta)
 func pose(state: int, progress: float, moving: float, delta: float, strike := 0) -> void:

@@ -34,7 +34,7 @@ static func ability_definition(id: String) -> Dictionary:
 	match ability.kind:
 		"supply":
 			ability["description"] = "按 L 立即恢复 10 点法力，最多恢复至角色法力上限。成功使用后冷却 %s 秒；满蓝时不消耗冷却。技能消耗 0 蓝，不重置武器动作、攻击间隔或弹匣。" % seconds(ability.cooldown)
-			ability["passive_description"] = "均衡配装：近战短剑零消耗，符文短杖每发 5 蓝；可先射击消耗法力，再用 L 补给。"
+			ability["passive_description"] = "均衡配装：近战短剑零消耗，符文短杖每发 5 蓝；可先射击消耗法力，再用 L 补给。能量不随时间自然恢复；K 使用星蓝药剂恢复 20 蓝。"
 		"focus":
 			ability["description"] = "按 L 专注 %s 秒，当前武器攻击间隔 ÷ 1.3：手枪 0.50 → 0.38 秒，卡宾枪 0.80 → 0.62 秒。弹匣容量、换弹时间与每发弹药消耗不变。技能消耗 0 蓝；专注结束后开始 %s 秒冷却，闪避不取消专注。" % [seconds(ability.duration),seconds(ability.cooldown)]
 			ability["passive_description"] = "整备射击：停火 1.5 秒获得一次强化，保留 5 秒，两次获得至少间隔 6 秒。下一发线圈卡宾枪基础伤害 2 → 3，成功发射即消耗；手枪不消耗已获得的强化。"

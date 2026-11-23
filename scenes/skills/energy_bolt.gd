@@ -79,6 +79,8 @@ func _physics_process(delta: float) -> void:
 		set_physics_process(false)
 		var collider := collision.get_collider() as Node
 		impacted.emit(collider)
+		if is_instance_valid(collider) and collider.has_method("get_combat_actor"):
+			collider = collider.get_combat_actor()
 		if is_instance_valid(collider) and collider.has_method("take_direct_damage"):
 			collider.call("take_direct_damage", _damage, global_position - _direction)
 		elif is_instance_valid(collider) and collider.has_method("take_damage"):

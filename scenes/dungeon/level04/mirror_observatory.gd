@@ -159,7 +159,7 @@ func objective() -> String:
 	if not puzzles.calibrated: return "在 E 记录室读曝光盘，校准三位密码柜"
 	if not combat.is_clear("F"): return "前往 F 栈道，绕过隔墙迎击守卫"
 	if not combat.is_clear("H"): return "去 H 试车场，看一次无伤示范后进入内场"
-	if not combat.is_clear("I"): return "去 I 主穹顶，击败执刑官与近卫"
+	if not combat.is_clear("I"): return "去 I 主穹顶，击败袍冠女巫与尖蓟近卫"
 	return "穿过北门，在 J 升降台中央离站"
 
 func _record_location() -> void:

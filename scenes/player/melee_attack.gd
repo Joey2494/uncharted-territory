@@ -148,6 +148,9 @@ func _detect_hits() -> void:
 				receiver = parent
 		if receiver == attacker or attacker.is_ancestor_of(receiver):
 			continue
+		if receiver.has_method("get_combat_actor"):
+			receiver = receiver.get_combat_actor()
+			if not is_instance_valid(receiver): continue
 		var receiver_id := receiver.get_instance_id()
 		if _hit_targets.has(receiver_id):
 			continue

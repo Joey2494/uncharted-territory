@@ -55,11 +55,14 @@ static func targets_in_radius(actor: Node3D, center: Vector3, radius: float) -> 
 	var space := actor.get_world_3d().direct_space_state
 	for hit in space.intersect_shape(query, 64):
 		var target := hit.collider as Node3D
+		var contact := target
+		if is_instance_valid(target) and target.has_method("get_combat_actor"):
+			target = target.get_combat_actor()
 		if target == null or not target.has_method("take_damage") or result.has(target):
 			continue
 		if target.has_method("is_dead") and target.is_dead():
 			continue
-		var ray := PhysicsRayQueryParameters3D.create(center + Vector3.UP * 0.8, target.global_position + Vector3.UP * 0.8, 1)
+		var ray := PhysicsRayQueryParameters3D.create(center + Vector3.UP * 0.8, contact.global_position + Vector3.UP * 0.8, 1)
 		if space.intersect_ray(ray).is_empty():
 			result.append(target)
 	return result

@@ -19,7 +19,9 @@ static func ensure_loaded() -> void:
 	settled_runs = []
 	message = ""
 	var config := ConfigFile.new()
-	if config.load(path) != OK: return
+	if config.load(path) != OK:
+		# An interrupted write must not turn a valid wallet into an empty profile.
+		if config.load(path + ".bak") != OK: return
 	var saved: Variant = config.get_value("profile", "coins", 0)
 	if saved is int: coins = clampi(saved, 0, 100000000)
 	var settled: Variant = config.get_value("profile", "settled_runs", [])
@@ -58,20 +60,34 @@ static func set_selected_character(id: String) -> bool:
 static func save() -> bool:
 	ensure_loaded()
 	var config := ConfigFile.new()
-	config.load(_loaded_path)
+	if config.load(_loaded_path) != OK: config.load(_loaded_path + ".bak")
 	config.set_value("profile", "coins", coins)
 	config.set_value("profile", "settled_runs", settled_runs)
 	config.set_value("profile", "characters", unlocked)
 	config.set_value("profile", "selected_character", get_selected_character())
-	var ok := config.save(_loaded_path) == OK
+	# Write beside the destination, then replace it only after the complete file
+	# is closed. Keep the last valid profile as a recovery copy.
+	var temporary := _loaded_path + ".tmp"
+	var ok := config.save(temporary) == OK
+	if ok and FileAccess.file_exists(_loaded_path):
+		var previous := ConfigFile.new()
+		if previous.load(_loaded_path) == OK:
+			ok = DirAccess.copy_absolute(_loaded_path, _loaded_path + ".bak") == OK
+	if ok:
+		ok = DirAccess.rename_absolute(temporary, _loaded_path) == OK
+	if not ok and FileAccess.file_exists(temporary):
+		DirAccess.remove_absolute(temporary)
 	message = "" if ok else "存档失败，请检查存储权限后重试"
 	return ok
 
 static func set_coins(amount: int) -> bool:
 	ensure_loaded()
 	if amount == coins: return true
+	var previous := coins
 	coins = clampi(amount, 0, 100000000)
-	return save()
+	if save(): return true
+	coins = previous
+	return false
 
 static func unlock_character(id: String) -> bool:
 	ensure_loaded()

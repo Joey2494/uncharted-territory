@@ -1,0 +1,16 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://addons/ziyuan_level04/previews/room_preview.gd" id="1"]
+[ext_resource type="PackedScene" path="res://addons/ziyuan_level04/models/RavenRoostModel.tscn" id="2"]
+[ext_resource type="Script" path="res://addons/ziyuan_level04/room_catalog.gd" id="3"]
+
+[node name="RavenRoostPreview" type="Node3D"]
+script = ExtResource("1")
+enemy_id = "raven_roost"
+
+[node name="Model" parent="." instance=ExtResource("2")]
+rotation = Vector3(0, 3.141593, 0)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+current = true
+fov = 35.0

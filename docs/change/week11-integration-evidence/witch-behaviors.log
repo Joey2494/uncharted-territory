@@ -1,0 +1,94 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS catalog registers witch boss and spore guard minion
+PASS witch boss stats scaled to campaign baseline
+PASS spore guard drops no coins
+PASS witch exposes boss contract signals
+PASS witch exposes hud and telegraph signals
+PASS witch exposes combat methods
+PASS witch exposes control and minion contract
+PASS target binding validates the player interface
+PASS witch joins camera group with framing metadata
+PASS witch starts dormant and rejects damage
+PASS single spore mark explodes for two damage and leaves one pool
+PASS triple shot starts directly without any telegraph signal or windup
+PASS direct cast creates no attack range meshes
+PASS first physical spore launches immediately
+PASS repeated zero delta cannot duplicate the first spore
+PASS second spore waits for 0.35 real seconds
+PASS second spore launches after 0.35 seconds
+PASS triple spore shot places three locked marks
+PASS finished triple shot never duplicates projectiles
+PASS locked marks explode and hit protection settles one hit
+PASS three marks leave three poison pools
+PASS fourth pool dissolves the oldest one
+PASS pool ticks once immediately on entry
+PASS pool ticks once per second while standing inside
+PASS leaving the pool stops damage
+PASS re-entering inside one second cannot speed up the source tick
+PASS the pool still ticks once per second after re-entry
+PASS pool expires after four seconds
+PASS pulse seed can be forced for verification
+PASS pulse seed fires eight ring bolts
+PASS ring bolt deals one damage on swept contact
+PASS guard slot fires while no minion is alive
+PASS one batch requests two guards at distinct marked positions
+PASS summon batch counter advances
+PASS host registers living minions for summon decision
+PASS guard slot replaced by pulse while a batch is alive
+PASS dead batch frees the guard slot again
+PASS second batch is allowed once the first is gone
+PASS second batch summons and advances the counter
+PASS alive minion keeps replacing the guard slot
+PASS third and final batch is allowed
+PASS batch cap reached
+PASS fourth batch is refused and replaced by pulse
+PASS vine sweep locks its band on the player at windup start
+PASS vine sweep hazard is live
+PASS wave passing the player inside the band deals two damage
+PASS vine hazard clears after one pass
+PASS stepping off the band avoids the sweep
+PASS roll invulnerability crosses the sweep
+PASS overlapping pool ticks once before the sweep test
+PASS one pool lies across the sweep band
+PASS pool safe path tests the sweep x axis
+PASS pool blocking the band dissolves before the sweep
+PASS sweep still resolves after the safe-path fix
+PASS fresh boss opens with triple shot
+PASS crossing half health only marks the transition
+PASS transition runs at the next safe move boundary
+PASS transition clears old projectiles and hazard zones
+PASS transition show ends after 0.8 seconds
+PASS phase two opens with the fixed vine sweep
+PASS phase two rotation interleaves triple shot
+PASS phase two rotation interleaves pulse seed
+PASS phase two rotation repeats vine sweep
+PASS phase two rotation repeats pulse seed
+PASS phase change is announced exactly once
+PASS first hard control converts to twenty-five stance without interrupting
+PASS stance sources are gated to one request per second
+PASS one hundred stance triggers the two second break
+PASS damage during the break is doubled
+PASS break ends and double damage window closes
+PASS break triggers at most once per phase
+PASS lethal damage accepted
+PASS death reward and minion dissolve are idempotent
+PASS team enemy_died signal passes the actor exactly once
+PASS death animation releases the boss actor
+PASS spore guard cannot emit rewards
+PASS spore guard dies without coin drops
+PASS active witch maintains its hazards
+PASS stopping the room clears witch hazards
+PASS reactivated witch accepts damage again
+PASS laboratory loads the solo witch encounter
+PASS pause freezes the boss state machine
+PASS laboratory registers two spore guards with the boss
+PASS half health wave demonstrates the phase two entry
+PASS room adapter rejects empty reward identity
+PASS room adapter reads Marker3D and leaves boss dormant
+PASS arena bounds follow a translated room center
+PASS adapter spawns and registers both minions
+PASS adapter stop clears guards and resets direct cast state
+PASS adapter supports stop then restart without losing summon callbacks
+PASS adapter dissolves minions and forwards stable reward identity
+LEVEL04_TEST_RESULT passed=91 failed=0

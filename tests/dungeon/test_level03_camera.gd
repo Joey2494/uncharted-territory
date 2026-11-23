@@ -72,14 +72,14 @@ func run() -> void:
 		var destination: Vector3 = camera._desired_focus(camera._get_actors())
 		await frames(8)
 		check(camera._focus.distance_to(destination) < before.distance_to(destination) and not camera._focus.is_equal_approx(before), "探索使用第一关的缓动跟随")
-		for id in [&"C",&"E",&"F",&"G"]:
+		for id in [&"C",&"E",&"F",&"I",&"G"]:
 			player.global_position = map.get_node("Rooms/" + String(id)).global_position + Vector3(0,0.05,3)
 			await frames()
 			if id == &"G":
 				host._boss._pursue(0.0)
-				host._boss.take_damage(45)
+				host._boss.take_damage(host._boss.max_hp / 2)
 				await frames()
-				check(host._boss_bar.visible and map._summons.size() == 2, "第一关镜头下首领栏与半血援军正常")
+				check(host._boss_bar.visible and host._boss._phase_two and map._summons.is_empty(), "第一关镜头下首领栏与半血狂暴正常")
 			camera.reset_follow()
 			await frames(12)
 			check_actors("%s %s" % [size,id])

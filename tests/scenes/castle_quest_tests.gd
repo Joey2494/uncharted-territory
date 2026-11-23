@@ -99,8 +99,13 @@ func run() -> void:
 	check(host._hud.get_result_screen().summary_label.text == "失落石堡 · 主线目标已全部完成","Existing settlement visibly preserves the all-complete state")
 	await frames(50)
 	await capture("06-level-complete")
+	var previous_id := host.get_instance_id()
 	check(host.restart_run(),"The existing restart action remains available")
-	await frames(12)
+	var deadline := Time.get_ticks_msec()+45000
+	while Time.get_ticks_msec() < deadline:
+		await process_frame
+		if current_scene != null and current_scene.get_instance_id() != previous_id and root.get_node_or_null("LoadingScreen") == null: break
+	await frames(4)
 	host = current_scene
 	panel = host._hud.get_node("LevelObjective")
 	host._player._invulnerability_remaining = 100000.0
