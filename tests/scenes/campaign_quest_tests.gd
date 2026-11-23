@@ -118,7 +118,18 @@ func third() -> void:
 	await use_station("tide")
 	expect("west",0,1)
 	await use_station("director")
+	expect("i_guards",0,1)
+	check_maintenance_map("i_guards","干涸维修井")
+	await go(map.get_node("Rooms/I").global_position+Vector3(0,0.05,3))
+	expect("i_guards",0,1)
+	check(panel.get_node("%QuestQuantity").text == "0/1" and panel.get_node("%QuestProgress").value == 0,"Maintenance-well journal shows actual remaining combat progress")
+	check_maintenance_map("i_guards","干涸维修井")
+	check(panel.get_node("%QuestTask").text.contains("双链执刑官"),"Visible journal requires the actual maintenance-well enemy before release")
+	await use_station("release")
+	check(map.get_storage_state() == map.Storage.STORED,"Release remains blocked while the maintenance-well enemy is alive")
+	await clear3("I")
 	expect("release",0,1)
+	check_maintenance_map("release","泄压装置")
 	var before: Dictionary = panel._snapshot.duplicate(true)
 	host.set_paused(true)
 	await create_timer(0.15).timeout
@@ -139,30 +150,29 @@ func third() -> void:
 	await use_station("highwalk")
 	await use_station("tide")
 	await use_station("director")
+	check(panel._snapshot.tasks.filter(func(task): return task.id == "i_guards")[0].done,"Puzzle reset preserves the completed maintenance-well battle")
 	await use_station("release")
-	expect("g_guards",0,2)
+	expect("g_guards",0,1)
+	check_maintenance_map("g_guards","中心闸庭")
 	await go(map.get_node("Rooms/G").global_position+Vector3(0,0.05,3))
 	check(host._boss_bar.visible and panel.get_node("%QuestTask").text.contains(host._boss.boss_name),"Third-level real Boss and named quest remain visible together")
 	await matrix("third-real-boss")
-	map._summon_requested("bone_axe",map.get_node("Rooms/G").global_position,host._boss)
+	host._boss.take_damage(host._boss.max_hp/2)
 	await frames(3)
-	expect("g_guards",0,2)
-	check(map._summons.size() > 0,"Actual Boss summons do not inflate the sealed quest enemy roster")
+	expect("g_guards",0,1)
+	check(host._boss._phase_two and map._summons.is_empty(),"Half-health Boss changes cadence without adding a second species")
+	check(not panel.get_node("%QuestTask").text.contains("执刑官"),"Center-court journal names only its actual Boss")
 	host._boss.take_damage(999)
 	await frames(2)
-	expect("g_guards",1,2)
-	check(not panel._snapshot.complete and not map._progress.is_complete(&"G"),"Boss death alone cannot complete the final two-enemy encounter")
-	for enemy in map.get_node("Enemies").get_children():
-		if enemy.get_meta("room",&"") == &"G" and not enemy.is_dead() and not enemy.get_meta("summoned",false): enemy.take_damage(999)
-	await frames(2)
+	check(not panel._snapshot.complete and map._progress.is_complete(&"G"),"Single Boss death clears its room but does not replace gate and physical exit steps")
 	expect("gate",0,1)
 	await create_timer(0.6).timeout
 	expect("exit",0,1)
 	await matrix("third-history")
-	check(panel._completed.size() == 14 and not map._inventory.has_claimed(map.REWARD_ID),"Garden reward is optional; all fourteen pre-exit milestones have actual history")
+	check(panel._completed.size() == 15 and not map._inventory.has_claimed(map.REWARD_ID),"Garden reward is optional; all fifteen pre-exit milestones have actual history")
 	await go(map.get_node("Rooms/J").global_position+Vector3.UP*0.05)
 	await frames(3)
-	check(panel._snapshot.complete and panel.get_node("%QuestQuantity").text == "15/15","Real J exit finishes every main step")
+	check(panel._snapshot.complete and panel.get_node("%QuestQuantity").text == "16/16","Real J exit finishes every main step including maintenance-well combat")
 	check(host.get_run_state() == host.RunState.VICTORY,"Original tide, final-guard and exit conditions still control victory")
 
 func expect(id: String, count: int, total: int) -> void:
@@ -172,6 +182,13 @@ func expect(id: String, count: int, total: int) -> void:
 	for i in panel._snapshot.tasks.size():
 		check(panel._marks[i].get_child(1).text == ("✓" if panel._snapshot.tasks[i].done else "○"),"Marker matches real state: "+panel._snapshot.tasks[i].id)
 	check(panel.get_node("%QuestTask").get_theme_color("font_color") == panel.GOLD,"Active action uses the same castle gold highlight")
+
+func check_maintenance_map(id: String, location: String) -> void:
+	var quest_map: CanvasLayer = panel.quest_map
+	check(quest_map.open_map(),"Actual journal map opens for "+id)
+	check(quest_map.view.snapshot.target.id == id and quest_map.view.snapshot.target.name.contains(location),"Actual map marker names the current action: "+id)
+	check(quest_map.objective.text.contains(panel.get_node("%QuestTask").text),"Visible map objective agrees with visible journal action: "+id)
+	quest_map.close_map()
 
 func matrix(label: String) -> void:
 	for size in SIZES:
@@ -216,14 +233,22 @@ func clear3(id: String) -> void:
 	await go(host._dungeon.get_node("Rooms/"+id).global_position+Vector3(0,0.05,3))
 	var killed := 0
 	for enemy in host._dungeon.get_node("Enemies").get_children():
-		if enemy.get_meta("room",&"") == StringName(id) and not enemy.is_dead():
+		if is_instance_valid(enemy) and enemy.get_meta("room",&"") == StringName(id) and not enemy.is_dead():
 			enemy.take_damage(999)
 			killed += 1
 			await frames(2)
-			if killed == 1: check(panel.get_node("%QuestQuantity").text == "1/2","Actual first kill immediately updates "+id+" quantity")
+			if killed == 1 and host._dungeon._progress.get_total_enemies(StringName(id)) == 2: check(panel.get_node("%QuestQuantity").text == "1/2","Actual first kill immediately updates "+id+" quantity")
 	await frames(3)
 func use_station(id: String) -> void:
 	await go(host._dungeon.get_node("Stations/"+id).global_position+Vector3(0,0.05,1.1))
+	# 掉落金币/地图补给可能比机关更近；按真实E优先级先拾取，再操作指定机关。
+	var station: Node3D = host._dungeon.get_node("Stations/"+id)
+	for i in 6:
+		var target: Node3D = host._items._get_nearest_interaction_target()
+		if target == station or target == null: break
+		check(target is Area3D and host._items.try_interact_nearest(),"Collect nearer pickup before device interaction: "+id)
+		await frames(2)
+	check(host._items._get_nearest_interaction_target() == station,"Nearest E target is the actual device: "+id)
 	check(host._items.try_interact_nearest(),"Existing nearest-target E interaction: "+id)
 	await frames(3)
 func go(point: Vector3) -> void:
