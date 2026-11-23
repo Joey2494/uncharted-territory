@@ -1,4 +1,4 @@
-extends "res://addons/ziyuan_level03/enemy.gd"
+extends "res://scenes/dungeon/level04/observatory_enemy_compat.gd"
 ## 沿用现有敌人的招式、模型和受击契约；本关石墙会挡住追击，需要绕至通行缺口。
 var encounter: Node3D
 var _next_corner := Vector3.ZERO

@@ -29,3 +29,5 @@
 验证日志：`evidence/direct_combat_tests.log`（敌人伤害与接口）、`direct_integration_tests.log`（正式关真实J/K、奖励、暂停和清场）；图形截图 `direct_bone_axe.png`、`direct_bone_spike.png`、`direct_tomb_sword.png`、`direct_chain_jailer.png`、`direct_sand_king.png`，由 `capture_direct_combat.gd`生成。数值强化需后续试玩平衡，不代表人工完整通关验收。
 
 最终验证：独立敌人测试 **70 passed / 0 failed**；正式第三关接入 **46 checks / 0 failures**；五种攻击图形截图已查看，日志无脚本错误。沙王重踏会先追入5.3单位实际距离，飞行沙咒触发距离14单位，与8.5弹速/1.7秒寿命匹配。
+
+PR整合说明：与main `b1ee670`合并时，发现正式第四关观测站继承本模块。为保留组员已验收的观测站机关战，`observatory_guard.gd`改为继承同目录的`observatory_enemy_compat.gd`，连同数值和投射物保留该主分支行为快照；第三关使用本模块的新直接攻击规则，新第四关敌人仍为独立原型。合并后第三关战役143项、观测站战斗66项和战役41项均通过。
