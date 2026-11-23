@@ -39,7 +39,10 @@ func _ready() -> void:
 	load_error.back_requested.connect(_dismiss_load_error)
 	level_select.hide()
 	settings_screen.hide()
-	var levels: Array[Dictionary] = [{"id": &"level1", "name": "第一关"}, {"id": &"level2", "name": "第二关"}, {"id": &"level3", "name": "第三关"}]
+	var levels: Array[Dictionary] = [
+		{"id": &"level1", "name": "第一关"}, {"id": &"level2", "name": "第二关"},
+		{"id": &"level3", "name": "第三关"}, {"id": &"level4", "name": "第四关 · 日晷观测站"},
+	]
 	level_select.configure(levels, progress)
 	settings_screen.configure(settings)
 	if host._dungeon.has_method("get_route_reference"):
@@ -114,12 +117,12 @@ func _continue_campaign() -> void:
 func return_to_level_select() -> void:
 	host.request_scene_change("res://Main.tscn", {"show_levels": true})
 
-## 独立白盒从选关页试玩，保留最近一次正式战役的继续游戏目标。
+## 独立试玩与正式第四关共用地图，试玩场景自行隔离进度和金币。
 func _open_mirror_preview() -> void:
 	if host._run_state != host.RunState.MENU or not level_select.visible or load_error.visible:
 		return
-	host.request_scene_change("res://scenes/dungeon/level04/Level04Preview.tscn",
-		{"character_id": host._start_screen.selected_character_id})
+	host.request_scene_change("res://scenes/dungeon/Level04Practice.tscn",
+		{"character_id": host._start_screen.selected_character_id, "start_run": true})
 
 func _launch(id: StringName) -> void:
 	if host._transition_queued or host._run_state != host.RunState.MENU or not progress.is_unlocked(id): return

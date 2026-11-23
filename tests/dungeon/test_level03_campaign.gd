@@ -21,7 +21,7 @@ func run() -> void:
 	progress.complete(1)
 	check(progress.is_unlocked(&"level3") and not progress.is_completed(&"level2"), "第三关不依赖第二关通关记录")
 	progress.complete(2)
-	check(progress.is_unlocked(&"level3") and progress.recommended_level() == &"level3", "第二关完成后推荐并解锁第三关")
+	check(progress.is_unlocked(&"level3") and progress.recommended_level() == &"level4", "第三关仍可选择，测试版推荐最高可选关卡")
 	var legacy := ConfigFile.new()
 	legacy.set_value("campaign", "completed", ["level1", "level2"])
 	legacy.set_value("campaign", "played", ["level1", "level2"])
@@ -176,7 +176,7 @@ func third_route() -> void:
 	check(host.get_run_state() == host.RunState.VICTORY and map.is_victorious(), "I 泄压、G 清场、门打开并走入 J 才通关")
 	check(host.get_node("MenuNavigation").progress.is_completed(&"level3"), "第三关完成写入进度")
 	var result: Control = host._hud.get_result_screen()
-	check(result != null and not result.next_level_button.visible and not host.advance_to_next_level(), "第三关终局没有第四关按钮且拒绝越界跳转")
+	check(result != null and result.next_level_button.visible and host.get_next_level_block_reason().is_empty(), "第三关实际通关后结算页开放第四关")
 	check(result.summary_label.text.contains("沙缚王") and result.summary_label.text.contains("守卫") and result.get_node("%PuzzleLabel").text.contains("潮汐"), "结算如实显示沙缚王、守卫和潮汐机关")
 	check(not host._settled and PROFILE.coins == wallet_before and host._items.gold == 37 and host._settlement_id not in PROFILE.settled_runs, "第三关结算保存失败回滚钱包并保留本局金币")
 	check(result.get_node("%SettlementLabel").text.contains("金币保存失败") and result._retry.visible, "第三关结算显示金币失败文案和实际重试按钮")
@@ -203,6 +203,7 @@ func result_layout(screen: Control) -> void:
 		root.size = dimensions
 		await frames()
 		var panels: Array[Control] = [screen.get_node("%ResultDetails"), screen.get_node("%RewardsPanel"), screen.get_node("%SettlementLabel"), screen.get_node("%ProgressLabel"), screen.restart_button, screen.get_node("%LevelSelectButton"), screen.get_node("%MainMenuButton")]
+		panels.append(screen.next_level_button)
 		if screen._retry.visible: panels.append(screen._retry)
 		var viewport := root.get_visible_rect()
 		var bounded := true

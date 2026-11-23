@@ -6,6 +6,7 @@ const NAVIGATION = preload("res://scripts/integration/menu_navigation.gd")
 const FIRST := "res://Main.tscn"
 const SECOND := "res://scenes/dungeon/Level02Run.tscn"
 const THIRD := "res://scenes/dungeon/Level03Run.tscn"
+const FOURTH := "res://scenes/dungeon/Level04Run.tscn"
 var host: Node
 var checks := 0
 var failures := 0
@@ -38,7 +39,7 @@ func boot(role: String, level: int = 1, writable: bool = true) -> void:
 	CHARACTERS.start_pending = false
 	NAVIGATION.pending_level_select = false
 	PROGRESS.override_path = "user://victory-campaign-%d.cfg" % Time.get_ticks_usec() if writable else "user://victory-missing-%d/campaign.cfg" % Time.get_ticks_usec()
-	change_scene_to_file({1: FIRST, 2: SECOND, 3: THIRD}[level])
+	change_scene_to_file({1: FIRST, 2: SECOND, 3: THIRD, 4: FOURTH}[level])
 	await frames(8)
 	host = current_scene
 	host._on_run_started()
@@ -115,11 +116,14 @@ func next_without_completion() -> void:
 	check_direct("lan")
 
 func final_level(action: String) -> void:
-	await boot("astra", 3)
+	await boot("astra", 4)
+	if action == "menu":
+		for level in [1, 2, 3]: host.get_node("MenuNavigation").progress.complete(level)
 	settle()
 	var before := scene_changes
 	var screen: Control = host._hud.get_result_screen()
-	check(not screen.get_node("%NextLevelButton").visible and screen.get_node("%ProgressLabel").text.contains("全部关卡"), "last-level settlement explains campaign completion and hides unavailable Next")
+	var expected_message := "全部关卡" if action == "menu" else "战役末关"
+	check(not screen.get_node("%NextLevelButton").visible and screen.get_node("%ProgressLabel").text.contains(expected_message), "last-level settlement describes actual campaign progress and hides unavailable Next")
 	check(not host.advance_to_level02() and not host._transition_queued and not CHARACTERS.start_pending, "last level cannot accidentally loop back into itself")
 	if "--capture" in OS.get_cmdline_user_args() and action == "levels": await capture_final(screen)
 	screen.get_node("%LevelSelectButton" if action == "levels" else "%MainMenuButton").pressed.emit()

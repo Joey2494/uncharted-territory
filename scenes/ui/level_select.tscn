@@ -117,7 +117,8 @@ custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_default_cursor_shape = 2
-text = "试玩第四关 · 日晷观测站"
+text = "独立试玩 · 日晷观测站"
+tooltip_text = "试玩使用本局背包，保留正式战役的进度与钱包"
 
 [node name="BackButton" type="Button" parent="Center/Card/Padding/Content/Actions"]
 unique_name_in_owner = true
