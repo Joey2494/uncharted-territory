@@ -1,5 +1,5 @@
 extends SceneTree
-## 前两关衔接回归（第三关为终关）。定位玩家以隔离移动距离，用真实伤害、交互与物理出口推进。
+## 前两关衔接回归。定位玩家以隔离移动距离，用真实伤害、交互与物理出口推进。
 
 const FIRST := "res://Main.tscn"
 const SECOND := "res://scenes/dungeon/Level02Run.tscn"

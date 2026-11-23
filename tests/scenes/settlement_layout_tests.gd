@@ -12,13 +12,15 @@ func run() -> void:
 		if argument.begins_with("--output="): output = argument.trim_prefix("--output=")
 	if capture: DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(output))
 	root.mode = Window.MODE_WINDOWED
-	for level in [2, 3]:
+	for level in [2, 3, 4]:
 		for saved in [false, true]:
 			var data := {"level_id":level, "elapsed_seconds":125.0, "rooms_visited":10, "rooms_total":10, "player_hp":12, "player_max_hp":16, "puzzle_solved":true, "reward_claimed":true, "settlement_ok":saved, "settled_gold":37 if saved else 0, "boss_name":"灾厄巨蝎", "boss_defeated":true}
 			if level == 3:
 				data.merge({"completion_summary":"最终守卫已清除 · 成功抵达远航出口", "puzzle_name":"潮汐机关", "reward_name":"溢流花园奖励"}, true)
+			if level == 4:
+				data.merge({"completion_summary":"日晷观测站 · 已从北侧升降台离站", "puzzle_name":"曝光记录", "reward_name":"支线奖励"}, true)
 			var screen: Control = load("res://scenes/ui/win_screen.tscn").instantiate()
-			screen.offer_next_level = level == 2
+			screen.offer_next_level = level < 4
 			screen.set_run_result(data)
 			root.add_child(screen)
 			for dimensions in [Vector2i(1280,720), Vector2i(720,720)]:

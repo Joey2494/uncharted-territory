@@ -22,6 +22,9 @@ func _run() -> void:
 		quit(1)
 		return
 	await _start_level()
+	player.global_position = Vector3(3.1, 0.05, 23.4)
+	await _settle()
+	await _collect_supply("ArrivalPotion", 0)
 	_check(not await _use(&"director", false), "初始远离装置时不能遥控导体")
 	_check(not _blocked(&"BC") and _blocked(&"BE"), "低水位只允许下层主通道")
 	await _use(&"tide")
@@ -35,6 +38,15 @@ func _run() -> void:
 	_check(level.get_storage_state() == 0, "断开的输入不能充能")
 	await _use(&"highwalk")
 	_check(not _blocked(&"FB") and _blocked(&"CI"), "F 清场后可手动开高架，高水位仍封闭维修路")
+	# 另一条路线在 F 当场向东探 H，奖励后沿同一浮栈返 F。
+	Input.action_press("sprint")
+	await create_timer(0.4).timeout
+	await _walk(Vector2(20, -24.6))
+	await _walk(Vector2(44.8, -24.6))
+	await _press_e(&"reward")
+	_check(player.get_node("ItemInventory").rune_count == 1, "经 F 东侧实走探访 H 并领取支线奖励")
+	await _walk(Vector2(20, -24.6))
+	Input.action_release("sprint")
 
 	await _use(&"tide")
 	_check(not _blocked(&"FB") and not _blocked(&"CI") and _blocked(&"EF") and _blocked(&"FH"), "低水位保留高架，收回浮栈")
@@ -72,6 +84,7 @@ func _run() -> void:
 	_check(_blocked(&"FB") and _blocked(&"CI") and _blocked(&"ID"), "重置恢复三条谜题门")
 	_check(level.get_node("Progress").is_complete(&"C") and level.get_node("Progress").is_complete(&"F"), "重置保留清敌")
 	_check(inventory.rune_count == 1, "重置保留已领的奖励")
+	_check(level.get_node_or_null("Supplies/ArrivalPotion") == null and inventory.potion_count == 1, "复位不刷新已收走的地面补给")
 	await _use(&"conductor")
 	await _use(&"director")
 	await _use(&"tide")
@@ -110,6 +123,8 @@ func _walk_main_route() -> void:
 	paused = false
 	await _start_level()
 	Input.action_press("sprint")
+	await _walk(Vector2(2.8, 23.4))
+	await _collect_supply("ArrivalPotion", 0)
 	await _walk(Vector2(0, 22.5))
 	await _press_e(&"model")
 	# 交互台现在有真实碰撞，连续路线须绕开沙盘及潮位台，不能穿模抄近路。
@@ -144,6 +159,8 @@ func _walk_main_route() -> void:
 	await _press_e(&"charge")
 	await _walk(Vector2(20, -25.9))
 	await _press_e(&"highwalk")
+	await _walk(Vector2(21.8, -25.0))
+	await _collect_supply("WorkshopPotion", 5)
 	await _walk(Vector2(20, -24))
 	await _walk(Vector2(12.5, -24))
 	await _walk(Vector2(12.5, -7))
@@ -167,7 +184,17 @@ func _walk_main_route() -> void:
 	await _walk(Vector2(-2, 0))
 	await _walk(Vector2(-2, -1.2))
 	await _walk(Vector2(0, -1.2))
+	await _walk(Vector2(0, -15.4))
+	await _walk(Vector2(-4.8, -15.4))
+	await _collect_supply("GateRune", 2)
+	await _walk(Vector2(0, -15.4))
 	await _walk(Vector2(0, -21))
+	# 从战场向凹室侧和闸门正中各探测一次，两条退路都应有真实碰撞。
+	await create_timer(0.5).timeout
+	for x in [-5.2, 0.0]:
+		var return_ray := PhysicsRayQueryParameters3D.create(Vector3(x, 0.7, -18), Vector3(x, 0.7, -15.4), 1, [player.get_rid()])
+		var hit := player.get_world_3d().direct_space_state.intersect_ray(return_ray)
+		_check(not hit.is_empty() and hit.collider is StaticBody3D, "G 封场后不可退到闸后整备位 x=%s" % x)
 	await _defeat(&"G")
 	await create_timer(0.4).timeout
 	await _walk(Vector2(0, -47))
@@ -189,6 +216,19 @@ func _walk(target: Vector2) -> void:
 	var distance := Vector2(player.global_position.x, player.global_position.z).distance_to(target)
 	_check(distance <= 0.4 or level.is_victorious(), "玩家可走到 %s，当前位置 %s" % [target, player.global_position])
 	await _settle()
+
+
+## 用当前背包的最近交互入口验证真实物品类型、一次性和入袋数量。
+func _collect_supply(node_name: String, item_id: int) -> void:
+	var item := level.get_node_or_null("Supplies/" + node_name)
+	_check(is_instance_valid(item), "存在实际可拾取补给 " + node_name)
+	if not is_instance_valid(item): return
+	var inventory = player.get_node("ItemInventory")
+	var before: int = inventory.get_count(item_id)
+	_check(item.item_type == item_id and inventory._get_nearest_interaction_target() == item, "最近 E 目标为 " + node_name)
+	_check(inventory.try_interact_nearest(), "实际拾取 " + node_name)
+	await _settle()
+	_check(inventory.get_count(item_id) == before + 1 and not is_instance_valid(item), "单份补给入袋并从场景移除 " + node_name)
 
 
 func _drive_axis(negative: StringName, positive: StringName, value: float) -> void:
@@ -227,6 +267,7 @@ func _check_restart() -> void:
 	level = current_scene
 	player = level.get_node("Player")
 	await _settle()
+	_check(level.get_node_or_null("Supplies") != null and level.get_node("Supplies").get_child_count() == 3, "新局补给点全部恢复")
 	_check(level.get_storage_state() == 0 and _blocked(&"BG") and not _blocked(&"BC"), "新局恢复低水位和闸门初态")
 	_check(level.get_node("Enemies").get_child_count() == 8 and not level.get_node("Progress").is_complete(&"C"), "新局刷新四个战斗房的八名字远敌人")
 	_check(player.get_node("ItemInventory").rune_count == 0 and not level.is_victorious(), "新局没有保留奖励或结算状态")

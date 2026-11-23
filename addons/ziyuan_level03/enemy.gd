@@ -335,8 +335,12 @@ func take_damage(amount: int) -> bool:
 		_phase_two=true
 		state_changed.emit("沙王狂暴 斥候苏醒")
 		for side in [-1,1]: summon_requested.emit("bone_axe",global_position+Vector3(side*3.0,0,1.5))
-	elif not is_boss() and enemy_id!="tomb_sword":
+	elif _stagger_on_hit():
 		state=State.HURT
 		_remaining=0.15
 		_clear_warning()
 	return true
+
+## 单次伤害与硬直分别判定，特殊场地可保留已承诺的动作预告。
+func _stagger_on_hit() -> bool:
+	return not is_boss() and enemy_id!="tomb_sword"

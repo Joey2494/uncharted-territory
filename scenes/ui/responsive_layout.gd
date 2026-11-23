@@ -65,8 +65,8 @@ func _apply_layout() -> void:
 	var viewport_size := get_viewport().get_visible_rect().size
 	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
 		return
-	if is_instance_valid(_camera) and _camera.has_method("is_puzzle_framed"):
-		_apply_level02_layout(viewport_size)
+	if is_instance_valid(_camera) and (compact_combat_layout or _camera.has_method("is_puzzle_framed")):
+		_apply_compact_combat_layout(viewport_size)
 		return
 	var wide := viewport_size.x >= WIDE_WIDTH
 	var half_width := (viewport_size.x - MARGIN * 2.0 - GAP) * 0.5
@@ -142,8 +142,8 @@ func _apply_layout() -> void:
 			_camera.set_safe_frame(Rect2(clear.position / viewport_size, clear.size / viewport_size))
 
 
-## 二关统一使用紧凑边缘HUD。区域切换不再隐藏操作栏，也不由临时消息决定镜头。
-func _apply_level02_layout(viewport: Vector2) -> void:
+## 紧凑战斗布局将控件放在画面边缘。区域切换不再隐藏操作栏，也不由临时消息决定镜头。
+func _apply_compact_combat_layout(viewport: Vector2) -> void:
 	var ui_scale := (0.72 if viewport.x < 900.0 else 0.8) if viewport.y < 900.0 else 1.0
 	var margin := 16.0
 	for control in [_stats, _resources, _feedback, _cooldowns, _hotbar, _boss_bar, _objective, _shop_shortcut]:
@@ -179,7 +179,9 @@ func _apply_level02_layout(viewport: Vector2) -> void:
 		boss_y = margin+144*ui_scale+8
 	var boss_x := middle_left+(middle_width-boss_width*ui_scale)*0.5 if boss_y == margin else (viewport.x-boss_width*ui_scale)*0.5
 	_place(_boss_bar,Vector2(boss_x,boss_y),Vector2(boss_width,maxf(88,_boss_bar.get_combined_minimum_size().y)))
-	if _boss_bar.visible: top = maxf(top,_boss_bar.get_global_rect().end.y)
+	if _boss_bar.visible or compact_combat_layout: top = maxf(top,_boss_bar.get_global_rect().end.y)
+	if compact_combat_layout and _objective != null:
+		top = maxf(top, _objective.get_global_rect().end.y)
 	# 提示卡按内容收缩；始终保留同一条交互带，反馈消失不改变构图。
 	var feedback_width := minf(420, (viewport.x-2*margin)/ui_scale)
 	var feedback_height := _feedback.get_combined_minimum_size().y
