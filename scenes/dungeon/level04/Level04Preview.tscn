@@ -1,15 +1,13 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=8 format=3]
 
-[ext_resource type="Script" path="res://scenes/dungeon/level04/mirror_observatory.gd" id="1"]
-[ext_resource type="Script" path="res://scenes/dungeon/level04/observatory_layout.gd" id="2"]
-[ext_resource type="PackedScene" path="res://scenes/player/PlayerKnight.tscn" id="3"]
-[ext_resource type="Script" path="res://scenes/dungeon/level04/observatory_camera.gd" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/level04/Level04World.tscn" id="base"]
+
+[ext_resource type="Script" path="res://scenes/dungeon/level04/observatory_legacy_preview.gd" id="preview"]
+
 [ext_resource type="Script" path="res://scenes/dungeon/level04/observatory_hud.gd" id="5"]
+
 [ext_resource type="Font" path="res://scenes/ui/dungeon_font.tres" id="6"]
 
-[ext_resource type="Script" path="res://scenes/dungeon/level04/observatory_combat.gd" id="7"]
-[ext_resource type="Script" path="res://scenes/dungeon/level04/observatory_puzzles.gd" id="8"]
-[ext_resource type="Script" path="res://scenes/dungeon/level04/observatory_mail.gd" id="9"]
 [ext_resource type="PackedScene" path="res://scenes/ui/CommerceLayer.tscn" id="10"]
 
 [sub_resource type="StyleBoxFlat" id="Slate"]
@@ -21,54 +19,15 @@ content_margin_right = 11.0
 content_margin_top = 6.0
 content_margin_bottom = 6.0
 
-[sub_resource type="Environment" id="Env"]
-background_mode = 1
-background_color = Color(0.055, 0.09, 0.12, 1)
-ambient_light_source = 3
-ambient_light_color = Color(0.78, 0.87, 0.95, 1)
-ambient_light_energy = 0.85
-
 [sub_resource type="Theme" id="FontTheme"]
 default_font = ExtResource("6")
 default_font_size = 17
 
-[node name="Level04Preview" type="Node3D"]
-script = ExtResource("1")
-
-[node name="Layout" type="Node3D" parent="."]
-script = ExtResource("2")
-
-[node name="Puzzles" type="Node3D" parent="."]
-script = ExtResource("8")
-
-[node name="Combat" type="Node3D" parent="."]
-script = ExtResource("7")
-
-[node name="Mail" type="Node3D" parent="."]
-script = ExtResource("9")
+[node name="Level04Preview" instance=ExtResource("base")]
+script = ExtResource("preview")
 
 [node name="CommerceLayer" parent="." instance=ExtResource("10")]
 external_pause = true
-
-
-[node name="Stations" type="Node3D" parent="."]
-
-[node name="Player" parent="." instance=ExtResource("3")]
-position = Vector3(0, 0.05, 2)
-
-[node name="Camera3D" type="Camera3D" parent="."]
-current = true
-fov = 52.0
-script = ExtResource("4")
-minimum_distance = 18.5
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Env")
-
-[node name="Sun" type="DirectionalLight3D" parent="."]
-rotation = Vector3(-0.98, -0.51, 0)
-light_color = Color(1, 0.93, 0.8, 1)
-shadow_enabled = true
 
 [node name="HUD" type="CanvasLayer" parent="."]
 process_mode = 3

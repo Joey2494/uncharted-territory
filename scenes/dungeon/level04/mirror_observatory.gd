@@ -1,5 +1,5 @@
 extends Node3D
-## 第四关独立试玩。门、支线和终点共用同一局的物理与进度状态。
+## 日晷观测站共享地图。门、支线和终点共用同一局的物理与进度状态。
 const CHARACTERS := preload("res://scenes/player/character_catalog.gd")
 const STATION := preload("res://scenes/dungeon/level03/tide_station.gd")
 const CATALOG := preload("res://data/item_catalog.gd")
@@ -18,7 +18,6 @@ signal failed
 @onready var combat := $Combat
 @onready var puzzles := $Puzzles
 @onready var mail := $Mail
-@onready var commerce := $CommerceLayer
 var current_room := ""
 var visited := {}
 var finished := false
@@ -27,13 +26,8 @@ var elapsed := 0.0
 var _gate_state := {}
 var _labels := {}
 
-func _enter_tree() -> void:
-	$Player.character_id = CHARACTERS.selected_id
-
 func _ready() -> void:
 	$Camera3D.set_safe_frame(Rect2(0.04,0.18,0.91,0.74))
-	var music := get_node_or_null("/root/MusicManager")
-	if music: music.play_level(4)
 	layout.build()
 	puzzles.setup(self)
 	combat.setup(self)
@@ -52,13 +46,7 @@ func _ready() -> void:
 	combat.battle_started.connect(_battle_started)
 	combat.battle_cleared.connect(_battle_cleared)
 	player.died.connect(_die)
-	player.feedback.connect(note)
-	inventory.feedback.connect(note)
-	commerce.bind_inventory(inventory, func() -> bool: return not finished and not puzzles.modal_open())
-	commerce.external_pause_state = func() -> bool: return $HUD/Overlay.visible and not finished
-	commerce.set_run_active(true)
 	_refresh_gates()
-	_record_location()
 
 func _battle_started(id: String) -> void:
 	layout.seal_room(id,true)
@@ -194,17 +182,19 @@ func _physics_process(delta: float) -> void:
 	_refresh_gates()
 	for station: Node3D in _labels:
 		_labels[station].visible = player.position.distance_squared_to(station.position) < 18.0
-	var point: Vector3 = player.position - layout.room_center("J")
-	if current_room == "J" and combat.is_clear("I") and layout.passage_open("I","J") and absf(point.x) < 1.9 and absf(point.z+1.8) < 1.3 and absf(point.y) < 1.2:
+	if combat.is_clear("I") and layout.passage_open("I","J") and is_player_in_exit_area():
 		finished = true
 		won = true
 		combat.stop()
-		commerce.finish_run()
 		completed.emit()
+
+## 到达升降台中央的同一组几何边界也供战役结算独立复核。
+func is_player_in_exit_area() -> bool:
+	var point: Vector3 = player.position - layout.room_center("J")
+	return layout.room_at(player.position) == "J" and absf(point.x) < 1.9 and absf(point.z + 1.8) < 1.3 and absf(point.y) < 1.2
 
 func _die() -> void:
 	if finished: return
 	finished = true
 	combat.stop()
-	commerce.finish_run()
 	failed.emit()

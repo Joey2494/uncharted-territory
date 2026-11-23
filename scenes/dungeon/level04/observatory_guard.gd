@@ -16,6 +16,12 @@ func _ready() -> void:
 		definition.hp = max_hp
 		hp_changed.emit(hp,max_hp)
 
+## 以穹顶封场为 Boss 条的起点；寻敌逻辑共用 _battle 标志，避免重复开场。
+func start_dome_encounter() -> void:
+	if not _battle:
+		_battle = true
+		battle_started.emit()
+
 func _stagger_on_hit() -> bool:
 	if enemy_id == "chain_jailer" and get_meta("room","") == "I":
 		if advancing or state in [State.WINDUP,State.STRIKE]: return false

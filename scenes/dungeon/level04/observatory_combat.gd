@@ -37,6 +37,7 @@ var _reinforced := false
 var _warning_left := -1.0
 var _spawn_serial := 0
 var _stopped := false
+var prepared_dome_boss: CharacterBody3D
 var _jailer: CharacterBody3D
 var _advance_paused_light := false
 var _paths: AStarGrid2D
@@ -175,23 +176,47 @@ func _begin_battle(room: String) -> void:
 		_sweeps[room].begin(_next_side,false)
 		feedback.emit("百叶运行 · 琥珀光选侧，红光锁定，白光扫过")
 
-func _spawn(kind: String, xz: Vector2) -> void:
+## 战役 HUD 在玩家进场前订阅真正的执刑官；入场前隐藏模型、碰撞及战斗处理。
+func prepare_dome_boss() -> void:
+	for spec in ROSTERS["I"]:
+		if spec[0] == "chain_jailer":
+			prepared_dome_boss = _create_guard("I", spec[0], spec[1])
+			prepared_dome_boss.hide()
+			prepared_dome_boss.collision_layer = 0
+			prepared_dome_boss.collision_mask = 0
+			prepared_dome_boss.get_node("HealthLabel").hide()
+			return
+
+func _create_guard(room: String, kind: String, xz: Vector2) -> CharacterBody3D:
 	var guard := FACTORY.create(kind)
 	guard.set_script(GUARD)
 	guard.enemy_id = kind
 	guard.encounter = self
 	guard.bind_target(_player)
 	_spawn_serial += 1
-	guard.name = "%s_Guard%d" % [active_room,_spawn_serial]
-	guard.set_meta("room",active_room)
-	guard.position = _at(active_room,xz,0.06)
+	guard.name = "%s_Guard%d" % [room,_spawn_serial]
+	guard.set_meta("room",room)
+	guard.position = _at(room,xz,0.06)
 	add_child(guard)
-	# 第四关要求基础角色可无药通行。保留既有招式与血量，为多敌叠加降低每次失误的代价。
+	# 保留既有招式与血量，为多敌叠加降低每次失误的代价。
 	guard.definition.damage = 2 if kind in ["chain_jailer","tomb_sword"] else 1
 	guard.died.connect(_on_guard_dead.bind(guard))
+	return guard
+
+func _spawn(kind: String, xz: Vector2) -> void:
+	var guard: CharacterBody3D
+	if kind == "chain_jailer" and is_instance_valid(prepared_dome_boss):
+		guard = prepared_dome_boss
+		guard.collision_layer = 4
+		guard.collision_mask = 3
+		guard.show()
+	else:
+		guard = _create_guard(active_room,kind,xz)
 	_enemies.append(guard)
 	guard.set_encounter_active(true)
-	if kind == "chain_jailer": _jailer = guard
+	if kind == "chain_jailer":
+		_jailer = guard
+		if guard == prepared_dome_boss: guard.start_dome_encounter()
 
 func _on_guard_dead(guard: CharacterBody3D) -> void:
 	_enemies.erase(guard)
@@ -234,6 +259,7 @@ func _handle_half_health(light: Node3D) -> bool:
 		light.stop()
 		var target := _at("I",Vector2(5.4,2.0),0)
 		_jailer.announce_advance(target)
+		_jailer.state_changed.emit("举链开道")
 		feedback.emit("执刑官举链开道 · 让出东侧扳杆路线，收链后反击")
 		return true
 	return false

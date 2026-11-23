@@ -20,7 +20,7 @@ var rail_labels: Array[Label] = []
 var undo_button: Button
 
 func _ready() -> void:
-	layer = 25
+	layer = 35
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(shade)
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
