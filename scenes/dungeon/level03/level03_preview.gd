@@ -16,6 +16,7 @@ const Gate = preload("res://scenes/dungeon/components/ProgressionGate.tscn")
 const EnemyFactory = preload("res://addons/ziyuan_level03/factory.gd")
 const CoinPickup = preload("res://scenes/items/coin_pickup.gd")
 const REWARD_ID := "level03_overflow_garden"
+const RESET_CONFIRM_PROMPT := "4秒内再次按 E 确认\n重置水位、导体、储能和机关门\n清场记录与已领取奖励保留"
 
 # 沿原有四个战斗房递进；位置避开台体、矮掩体、门洞和文字。
 const ENEMY_ROSTER := {
@@ -151,6 +152,10 @@ func station_available(action: StringName) -> bool:
 	return _run_active and not _terminal and STATIONS.has(action)
 
 
+func get_reset_prompt() -> String:
+	return "重置机关\n" + (RESET_CONFIRM_PROMPT if _reset_armed > 0.0 else "[E] 请求重置")
+
+
 ## 交互距离及视线由 Station 检查；这里检查该装置的水位、战斗与供能约束。
 func use_station(action: StringName) -> bool:
 	if not station_available(action) or not can_process():
@@ -216,7 +221,7 @@ func _use_tide_control(action: StringName) -> String:
 		return "高水位 · 东侧浮栈升起，西侧地沟关闭。" if _high else "低水位 · 西侧地沟露出，东侧浮栈收回。"
 	if _reset_armed <= 0.0:
 		_reset_armed = 4.0
-		return "4 秒内再按 E 确认重置水位、导体、储能和机关门。清场与奖励保留。"
+		return RESET_CONFIRM_PROMPT
 	_reset_armed = 0.0
 	_high = false
 	_conductor = Conductor.RACK

@@ -22,6 +22,8 @@ func run() -> void:
 		if level == 1: host.get_node("RunBindings").tutorial.skip()
 		bubbles = host._hud.hint_dock.bubbles
 		await sizing_checks(level)
+		if level == 2: await archive_copy_checks()
+		if level == 3: await reset_copy_checks()
 		var object: Node3D = host._dungeon.get_node("EntrancePotion" if level == 1 else ("Devices/Relay" if level == 2 else "Stations/model"))
 		if level == 2: object = host._dungeon.get_node("EnergyRelayPuzzle/Inspect")
 		await go(object.global_position+Vector3(0,0.05,1.1))
@@ -71,6 +73,98 @@ func frames(n: int) -> void:
 	for i in n:
 		await physics_frame
 		await process_frame
+
+# Read the actual visible bubble, never the hidden legacy pickup label.
+func visible_copy(expected: String, context: String) -> void:
+	var panel: PanelContainer = bubbles.interaction
+	var label: Label = panel.get_child(0).get_child(1)
+	check(panel.is_visible_in_tree() and label.is_visible_in_tree(),context+": bubble is visible")
+	check(label.text == expected,context+": complete name, action and restrictions: "+label.text)
+	check(label.get_visible_line_count() == label.get_line_count() and label.size.y >= label.get_minimum_size().y,context+": all wrapped lines are visible")
+	check(root.get_visible_rect().encloses(panel.get_global_rect()),context+": complete bubble fits viewport")
+	for obstacle in host._hud.hint_dock.obstacles():
+		check(not panel.get_global_rect().intersects(obstacle),context+": bubble avoids HUD and actors")
+
+func archive_copy_checks() -> void:
+	var puzzle: Node = host._dungeon.puzzle
+	await go(puzzle.get_node("BridgeSocket").global_position+Vector3(1.25,0.05,0))
+	# Allow the actual archive room camera to finish its entrance framing.
+	await frames(60)
+	visible_copy("桥台插槽 · 主供能中断\n检查供能来源","Archive offline")
+	puzzle.enable_supply()
+	await frames(3)
+	visible_copy("桥台插槽 · 空槽\n检查空槽（手持为空）","Archive empty hands")
+	await archive_use("CoreRack")
+	await go(puzzle.get_node("BridgeSocket").global_position+Vector3(1.25,0.05,0))
+	visible_copy("桥台插槽 · 空槽\n放入一枚能源","Archive insert")
+	check(host._items.try_interact_nearest(),"Actual bridge insertion")
+	await frames(3)
+	visible_copy("桥台插槽 · 已供能\n撤回能源","Archive retrieve")
+	await go(puzzle.get_node("BridgeSocket").global_position+Vector3(-1.2,0.05,0))
+	visible_copy("桥台插槽 · 已供能\n检查插槽（先离开桥面）","Archive bridge safety")
+	for dimensions in [Vector2i(1280,720),Vector2i(720,720),Vector2i(480,800),Vector2i(640,360)]:
+		root.size = dimensions
+		await go(puzzle.get_node("Lever").global_position+Vector3(0,0.05,1.35))
+		visible_copy("步道开关 · 检修线断开\n拉下开关，展开返回步道并接通门锁","Archive long action %s" % dimensions)
+		var label: Label = bubbles.interaction.get_child(0).get_child(1)
+		check(label.get_line_count() >= 2,"Real action retains its explicit newline")
+		if dimensions.x == 480: check(label.get_line_count() > 2,"Narrow viewport naturally wraps the real long action")
+		await capture("archive-full-action-%dx%d" % [dimensions.x,dimensions.y])
+	root.size = Vector2i(1280,720)
+
+func archive_use(name: String) -> void:
+	await go(host._dungeon.puzzle.get_node(name).global_position+Vector3(0,0.05,1.35))
+	check(host._items.try_interact_nearest(),"Archive actual interaction: "+name)
+	await frames(3)
+
+func station_use(id: String) -> void:
+	await go(host._dungeon.get_node("Stations/"+id).global_position+Vector3(0,0.05,1.1))
+	check(host._items.try_interact_nearest(),"Tide actual interaction: "+id)
+	await frames(3)
+
+func reset_copy_checks() -> void:
+	var map: Node = host._dungeon
+	await station_use("tide")
+	# Register real encounter deaths and collect the actual optional reward.
+	for id in ["E","F"]:
+		await go(map.get_node("Rooms/"+id).global_position+Vector3(0,0.05,3))
+		for enemy in map.get_node("Enemies").get_children():
+			if enemy.get_meta("room",&"") == StringName(id): check(enemy.take_damage(999),"Actual enemy death "+id)
+		await frames(6)
+	await station_use("highwalk")
+	await station_use("reward")
+	var reward_count: int = host._items.rune_count
+	check(reward_count == 1 and map._progress.is_complete(&"F"),"Reset fixture has genuine reward and combat clear")
+	await station_use("reset")
+	check(map._high and map._highwalk,"First E does not reset puzzle")
+	var expected := "重置机关\n4秒内再次按 E 确认\n重置水位、导体、储能和机关门\n清场记录与已领取奖励保留"
+	for dimensions in [Vector2i(1280,720),Vector2i(720,720),Vector2i(480,800),Vector2i(640,360)]:
+		root.size = dimensions
+		await frames(4)
+		visible_copy(expected,"Reset armed %s" % dimensions)
+		await capture("reset-confirm-%dx%d" % [dimensions.x,dimensions.y])
+	check(host._items.try_interact_nearest(),"Second E confirms within four seconds")
+	await frames(4)
+	visible_copy("重置机关\n请求重置","Reset confirmed")
+	check(not map._high and not map._highwalk and map.get_storage_state() == 0,"Confirmation restores puzzle state")
+	check(map._progress.is_complete(&"E") and map._progress.is_complete(&"F") and host._items.rune_count == reward_count and host._items.has_claimed(map.REWARD_ID),"Confirmation preserves clears and reward claim")
+	root.size = Vector2i(1280,720)
+	await station_use("tide")
+	await station_use("reward")
+	check(host._items.rune_count == reward_count,"Reset cannot duplicate reward")
+	await station_use("reset")
+	visible_copy(expected,"Reset armed before timeout")
+	await create_timer(4.2).timeout
+	await frames(3)
+	visible_copy("重置机关\n请求重置","Timeout cancels confirmation")
+	check(map._reset_armed == 0.0 and map._high and host._items.rune_count == reward_count and map._progress.is_complete(&"F"),"Timeout leaves gameplay and rewards unchanged")
+	check(host._items.try_interact_nearest(),"E after timeout requests a fresh confirmation")
+	await frames(3)
+	visible_copy(expected,"Fresh request after timeout")
+	check(map._high,"Late E cannot confirm expired request")
+	await go(map.get_node("Rooms/B").global_position+Vector3(0,0.05,2))
+	check(map._reset_armed == 0.0,"Leaving reset range still cancels confirmation")
+
 func sizing_checks(level: int) -> void:
 	var fixture: PanelContainer = bubbles._bubble()
 	for dimensions in [Vector2i(1920,1080),Vector2i(1280,720),Vector2i(720,720),Vector2i(480,800),Vector2i(640,360)]:

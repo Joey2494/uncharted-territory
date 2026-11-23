@@ -125,8 +125,9 @@ func _process(_delta: float) -> void:
 			if "quantity" in target: text += " ×%d" % target.quantity
 		elif target.has_method("get_interaction_prompt"):
 			var prompt: String = target.get_interaction_prompt()
-			text = prompt.replace("[E]","").strip_edges().split("\n")[0]
-			if text.length() > 20: text = "交互 · "+_object_name(target)
+			# The key cap replaces only the marker; names, actions and restrictions
+			# remain together, with the existing responsive label handling wrapping.
+			text = prompt.replace("[E] ","").replace("[E]","").strip_edges()
 		_copy(interaction,["E"],text)
 		interaction.visible = place_world(interaction,target.global_position+Vector3.UP*1.5)
 	var feedback: String = hud._feedback_active.get("text","")
@@ -150,11 +151,6 @@ func _process(_delta: float) -> void:
 		_copy(map_tip,["M"],"打开地图")
 		map_tip.visible = place_screen(map_tip,Vector2(quest.get_global_rect().end.x,button.get_global_rect().get_center().y),dock.obstacles())
 
-func _object_name(node: Node) -> String:
-	if "action" in node and host.level_id == 3:
-		return host._dungeon.STATIONS.get(node.action,[Vector3.ZERO,"机关"])[1]
-	return "机关"
-
 func place_world(panel: Control, point: Vector3) -> bool:
 	var camera: Camera3D = host._dungeon.get_node("Camera3D")
 	if camera.is_position_behind(point): return false
@@ -175,6 +171,16 @@ func place_screen(panel: Control, point: Vector2, obstacles: Array) -> bool:
 		size = panel.get_combined_minimum_size()
 	var bounds: Rect2 = hud.get_viewport_rect().grow(-8)
 	var candidates := [point-Vector2(size.x*0.5,size.y+12),point+Vector2(18,-size.y*0.5),point-Vector2(size.x+18,size.y*0.5),point+Vector2(-size.x*0.5,20)]
+	# A multiline prompt may fit beside the quest panel even when the four
+	# centered placements collide. Slide along obstacle edges, keeping it local.
+	var slides: Array[Vector2] = []
+	for obstacle: Rect2 in obstacles:
+		for y in [point.y-size.y-12, point.y+20]:
+			for x in [obstacle.end.x+1, obstacle.position.x-size.x-1]:
+				var position := Vector2(x,y)
+				if (position+size*0.5).distance_to(point) < maxf(400,size.x): slides.append(position)
+	slides.sort_custom(func(a: Vector2,b: Vector2) -> bool: return (a+size*0.5).distance_squared_to(point) < (b+size*0.5).distance_squared_to(point))
+	candidates.append_array(slides)
 	for position: Vector2 in candidates:
 		var rect := Rect2(position,size)
 		if not bounds.encloses(rect): continue
