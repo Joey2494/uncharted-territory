@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://addons/ziyuan_level04/previews/witch_preview.gd" id="1"]
+[ext_resource type="PackedScene" path="res://addons/ziyuan_level04/models/WitchModel.tscn" id="2"]
+
+[node name="WitchPreview" type="Node3D"]
+script = ExtResource("1")
+
+[node name="Model" parent="." instance=ExtResource("2")]
+rotation = Vector3(0, 3.141593, 0)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+position = Vector3(4.8, 3.6, 7.2)
+current = true
+fov = 35.0

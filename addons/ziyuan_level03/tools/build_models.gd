@@ -63,13 +63,13 @@ func ell(name: String, parent: Node3D, at: Vector3, radius: Vector3, mat: String
 	var shape:=SphereMesh.new()
 	shape.radius=1
 	shape.height=2
-	shape.radial_segments=24
-	shape.rings=14
+	shape.radial_segments=12
+	shape.rings=7
 	var n:=mesh(name,shape,parent,mat)
 	n.position=at
 	n.scale=radius
 	return n
-func tube(name: String, parent: Node3D, pts: Array, radii: Array, mat: String, sides:=12) -> MeshInstance3D:
+func tube(name: String, parent: Node3D, pts: Array, radii: Array, mat: String, sides:=8) -> MeshInstance3D:
 	var st:=SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var rings: Array=[]
@@ -711,6 +711,53 @@ func titan_model() -> void:
 	_asset.get_node("LegL").rotation.x=-0.08
 	_asset.scale=Vector3.ONE*1.43
 
+func reference_polish(id: String) -> void:
+	var body := _asset.get_node("Body") as Node3D
+	var head := body.get_node("Head") as Node3D
+	if id == "bone_axe":
+		# Rusted three-prong crown and a broad blade remain legible from gameplay height.
+		for side in [-1, 1]:
+			plate("BrokenCrownFlare",head,[Vector3(side*0.1,0.14,0.1),Vector3(side*0.29,0.22,0.08),Vector3(side*0.24,0.4,0.06)],0.035,"Bronze")
+			wraps(_asset.get_node("LegR" if side>0 else "LegL"),Vector3(side*0.05,-0.78,0.02),0.23,0.082,0.08,3,"Leather")
+		cloth_panel(body,0.32,1.15,0.65,0.15,"Rag")
+		ell("CrownBloodstone",head,Vector3(0,0.16,-0.224),Vector3(0.045,0.055,0.022),"Crimson")
+	elif id == "bone_spike":
+		# Lean forward, with uneven hanging fascia instead of a symmetrical skeleton.
+		body.rotation.x = -0.09
+		_asset.get_node("ArmL").scale.y = 1.10
+		for side in [-1,1]:
+			for i in 4:
+				var at := Vector3(side*(0.24+i*0.024),1.8-i*0.08,0.10)
+				ribbon("LooseShoulderFascia",body,[at,at+Vector3(side*0.06,-0.16,0.04),at+Vector3(side*0.035,-0.34-i*0.025,0.02)],0.035,"DeadSkin")
+	elif id == "tomb_sword":
+		# Enclose the hood at the back and sides; leave the skull and ribcage exposed.
+		for side in [-1,1]:
+			plate("TatteredHoodSide",head,[Vector3(side*0.22,0.28,0.08),Vector3(side*0.29,0.1,0.04),Vector3(side*0.25,-0.30,0.09),Vector3(side*0.11,-0.39,0.20),Vector3(side*0.10,0.24,0.23)],0.018,"Rag")
+		plate("HoodCowlBack",head,[Vector3(-0.22,0.26,0.20),Vector3(0,0.37,0.18),Vector3(0.22,0.26,0.20),Vector3(0.20,-0.28,0.22),Vector3(-0.20,-0.28,0.22)],0.018,"Rag")
+		var guard := _asset.get_node("ArmL") as Node3D
+		guard.scale = Vector3(1.18,1.0,1.12)
+		for i in 4:
+			tube("BracerScars",guard,[Vector3(-0.06,-0.36-i*0.09,-0.215),Vector3(0.04,-0.40-i*0.09,-0.219)],[0.006,0.003],"Edge",5)
+	elif id == "chain_jailer":
+		# Splayed weapon arms, verdigris armour, red cloth and paired ritual seals.
+		_asset.get_node("ArmR").rotation.z = 0.24
+		_asset.get_node("ArmL").rotation.z = -0.24
+		for side in [-1,1]:
+			var arm := _asset.get_node("ArmR" if side>0 else "ArmL") as Node3D
+			for i in 3:
+				plate("OverlappingShoulderLamella",arm,[Vector3(-0.19,-0.015-i*0.065,-0.17),Vector3(0.18,-0.015-i*0.065,-0.17),Vector3(0.14,-0.10-i*0.065,-0.18),Vector3(-0.14,-0.10-i*0.065,-0.18)],0.025,"Bronze")
+			for y in [1.15,1.72]:
+				rivets(body,[Vector3(side*0.09,y,-0.287)],"Copper")
+		cloth_panel(body,0.46,1.13,0.24,-0.10,"Crimson")
+	else:
+		# A heavy wrapped silhouette, narrow blue eyes, aged hems and engraved cuffs.
+		for side in [-1,1]:
+			var arm := _asset.get_node("ArmR" if side>0 else "ArmL") as Node3D
+			for i in 4:
+				var at := Vector3(side*0.16,-0.35-i*0.08,-0.27)
+				ribbon("FrayedCuffTail",arm,[at,at+Vector3(side*0.09,-0.06,-0.02),at+Vector3(side*0.13,-0.18,-0.01)],0.045,"OldIvory")
+			band(body,Vector3(0,1.20,0.025),0.43,0.31,0.08,side*0.12,"OldIvory",0,0.025,PI)
+
 func save_model(id: String, filename: String) -> void:
 	_asset=Node3D.new()
 	_asset.name=filename
@@ -729,6 +776,7 @@ func save_model(id: String, filename: String) -> void:
 			"bone_axe": axe_details()
 			"tomb_sword": sword_details()
 			"chain_jailer": chain_details()
+	reference_polish(id)
 	var packed:=PackedScene.new()
 	var code:=packed.pack(_asset)
 	if code==OK: code=ResourceSaver.save(packed,"res://addons/ziyuan_level03/models/"+filename+".tscn")
@@ -736,18 +784,19 @@ func save_model(id: String, filename: String) -> void:
 	_asset.free()
 	if code!=OK: quit(1)
 func build_all() -> void:
-	material("Bone",Color("bfb7a4"),0.02,0.72,true)
+	material("Bone",Color("afa58a"),0.0,0.9,true)
 	material("DarkBone",Color("8d897b"),0.03,0.8,true)
 	material("Tooth",Color("d7ccb5"),0.02,0.55,true)
 	material("Cavity",Color("111012"),0,1)
 	material("Crack",Color("454037"),0,1)
-	material("Iron",Color("5a5d5c"),0.72,0.54,true)
-	material("Edge",Color("aaaeb0"),0.82,0.37,true)
-	material("Bronze",Color("637268"),0.68,0.63,true)
+	material("Iron",Color("434b49"),0.5,0.76,true)
+	material("Edge",Color("89938c"),0.6,0.54,true)
+	material("Bronze",Color("3f6257"),0.42,0.85,true)
+	material("Copper",Color("a67d4f"),0.4,0.74,true)
 	material("Leather",Color("3e3029"),0.05,0.88,true)
 	material("Wood",Color("65513e"),0,0.86,true)
-	material("Rag",Color("3d4141"),0,0.98,true)
-	material("Crimson",Color("573731"),0,0.95,true)
+	material("Rag",Color("292e30"),0,0.98,true)
+	material("Crimson",Color("602f2e"),0,0.95,true)
 	material("Linen",Color("b8a584"),0,0.95,true)
 	material("DirtyLinen",Color("918166"),0,1,true)
 	material("Flesh",Color("383a31"),0,0.94,true)
@@ -780,7 +829,7 @@ func build_all() -> void:
 	var tissue:=NoiseTexture2D.new()
 	tissue.width=256;tissue.height=512;tissue.noise=tissue_noise;tissue.seamless=true
 	var tissue_ramp:=Gradient.new()
-	tissue_ramp.colors=PackedColorArray([Color("3e3c2e"),Color("85765a"),Color("b2a78b")])
+	tissue_ramp.colors=PackedColorArray([Color("252b28"),Color("625846"),Color("918778")])
 	tissue_ramp.offsets=PackedFloat32Array([0,0.6,1])
 	tissue.color_ramp=tissue_ramp
 	for key in ["DeadSkin","DarkFibre","GreyFibre","RustFibre"]:

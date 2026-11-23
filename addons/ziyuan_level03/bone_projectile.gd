@@ -4,7 +4,8 @@ var _source: WeakRef
 var _target: WeakRef
 var _direction := Vector3.FORWARD
 var damage := 2
-var speed := 10.0
+var speed := 12.0
+var sand_curse := false
 var _life := 1.7
 var _done := false
 func launch(source: Node3D, target: Node3D, direction: Vector3, amount: int) -> void:
@@ -29,7 +30,7 @@ func launch(source: Node3D, target: Node3D, direction: Vector3, amount: int) -> 
 	blob.radial_segments=12
 	blob.rings=7
 	mass.mesh=blob
-	mass.material_override=FX.mat(Color("59472f"))
+	mass.material_override=FX.mat(Color("c6a16b") if sand_curse else Color("59472f"),sand_curse)
 	add_child(mass)
 	for i in 4:
 		var offset:=Vector3(sin(i*2.4)*0.09,cos(i*1.8)*0.08,0)
@@ -46,7 +47,11 @@ func _physics_process(delta: float) -> void:
 		_done=true
 		var receiver=hit.get_collider()
 		if receiver==target:
-			if receiver.has_method("take_direct_damage"): receiver.take_direct_damage(damage,source.global_position)
-			else: receiver.take_damage(damage)
+			var inventory: Node=receiver.get_node_or_null("ItemInventory")
+			var guarded: bool=is_instance_valid(inventory) and inventory.get("guard_active")==true
+			var accepted: bool=receiver.take_direct_damage(damage,source.global_position) if receiver.has_method("take_direct_damage") else receiver.take_damage(damage)
+			if accepted and sand_curse and not guarded:
+				source.status_requested.emit(target,"slow",1.4,0.6)
+				if target.has_method("apply_level03_slow"): target.apply_level03_slow(1.4,0.6)
 		FX.burst(get_parent(),global_position,Color("78684a"),0.35)
 	queue_free()

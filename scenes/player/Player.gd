@@ -12,12 +12,10 @@ signal feedback(message: String)
 
 const CATALOG = preload("res://scenes/player/character_catalog.gd")
 @export_enum("knight", "lan", "iron", "astra") var character_id: String = "knight"
-@export var energy_regeneration: float = 5.0
 var energy: float = 0.0
 var max_energy: float = 40.0
 var shield: int = 0
 var max_shield: int = 0
-var _energy_recovery_delay: float = 0.0
 
 @export_range(0.1, 30.0, 0.1) var move_speed: float = 8.0
 @export_range(0.1, 30.0, 0.1) var walk_speed: float = 5.0
@@ -98,11 +96,6 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _physics_process(delta: float) -> void:
-	var recovery_delta := maxf(0.0, delta - _energy_recovery_delay)
-	_energy_recovery_delay = maxf(0.0, _energy_recovery_delay - delta)
-	if recovery_delta > 0.0 and energy < max_energy:
-		energy = minf(max_energy, energy + energy_regeneration * recovery_delta)
-		energy_changed.emit(energy, max_energy)
 	_invulnerability_remaining = maxf(0.0, _invulnerability_remaining - delta)
 	web_remaining = maxf(0, web_remaining - delta)
 	_sand_slow_remaining = maxf(0, _sand_slow_remaining - delta)
@@ -237,7 +230,6 @@ func spend_energy(amount: float) -> bool:
 	if _dead or not can_process() or amount < 0.0 or energy + 0.000001 < amount:
 		return false
 	energy = maxf(0.0, energy - amount)
-	_energy_recovery_delay = 1.0
 	energy_changed.emit(energy, max_energy)
 	return true
 

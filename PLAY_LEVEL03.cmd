@@ -6,4 +6,4 @@ if not exist "%GODOT_EXE%" (
  pause
  exit /b 1
 )
-start "" "%GODOT_EXE%" --path "%~dp0." res://addons/ziyuan_level03/Prototype.tscn
+start "" "%GODOT_EXE%" --path "%~dp0." res://scenes/dungeon/Level03Run.tscn

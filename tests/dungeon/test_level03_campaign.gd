@@ -161,6 +161,7 @@ func third_route() -> void:
 	await go(map.get_node("Rooms/J").global_position)
 	host._on_exit_reached()
 	check(host.get_run_state() == host.RunState.PLAYING, "G 清场及出口重叠不能绕过 I 泄压")
+	await clear_room(&"I")
 	await use_station(&"release")
 	check(map.get_storage_state() == 2 and host.get_run_state() == host.RunState.PLAYING, "真实泄压仍不能替代实际出口")
 	# 仅让钱包存档写入失败，保持同一档案的内存余额和本局结算身份。
@@ -176,6 +177,7 @@ func third_route() -> void:
 	check(not host._settled and PROFILE.coins == wallet_before and host._items.gold == 37 and host._settlement_id not in PROFILE.settled_runs, "第三关结算保存失败回滚钱包并保留本局金币")
 	check(result.get_node("%SettlementLabel").text.contains("金币保存失败") and result._retry.visible, "第三关结算显示金币失败文案和实际重试按钮")
 	check(result.get_node("%RewardLabel").text == "溢流花园奖励：未领取", "金币保存失败不覆盖第三关奖励名称和实际领取状态")
+	check(not host.request_scene_change("res://Main.tscn") and not host.restart_run() and not host._transition_queued and host._items.gold == 37, "保存失败时返回菜单和重开均保留胜利页及待结算金币")
 	await result_layout(result)
 	PROFILE.override_path = profile_path
 	PROFILE._loaded_path = profile_path

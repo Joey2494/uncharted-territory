@@ -83,7 +83,7 @@ func get_route_reference() -> Dictionary:
 		+ "低潮西路：B—C—D。C 沉沙库清敌后取得导体；D 折流廊调整方向。\n"
 		+ "高潮东路：B—E—F—H。E 清场后通往 F 蓄能工房；H 为可选花园奖励。\n"
 		+ "F 手柄：开启两种潮位均可通行的 F—B 高架，以及低潮可走的 C—I 维修路。\n"
-		+ "回流顺序：D 东向 → 升潮 → F 蓄能 → 开 F 手柄 → 降潮 → D 西向 → I 泄压。\n"
+		+ "回流顺序：D 东向 → 升潮 → F 蓄能 → 开 F 手柄 → 降潮 → D 西向 → I 清场并泄压。\n"
 		+ "储能在降潮和调向后保留。I 泄压后打开 B—G；清除 G 守卫后进入 J 远航出口。\n"
 		+ "I 手柄还可打开低潮的 I—D 小回环；B 重置台连续确认两次重置机关，清场和奖励保留。"}
 
@@ -107,6 +107,7 @@ func get_hud_objective() -> Dictionary:
 		if not _highwalk: title = "打开 F 高架与维修门手柄"
 		elif _high: title = "返回 B，降低水位"
 		elif _conductor != Conductor.WEST: title = "前往 D，将导体转向西方"
+		elif not _progress.is_complete(&"I"): title = "前往 I，击败双链执刑官"
 		else: title = "前往 I，操作泄压装置"
 		category = "解谜"
 	elif _conductor != Conductor.RACK:

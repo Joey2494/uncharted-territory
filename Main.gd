@@ -395,6 +395,13 @@ func request_scene_change(destination: String, handoff: Dictionary = {}) -> bool
 	var character_id: String = handoff.get("character_id", CHARACTERS.selected_id)
 	if character_id not in CHARACTERS.IDS or not PROFILE.owns(character_id):
 		return false
+	# Leaving a failed victory settlement used to discard its only pending
+	# balance. Retry first and keep the result screen open if storage still fails.
+	if _run_state == RunState.VICTORY and not _settled and _items.gold > 0:
+		retry_settlement()
+		if not _settled:
+			_hud.get_result_screen().show_progress_message("金币尚未保存，请重试保存后再离开。")
+			return false
 	_transition_queued = true
 	var navigation: Node = get_node("MenuNavigation")
 	_transition_snapshot = {
