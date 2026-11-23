@@ -27,7 +27,7 @@ static func set_line(n: Node3D, a: Vector3, b: Vector3) -> void:
 	if up.length() < 0.01: up = Vector3.UP
 	var right := up.cross(Vector3.FORWARD).normalized()
 	if right.length() < 0.01: right = Vector3.RIGHT
-	n.transform = Transform3D(Basis(right, up, right.cross(up)).scaled(Vector3(1,maxf(0.001,a.distance_to(b)),1)), (a+b)*0.5)
+	n.transform = Transform3D(Basis(right, up*maxf(0.001,a.distance_to(b)), right.cross(up)), (a+b)*0.5)
 static func sector(radius: float, degrees: float, inner := 0.0) -> ImmediateMesh:
 	var mesh := ImmediateMesh.new()
 	mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLES, mat(Color(0.95,0.24,0.1,0.35),true))

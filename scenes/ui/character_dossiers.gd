@@ -52,4 +52,4 @@ static func mechanics_text(id: String) -> String:
 	var data := CATALOG.definition(id)
 	var ability := CATALOG.ability_definition(id)
 	var dossier := entry(id)
-	return "[b]初始属性[/b]\n生命 %d · 护盾 %d · 能量 %d（初始/上限）\n近战伤害 %d · 步行 %.1f / 疾跑 %.1f 米/秒\n\n[b]通用操作[/b]\nWASD / 方向键移动，按住 Shift 疾跑。\n空格：闪避3米 / 0.2秒，期间无敌，冷却0.8秒；撞墙会受阻。\nJ：默认近战，间隔0.5秒；装备枪械后改为射击。\nK：法术小球，基础伤害2，消耗5能量，冷却0.8秒，最远10米；命中首个目标或墙体后消失。\n耗能后等待1秒，再每秒回复5能量；护盾优先承伤，不会自然回复。\n\n[b]L · %s[/b]\n%s\n\n[b]玩法提示[/b]\n%s\n\n以上为初始配置；强化符文、装备及减速等状态会影响实际战斗。计时随游戏暂停而停止。" % [data.hp, data.shield, int(data.energy), data.attack, data.walk, data.run, ability.name, ability.description, dossier.combat]
+	return "[b]初始属性[/b]\n生命 %d · 护盾 %d · 能量 %d（初始/上限）\n近战伤害 %d · 步行 %.1f / 疾跑 %.1f 米/秒\n\n[b]通用操作[/b]\nWASD / 方向键移动，按住 Shift 疾跑。\n空格：闪避3米 / 0.2秒，期间无敌，冷却0.8秒；撞墙会受阻。\nJ：默认近战，间隔0.5秒；装备枪械后改为射击。\nK：法术小球，基础伤害2，消耗5能量，冷却0.8秒，最远10米；命中首个目标或墙体后消失。\n能量不会随时间自然回复。星蓝药剂恢复20能量；Knight 按 L 补给恢复10能量；Astra 每间战斗房首次清场额外恢复5能量，均不超过上限。护盾优先承伤，不会自然回复。\n\n[b]L · %s[/b]\n%s\n\n[b]玩法提示[/b]\n%s\n\n以上为初始配置；强化符文、装备及减速等状态会影响实际战斗。计时随游戏暂停而停止。" % [data.hp, data.shield, int(data.energy), data.attack, data.walk, data.run, ability.name, ability.description, dossier.combat]

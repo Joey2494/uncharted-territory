@@ -18,12 +18,13 @@ const CoinPickup = preload("res://scenes/items/coin_pickup.gd")
 const REWARD_ID := "level03_overflow_garden"
 const RESET_CONFIRM_PROMPT := "4秒内再次按 E 确认\n重置水位、导体、储能和机关门\n清场记录与已领取奖励保留"
 
-# 沿原有四个战斗房递进；位置避开台体、矮掩体、门洞和文字。
+# 五个单一兵种房递进；维修井承担精英战，中心闸庭只保留首领。
 const ENEMY_ROSTER := {
 	&"C": [["bone_axe", Vector3(-2, 0.05, -3)], ["bone_axe", Vector3(3, 0.05, -2)]],
-	&"E": [["bone_axe", Vector3(-3, 0.05, -3.5)], ["bone_spike", Vector3(3.5, 0.05, -4.5)]],
-	&"F": [["bone_spike", Vector3(3.5, 0.05, -4)], ["tomb_sword", Vector3(-3, 0.05, 2)]],
-	&"G": [["chain_jailer", Vector3(-3.5, 0.05, 1)], ["sand_king", Vector3(2, 0.05, -3.5)]],
+	&"E": [["bone_spike", Vector3(-3, 0.05, -3.5)], ["bone_spike", Vector3(3.5, 0.05, -4.5)]],
+	&"F": [["tomb_sword", Vector3(3.5, 0.05, -4)], ["tomb_sword", Vector3(-3, 0.05, 2)]],
+	&"I": [["chain_jailer", Vector3(2, 0.05, -3)]],
+	&"G": [["sand_king", Vector3(2, 0.05, -3.5)]],
 }
 
 # 每条路在房间接缝单独封场；可重置挡板处在走廊中段。
@@ -43,6 +44,7 @@ const COMBAT_DOORS := {
 	&"C": [[Vector3(-18, 0, 0), true], [Vector3(-32, 0, 0), true], [Vector3(-25, 0, -7), false]],
 	&"E": [[Vector3(18, 0, 0), true], [Vector3(25, 0, -7), false]],
 	&"F": [[Vector3(25, 0, -17), false], [Vector3(18, 0, -24), true], [Vector3(32, 0, -24), true]],
+	&"I": [[Vector3(-25, 0, -17), false], [Vector3(-32, 0, -24), true]],
 	&"G": [[Vector3(0, 0, -17), false]],
 }
 
@@ -262,6 +264,8 @@ func _charge() -> String:
 func _release() -> String:
 	if _storage == Storage.RELEASED:
 		return "已泄压 · G 保持开启。可拉维修手柄打开 I–D。"
+	if not _progress.is_complete(&"I"):
+		return "先清除维修井的双链执刑官，再操作泄压装置。"
 	var missing: Array[String] = []
 	if _high:
 		missing.append("水位未降")
@@ -336,7 +340,8 @@ func _create_stations() -> void:
 	_layout.label($Rooms/C, "↑ I 泄压井", Vector3(1.3, 0.1, -5.6), Color("a3e9e1"), true)
 	_layout.label($Rooms/F, "← 高架回 B", Vector3(-4.6, 0.1, 1.6), Color("f9dc9d"), true)
 	_layout.label($Rooms/F, "支线 H 花园 →", Vector3(4.0, 0.1, 1.6), Color("b4f2ff"), true)
-	_layout.label($Rooms/G, "沙缚王与双链执刑官", Vector3(-5.8, 0.09, -5.7), Color("ffc9a1"), true)
+	_layout.label($Rooms/I, "双链执刑官 · 清场后泄压", Vector3(-5.8, 0.09, -5.7), Color("ffc9a1"), true)
+	_layout.label($Rooms/G, "沙缚王 · 三式连攻", Vector3(-5.8, 0.09, -5.7), Color("ffc9a1"), true)
 
 
 func _create_encounters() -> void:
@@ -456,6 +461,8 @@ func _battle_completed(id: StringName) -> void:
 		feedback.emit("F 已清场 · 检查蓄能器，或先开高架与维修门。")
 	elif id == &"C":
 		feedback.emit("C 已清场 · 从托架取用导体。")
+	elif id == &"I":
+		feedback.emit("I 已清场 · 检查西向回流并操作泄压装置。")
 	else:
 		_refresh_world()
 		feedback.emit("浮栈战区已清场 · 前往北侧 F。")

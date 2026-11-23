@@ -1,0 +1,65 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS four room definitions exist
+PASS dawn_shade starts dormant and counts as normal enemy
+PASS dawn_shade rejects dormant damage and invalid target
+PASS dawn_shade exposes integration signals
+PASS sun_puppet starts dormant and counts as normal enemy
+PASS sun_puppet rejects dormant damage and invalid target
+PASS sun_puppet exposes integration signals
+PASS iron_thistle starts dormant and counts as normal enemy
+PASS iron_thistle rejects dormant damage and invalid target
+PASS iron_thistle exposes integration signals
+PASS raven_roost starts dormant and counts as normal enemy
+PASS raven_roost rejects dormant damage and invalid target
+PASS raven_roost exposes integration signals
+PASS shade splits two decoys on nonlethal hit
+PASS split preserves real body damage
+PASS decoy has no room or reward responsibility
+PASS decoy uses the same visual structure
+PASS repeated hits cannot grow unbounded decoys
+PASS one hit dissolves echo without reward
+PASS morning blind applies bounded duration
+PASS morning blind recovers naturally
+PASS central solid pillar blocks morning blind
+PASS shade death and reward emit once
+PASS real shade death cleans all surviving echoes
+PASS puppet directly emits a heat wave
+PASS heat wave crossing applies actual damage
+PASS one wave cannot hit twice
+PASS central solid pillar blocks heat damage
+PASS stop removes puppet owned hazards
+PASS thistle is rooted and physically blocks player
+PASS thistle directly fires seven solid needles
+PASS solid needle actually collides with the shared player
+PASS thistle alternates into six active thorn clumps
+PASS active thorn clump hurts on contact
+PASS thistle death removes owned needles and thorn clumps
+PASS flock has seven hittable birds and no invisible center hitbox
+PASS hitting one bird damages shared flock health
+PASS same swing on multiple birds does not multiply damage
+PASS flock opens with scattered ambush
+PASS second flock attack gathers birds tightly
+PASS gathered flock swept contact deals damage once through player protection
+PASS all bird proxies become dead with the shared actor
+PASS room 1 loads configured actors
+PASS room 1 pause freezes actors
+PASS room 1 clears with only required actors
+PASS cleared room advances on explicit action
+PASS room 2 loads configured actors
+PASS room 2 pause freezes actors
+PASS room 2 clears with only required actors
+PASS cleared room advances on explicit action
+PASS room 3 loads configured actors
+PASS room 3 pause freezes actors
+PASS room 3 clears with only required actors
+PASS cleared room advances on explicit action
+PASS room 4 loads configured actors
+PASS room 4 pause freezes actors
+PASS room 4 clears with only required actors
+PASS retry restores room and clears blindness
+PASS retry after player death reloads requested fourth room
+PASS adapter rejects out of range room index
+PASS ordinary room adapter accepts translated arena
+PASS translated bounds and spawn positions stay in the room
+LEVEL04_FOUR_ROOMS_TEST_RESULT passed=62 failed=0

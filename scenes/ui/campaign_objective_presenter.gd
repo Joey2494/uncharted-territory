@@ -112,8 +112,9 @@ static func _third(world: Node3D) -> Dictionary:
 		_task("highwalk","拉动蓄能工房维修手柄","在蓄能工房找到高架与维修门手柄，按 E 操作并观察通路变化","[E] 拉动维修手柄 ×1",int(world._highwalk),1,world._highwalk),
 		_task("low","检查中央潮井的潮位总控","从蓄能工房返回中央潮井，观察水路与总控石刻，寻找维修井通路","[E] 检查潮位总控 ×1",int(lowered),1,lowered),
 		_task("west","返回折流廊检查回流连接","返回折流廊，观察回流刻纹与导向台接口，按 E 尝试调整连接","[E] 检查回流连接 ×1",int(west),1,west),
+		_battle(p,&"I","i_guards","清除干涸维修井的双链执刑官","击败双链执刑官 ×%d" % p.get_total_enemies(&"I")),
 		_task("release","检查干涸维修井的泄压装置","前往干涸维修井，观察泄压装置与周边回流刻纹，按 E 尝试操作","[E] 操作泄压装置 ×1",int(released),1,released),
-		_battle(p,&"G","g_guards","在中心闸庭击败%s与双链执刑官" % boss_name,"击败中心闸庭敌人 ×%d" % p.get_total_enemies(&"G")),
+		_battle(p,&"G","g_guards","在中心闸庭击败%s" % boss_name,"击败%s ×%d" % [boss_name,p.get_total_enemies(&"G")]),
 		_task("gate","等待远航出口闸门升起","最终守卫清除后，等待实体出口闸门完全开启","等待远航闸门开启 ×1",int(world.is_exit_open()),1,world.is_exit_open()),
 		_task("exit","穿过远航出口","完成维修井泄压与中心闸庭清场后，穿过远航出口","穿过远航出口 ×1",int(world._exit_recorded),1,world._exit_recorded),
 	]

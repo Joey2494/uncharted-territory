@@ -56,6 +56,8 @@ func _run() -> void:
 	await _use(&"director")
 	await _use(&"release")
 	_check(_blocked(&"BG") and level.get_storage_state() == 0, "空储能不能泄压")
+	_check(level._active_room == &"I" and not level.get_node("Progress").is_complete(&"I"), "维修井守卫存活时拒绝泄压")
+	await _clear_room(&"I")
 	await _use(&"director")
 	await _use(&"tide")
 	await _use(&"charge")
@@ -172,6 +174,9 @@ func _walk_main_route() -> void:
 	await _walk(Vector2(-48, 0))
 	await _press_e(&"director")
 	await _walk(Vector2(-25, 0))
+	await _walk(Vector2(-25, -21))
+	await _defeat(&"I")
+	await create_timer(0.4).timeout
 	await _walk(Vector2(-25, -22.9))
 	await _press_e(&"release")
 	await _walk(Vector2(-29, -26.9))

@@ -14,4 +14,8 @@ Godot 4.7.2 项目。本分支包含四个可连续游玩的战役关卡。团�
 
 商城新增「星蓝药剂」：15 金币，恢复 20 点能量，满蓝不消耗；可在背包使用或按快捷键 6。拾取金币属于本局余额，剩余金币仅在本关通关后存入永久钱包，失败和退出不入账。
 
+2026-11-22 修订：取消角色随时间自动回能，保留药剂和角色机制的单次恢复；第三关 C/E/F/I/G 分别配置骨斧×2、腐尸×2、墓卫×2、执刑官×1、沙王×1，每室只有一种敌人，维修井清场后方可泄压。`PLAY_LEVEL03.cmd` 现在进入正式战役；敌人实验室仍可单独运行 `addons/ziyuan_level03/Prototype.tscn`。通关钱包使用临时文件替换和备份恢复，保存失败时需重试成功后再离开结算页。详细数值、review 和验证见 [本次修复记录](docs/review/level03-energy-wallet-2026-11-22.md)。
+
 当前模块、角色和接线说明见 [项目开发说明](docs/current_project.md)，本次修改见 [第九周变更记录](docs/change/change-week9.md)。素材来源及授权保留在各素材目录的 README 和 License 文件中。
+
+2026-11-23：第三关取消攻击预警/范围提示并强化战斗节奏，见 [直接攻击说明](addons/ziyuan_level03/DIRECT_COMBAT.md)。新增第四关敌人独立原型：`addons/ziyuan_level04/FourRooms.tscn`（曦影、赤阳傀儡、白芒尖蓟、群鸦归巢），`addons/ziyuan_level04/Prototype.tscn`（袍冠女巫），在Godot按F6运行。模型预览与组员接口见 [第四关敌人说明](addons/ziyuan_level04/FOUR_ROOMS.md) 和 [女巫接入说明](addons/ziyuan_level04/INTEGRATION.md)。这些敌人尚未替换正式日晷观测站，观测站既有战斗依赖已隔离兼容。

@@ -58,6 +58,10 @@ func preview_roles() -> void:
 		check(selector.get_node("%SkillCooldown").text == CATALOG.cooldown_text(id), id+": dossier cooldown states both the actual duration and when it starts")
 		selector.get_node("%MechanicsButton").pressed.emit()
 		check(selector.get_node("%MechanicsOverlay").visible and selector.get_node("%MechanicsText").text.contains(configuration.description), id+": clickable mechanics includes the same active and passive effects as the actual player/HUD")
+		var mechanics: String = selector.get_node("%MechanicsText").text
+		check(mechanics.contains("能量不会随时间自然回复") and not mechanics.contains("耗能后等待1秒") and not mechanics.contains("每秒回复5能量"),id+": visible mechanics states no passive energy regeneration")
+		for source in ["星蓝药剂恢复20能量","Knight 按 L 补给恢复10能量","Astra 每间战斗房首次清场额外恢复5能量"]:
+			check(mechanics.contains(source),id+": visible mechanics identifies explicit recovery: "+source)
 		var before: String = selector.get_selected_id()
 		var right := InputEventKey.new()
 		right.keycode = KEY_RIGHT
