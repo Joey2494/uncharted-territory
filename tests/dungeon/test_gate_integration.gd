@@ -165,12 +165,11 @@ func run() -> void:
 	await process_frame
 	game = current_scene
 	d = game.get_node("DungeonTest")
-	check(game._run_state == game.RunState.MENU, "真实重开返回开始菜单")
+	check(game._run_state == game.RunState.PLAYING and game._player.can_process(), "胜利后重开直接进入新局")
 	check(not d.get_node("Gates/CourtyardGate").is_open(), "重开恢复中庭门")
 	check(not d.is_exit_open(), "重开恢复出口封印")
 	check(d.get_node("Gates/CourtyardSouthSeal").is_open() and d.get_node("Gates/BossNorthSeal").is_open(), "重开恢复纯战斗门的初始开态")
 	check(d.has_node("MeleeEnemy") and not d.get_node("MeleeEnemy").is_dead() and not d.get_node("MeleeEnemy").can_process(), "重开恢复敌人的休眠初态")
-	game._on_run_started()
 	p = d.get_node("Player")
 	p.position = Vector3(6,0.05,-23)
 	await frames()
@@ -256,5 +255,9 @@ func run() -> void:
 	finish()
 
 func finish() -> void:
+	root.get_node("MusicManager").stop_music()
+	# 固定帧率会加速游戏时钟，音频混音线程仍按真实时间释放 WAV。
+	OS.delay_msec(150)
+	await process_frame
 	print("GATE_INTEGRATION: ",checks," checks, ",failures," failures")
 	quit(1 if failures else 0)

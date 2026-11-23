@@ -29,14 +29,14 @@ func run() -> void:
 		var button: Button = nav.level_select.get_level_button(StringName(id))
 		check(nav.progress.is_unlocked(StringName(id)), id + " is accessible without prior completion")
 		check(not button.disabled and button.icon == null, id + " has an enabled tile without a lock icon")
-	check(not nav.progress.is_unlocked(&"level0") and not nav.progress.is_unlocked(&"level4"), "unknown levels remain invalid")
-	nav.level_select.get_level_button(&"level3").pressed.emit()
+	check(not nav.progress.is_unlocked(&"level0") and not nav.progress.is_unlocked(&"level5"), "unknown levels remain invalid")
+	nav.level_select.get_level_button(&"level4").pressed.emit()
 	await frames(12)
 	host = current_scene
 	nav = host.get_node("MenuNavigation")
-	check(host.level_id == 3 and host.get_run_state() == host.RunState.PLAYING, "fresh save directly starts actual third-level gameplay")
-	check(nav.progress.completed.is_empty() and nav.progress.played == ["level3"], "direct entry records only the level actually played")
-	check(nav.progress.get_last_played_level() == &"level3", "direct entry becomes the real continue target")
+	check(host.level_id == 4 and not host.practice_run and host.get_run_state() == host.RunState.PLAYING, "fresh save directly starts the fourth campaign level")
+	check(nav.progress.completed.is_empty() and nav.progress.played == ["level4"], "direct entry records only the level actually played")
+	check(nav.progress.get_last_played_level() == &"level4", "direct entry becomes the real continue target")
 	nav.host.get_node("RunBindings").return_to_menu()
 	await frames(12)
 	host = current_scene
@@ -44,7 +44,7 @@ func run() -> void:
 	host._start_screen.get_node("%ContinueButton").pressed.emit()
 	await frames(12)
 	host = current_scene
-	check(host.level_id == 3 and host.get_run_state() == host.RunState.PLAYING, "Continue directly reopens the third level")
+	check(host.level_id == 4 and not host.practice_run and host.get_run_state() == host.RunState.PLAYING, "Continue directly reopens the fourth campaign level")
 	host.queue_free()
 	await frames(3)
 	root.get_node("MusicManager").stop_music()

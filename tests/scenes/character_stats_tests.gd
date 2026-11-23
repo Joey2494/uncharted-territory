@@ -30,6 +30,9 @@ func run() -> void:
 		check(stat("Shield") == str(actor.max_shield), id+": shield equals actual starting shield")
 		check(stat("Health") == str(actor.max_hp), id+": health equals actual maximum HP")
 		check(stat("Speed") == "%.1f" % minf(actor.walk_speed,actor.move_speed), id+": speed equals actual ordinary movement speed")
+		var spell: Node = actor.get_node("EnergyShock")
+		check(actor.get_node("MeleeAttack").attack_cooldown == 0.5 and spell.damage == 2 and spell.cooldown == 0.8 and spell.max_distance == 10.0 and actor.get_spell_cost() == 5.0, id+": described base J/K intervals, damage, range and energy cost match the actual components")
+		check(actor.dodge_distance == 3.0 and actor.dodge_duration == 0.2 and actor.dodge_invulnerability == 0.2 and actor.dodge_cooldown == 0.8 and actor.energy_regeneration == 5.0, id+": described dodge and energy regeneration match the actual player")
 		check(selector.get_node("%CharacterDescription").text == DOSSIERS.entry(id).summary and selector.get_node("%CharacterDescription").text.count("。") == 2, id+": bottom summary is two sentences")
 		check(selector.get_node("%SkillTitleRow").tooltip_text.contains(CATALOG.ability_definition(id).description), id+": complete actual skill effect remains available on hover")
 		var actual := {"Attack":float(actor.get_node("MeleeAttack").attack_damage),"Health":float(actor.max_hp),"Shield":float(actor.max_shield),"Speed":minf(actor.walk_speed,actor.move_speed)}
@@ -103,6 +106,17 @@ func verify_layout(id: String, dimensions: Vector2i) -> void:
 	root.add_child(tooltip)
 	check(tooltip.get_combined_minimum_size().x <= root.get_visible_rect().size.x, "%s %dx%d: full skill tooltip fits in the viewport" % [id,dimensions.x,dimensions.y])
 	tooltip.free()
+	selector.get_node("%MechanicsButton").pressed.emit()
+	await frames(3)
+	var panel: Control = selector.get_node("%MechanicsPanel")
+	var details_scroll: ScrollContainer = selector.get_node("%MechanicsScroll")
+	check(root.get_visible_rect().encloses(panel.get_global_rect()) and panel.get_global_rect().encloses(selector.get_node("%CloseMechanicsButton").get_global_rect()), "%s %dx%d: mechanics panel and close action stay within the viewport" % [id,dimensions.x,dimensions.y])
+	check(not details_scroll.get_h_scroll_bar().visible and selector.get_node("%MechanicsText").size.x <= details_scroll.size.x, "%s %dx%d: mechanics wraps without horizontal overflow" % [id,dimensions.x,dimensions.y])
+	details_scroll.scroll_vertical = int(details_scroll.get_v_scroll_bar().max_value)
+	await frames(2)
+	check(details_scroll.get_v_scroll_bar().value + details_scroll.get_v_scroll_bar().page >= details_scroll.get_v_scroll_bar().max_value - 1, "%s %dx%d: final gameplay tips are reachable by scrolling" % [id,dimensions.x,dimensions.y])
+	if "--capture" in OS.get_cmdline_user_args(): await capture("%s-mechanics-%dx%d" % [id,dimensions.x,dimensions.y])
+	selector.get_node("%CloseMechanicsButton").pressed.emit()
 
 func capture(label: String) -> void:
 	await RenderingServer.frame_post_draw

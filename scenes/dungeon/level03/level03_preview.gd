@@ -16,6 +16,7 @@ const Gate = preload("res://scenes/dungeon/components/ProgressionGate.tscn")
 const EnemyFactory = preload("res://addons/ziyuan_level03/factory.gd")
 const CoinPickup = preload("res://scenes/items/coin_pickup.gd")
 const REWARD_ID := "level03_overflow_garden"
+const RESET_CONFIRM_PROMPT := "4秒内再次按 E 确认\n重置水位、导体、储能和机关门\n清场记录与已领取奖励保留"
 
 # 沿原有四个战斗房递进；位置避开台体、矮掩体、门洞和文字。
 const ENEMY_ROSTER := {
@@ -94,9 +95,9 @@ func _ready() -> void:
 	_create_stations()
 	_create_encounters()
 	_create_exit()
+	if _layout.has_method("finish_tomb"): _layout.finish_tomb(self)
 	_refresh_world()
 	_player.died.connect(_finish.bind(false))
-	_inventory.grant_reward("level03_maintenance_supply", {_inventory.HEALTH_POTION: 2})
 	feedback.emit("靠近检修沙盘按 E，了解潮位如何改变通路。")
 
 
@@ -148,6 +149,10 @@ func is_camera_target_relevant(actor: Node3D, _target: Node3D) -> bool:
 
 func station_available(action: StringName) -> bool:
 	return _run_active and not _terminal and STATIONS.has(action)
+
+
+func get_reset_prompt() -> String:
+	return "重置机关\n" + (RESET_CONFIRM_PROMPT if _reset_armed > 0.0 else "[E] 请求重置")
 
 
 ## 交互距离及视线由 Station 检查；这里检查该装置的水位、战斗与供能约束。
@@ -215,7 +220,7 @@ func _use_tide_control(action: StringName) -> String:
 		return "高水位 · 东侧浮栈升起，西侧地沟关闭。" if _high else "低水位 · 西侧地沟露出，东侧浮栈收回。"
 	if _reset_armed <= 0.0:
 		_reset_armed = 4.0
-		return "4 秒内再按 E 确认重置水位、导体、储能和机关门。清场与奖励保留。"
+		return RESET_CONFIRM_PROMPT
 	_reset_armed = 0.0
 	_high = false
 	_conductor = Conductor.RACK
@@ -327,6 +332,10 @@ func _create_stations() -> void:
 	_layout.label($Rooms/B, "高水位 E →", Vector3(7.2, 0.09, -1.7), Color("b4f2ff"), true)
 	_layout.label($Rooms/B, "↑ G 中心闸门", Vector3(0, 0.09, -6.2), Color("f9dc9d"), true)
 	_layout.label($Rooms/B, "F 高架 ↗", Vector3(7.2, 0.09, -6.8), Color("f9dc9d"), true)
+	_layout.label($Rooms/C, "← D 折流廊", Vector3(-4.9, 0.1, -1.3), Color("f9dc9d"), true)
+	_layout.label($Rooms/C, "↑ I 泄压井", Vector3(1.3, 0.1, -5.6), Color("a3e9e1"), true)
+	_layout.label($Rooms/F, "← 高架回 B", Vector3(-4.6, 0.1, 1.6), Color("f9dc9d"), true)
+	_layout.label($Rooms/F, "支线 H 花园 →", Vector3(4.0, 0.1, 1.6), Color("b4f2ff"), true)
 	_layout.label($Rooms/G, "沙缚王与双链执刑官", Vector3(-5.8, 0.09, -5.7), Color("ffc9a1"), true)
 
 

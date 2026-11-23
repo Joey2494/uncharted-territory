@@ -1,0 +1,203 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/castle_quest.gd" id="script"]
+[ext_resource type="Theme" path="res://scenes/ui/menu_theme.tres" id="theme"]
+
+[sub_resource type="StyleBoxFlat" id="frame"]
+bg_color = Color(0.035,0.039,0.034,0.86)
+border_width_left = 2
+border_width_top = 0
+border_width_right = 0
+border_width_bottom = 1
+border_color = Color(0.50,0.41,0.25,1)
+content_margin_left = 13.0
+content_margin_right = 13.0
+content_margin_top = 11.0
+content_margin_bottom = 11.0
+
+[sub_resource type="StyleBoxFlat" id="badge"]
+bg_color = Color(0.37,0.25,0.12,0.35)
+content_margin_left = 7.0
+content_margin_right = 7.0
+content_margin_top = 3.0
+content_margin_bottom = 3.0
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_left = 8
+corner_radius_bottom_right = 8
+
+[sub_resource type="StyleBoxFlat" id="progress_back"]
+bg_color = Color(0.28,0.28,0.24,0.45)
+
+[sub_resource type="StyleBoxFlat" id="progress_fill"]
+bg_color = Color(0.81,0.65,0.35,1)
+
+[sub_resource type="StyleBoxFlat" id="active"]
+bg_color = Color(0.28,0.20,0.08,0.60)
+border_width_left = 3
+border_color = Color(0.95,0.78,0.38,1)
+content_margin_left = 8.0
+content_margin_right = 7.0
+content_margin_top = 6.0
+content_margin_bottom = 6.0
+
+[node name="LevelObjective" type="PanelContainer"]
+mouse_filter = 2
+theme = ExtResource("theme")
+theme_override_styles/panel = SubResource("frame")
+script = ExtResource("script")
+
+[node name="Content" type="VBoxContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 5
+
+[node name="Header" type="HBoxContainer" parent="Content"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="QuestHeader" type="Label" parent="Content/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.91,0.77,0.46,1)
+text = "主线任务"
+
+[node name="Badge" type="PanelContainer" parent="Content/Header"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("badge")
+
+[node name="QuestBadge" type="Label" parent="Content/Header/Badge"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.84,0.68,0.43,1)
+text = "当前目标"
+
+[node name="HistoryToggle" type="Button" parent="Content/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 0
+toggle_mode = true
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.85,0.72,0.48,1)
+text = "历史 0 ▾"
+tooltip_text = "展开已完成的主线任务记录"
+
+[node name="MapButton" type="Button" parent="Content/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 0
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.95,0.81,0.47,1)
+text = "地图"
+
+[node name="QuestChapter" type="Label" parent="Content"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.87,0.70,0.41,1)
+text = "穿越失落石堡"
+
+[node name="Active" type="PanelContainer" parent="Content"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("active")
+
+[node name="Row" type="HBoxContainer" parent="Content/Active"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 7
+
+[node name="ActiveMarker" type="Label" parent="Content/Active/Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(18,18)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.95,0.81,0.47,1)
+text = "○"
+
+[node name="QuestTask" type="Label" parent="Content/Active/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.95,0.81,0.47,1)
+text = "穿过北门进入回廊中庭"
+autowrap_mode = 2
+
+[node name="QuestQuantity" type="Label" parent="Content/Active/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.95,0.81,0.47,1)
+text = "0/1"
+
+[node name="QuestDetail" type="Label" parent="Content"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.67,0.65,0.58,1)
+text = "穿过入口北门，进入回廊中庭"
+autowrap_mode = 2
+
+[node name="ProgressRow" type="HBoxContainer" parent="Content"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 7
+
+[node name="QuestTarget" type="Label" parent="Content/ProgressRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.77,0.74,0.65,1)
+text = "抵达回廊中庭 ×1"
+clip_text = true
+
+[node name="QuestProgress" type="ProgressBar" parent="Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0,3)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/background = SubResource("progress_back")
+theme_override_styles/fill = SubResource("progress_fill")
+show_percentage = false
+
+[node name="HistoryHeader" type="HBoxContainer" parent="Content"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+
+[node name="QuestCount" type="Label" parent="Content/HistoryHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.68,0.58,0.39,1)
+text = "已完成 0/6"
+
+[node name="QuestMarks" type="HBoxContainer" parent="Content/HistoryHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="QuestHistory" type="VBoxContainer" parent="Content"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 1

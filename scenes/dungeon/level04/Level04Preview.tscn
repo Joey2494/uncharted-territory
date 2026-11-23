@@ -1,0 +1,161 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/dungeon/level04/Level04World.tscn" id="base"]
+
+[ext_resource type="Script" path="res://scenes/dungeon/level04/observatory_legacy_preview.gd" id="preview"]
+
+[ext_resource type="Script" path="res://scenes/dungeon/level04/observatory_hud.gd" id="5"]
+
+[ext_resource type="Font" path="res://scenes/ui/dungeon_font.tres" id="6"]
+
+[ext_resource type="PackedScene" path="res://scenes/ui/CommerceLayer.tscn" id="10"]
+
+[sub_resource type="StyleBoxFlat" id="Slate"]
+bg_color = Color(0.045, 0.088, 0.11, 0.93)
+border_width_left = 3
+border_color = Color(0.83, 0.64, 0.39, 1)
+content_margin_left = 11.0
+content_margin_right = 11.0
+content_margin_top = 6.0
+content_margin_bottom = 6.0
+
+[sub_resource type="Theme" id="FontTheme"]
+default_font = ExtResource("6")
+default_font_size = 17
+
+[node name="Level04Preview" instance=ExtResource("base")]
+script = ExtResource("preview")
+
+[node name="CommerceLayer" parent="." instance=ExtResource("10")]
+external_pause = true
+
+[node name="HUD" type="CanvasLayer" parent="."]
+process_mode = 3
+script = ExtResource("5")
+
+[node name="Readout" type="PanelContainer" parent="HUD"]
+offset_left = 12.0
+offset_top = 12.0
+offset_right = 335.0
+theme_override_styles/panel = SubResource("Slate")
+theme = SubResource("FontTheme")
+mouse_filter = 2
+
+[node name="Rows" type="VBoxContainer" parent="HUD/Readout"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Title" type="Label" parent="HUD/Readout/Rows"]
+theme_override_colors/font_color = Color(1, 0.82, 0.52, 1)
+text = "第四关   日晷观测站"
+
+[node name="Vitals" type="Label" parent="HUD/Readout/Rows"]
+theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.71, 0.88, 0.86, 1)
+
+[node name="Goal" type="Label" parent="HUD/Readout/Rows"]
+autowrap_mode = 3
+
+[node name="Side" type="Label" parent="HUD/Readout/Rows"]
+visible = false
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.52, 0.81, 0.78, 1)
+
+[node name="Message" type="Label" parent="HUD/Readout/Rows"]
+visible = false
+autowrap_mode = 3
+theme_override_colors/font_color = Color(0.62, 0.92, 0.91, 1)
+
+[node name="Prompt" type="Label" parent="HUD/Readout/Rows"]
+visible = false
+theme_override_colors/font_color = Color(1, 0.88, 0.63, 1)
+
+[node name="Keys" type="Label" parent="HUD"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 14.0
+offset_top = -39.0
+theme = SubResource("FontTheme")
+text = "WASD 移动   E 操作   J 攻击   K 法术   空格闪避"
+
+[node name="Boss" type="PanelContainer" parent="HUD"]
+visible = false
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = -122.0
+offset_right = 122.0
+offset_top = -94.0
+offset_bottom = -46.0
+mouse_filter = 2
+theme = SubResource("FontTheme")
+theme_override_styles/panel = SubResource("Slate")
+
+[node name="Rows" type="VBoxContainer" parent="HUD/Boss"]
+mouse_filter = 2
+
+[node name="Name" type="Label" parent="HUD/Boss/Rows"]
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 15
+
+[node name="Health" type="ProgressBar" parent="HUD/Boss/Rows"]
+custom_minimum_size = Vector2(0, 8)
+show_percentage = false
+mouse_filter = 2
+
+[node name="MapButton" type="Button" parent="HUD"]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -132.0
+offset_right = -14.0
+offset_top = -54.0
+offset_bottom = -14.0
+focus_mode = 0
+theme = SubResource("FontTheme")
+text = "路线图 · Tab"
+
+[node name="Overlay" type="ColorRect" parent="HUD"]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.035, 0.065, 0.09, 0.94)
+theme = SubResource("FontTheme")
+
+[node name="Card" type="VBoxContainer" parent="HUD/Overlay"]
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = -212.0
+offset_right = 212.0
+offset_top = -275.0
+alignment = 1
+offset_bottom = 275.0
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="HUD/Overlay/Card"]
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(1, 0.83, 0.55, 1)
+
+[node name="Body" type="Label" parent="HUD/Overlay/Card"]
+autowrap_mode = 3
+horizontal_alignment = 1
+
+[node name="Resume" type="Button" parent="HUD/Overlay/Card"]
+text = "继续探索"
+
+[node name="Backpack" type="Button" parent="HUD/Overlay/Card"]
+text = "本局背包"
+
+[node name="Restart" type="Button" parent="HUD/Overlay/Card"]
+text = "重新进入观测站"
+
+[node name="Return" type="Button" parent="HUD/Overlay/Card"]
+text = "返回选关"

@@ -48,5 +48,7 @@ func _physics_process(delta: float) -> void:
 		if receiver==target:
 			if receiver.has_method("take_direct_damage"): receiver.take_direct_damage(damage,source.global_position)
 			else: receiver.take_damage(damage)
+		elif receiver is Node and receiver.is_in_group("breakable_cover"):
+			receiver.take_damage(damage)
 		FX.burst(get_parent(),global_position,Color("78684a"),0.35)
 	queue_free()

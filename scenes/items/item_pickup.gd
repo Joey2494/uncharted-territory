@@ -5,6 +5,7 @@ const Catalog = preload("res://data/item_catalog.gd")
 @export_enum("生命药剂", "攻击强化符文", "守护符文", "旧手炮奖励", "旧弹药奖励", "星蓝药剂", "黄铜手枪弹", "线圈磁芯弹") var item_type: int = 0
 @export_range(1, 99, 1) var quantity: int = 1
 @export_range(0.5, 3.0, 0.1) var interaction_distance: float = 1.5
+@export var show_prompt_quantity: bool = false
 
 @onready var _visuals: Node3D = $Visuals
 
@@ -36,6 +37,11 @@ func _process(delta: float) -> void:
 
 func get_display_name() -> String:
 	return str(Catalog.get_item(item_type).get("name", "未知道具"))
+
+
+func get_interaction_prompt() -> String:
+	var prompt := "[E] 拾取 " + get_display_name()
+	return prompt + " ×%d" % quantity if show_prompt_quantity else prompt
 
 
 func can_collect(player: CharacterBody3D) -> bool:

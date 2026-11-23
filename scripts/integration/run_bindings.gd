@@ -19,7 +19,11 @@ func _ready() -> void:
 	hud.skip_tutorial_requested.connect(func() -> void:
 		if tutorial != null: tutorial.skip())
 	hud.main_menu_requested.connect(return_to_menu)
-	host.get_node("CommerceLayer").main_menu_requested.connect(return_to_menu)
+	if host.practice_run:
+		host._commerce.pause_menu.get_node("%MainMenuButton").text = "返回关卡选择"
+		host._commerce.main_menu_requested.connect(func() -> void: host.get_node("MenuNavigation").return_to_level_select())
+	else:
+		host._commerce.main_menu_requested.connect(return_to_menu)
 	hud.hotbar_selection_requested.connect(_use_hotbar)
 	hud.combat_action_requested.connect(_combat_action)
 	items.state_changed.connect(_refresh_inventory)
@@ -46,6 +50,8 @@ func _refresh_inventory(_snapshot: Dictionary) -> void:
 	hud.update_gold(items.gold)
 	hud.gold_label.text = "本局 %d" % items.gold
 	hud.gold_label.tooltip_text = "待结算 %d · 永久钱包 %d\n本局可购买道具；剩余金币仅通关后入账，死亡或退出不保留。" % [items.gold, Profile.coins]
+	if host.practice_run:
+		hud.gold_label.tooltip_text = "试玩金币 %d · 可在本局商城使用，试玩结束后清零。" % items.gold
 	hud.update_guard_rune(&"active" if items.guard_active else (&"ready" if items.guard_count > 0 else &"none"), 1 if items.guard_active else items.guard_count)
 	var slots: Array = []
 	for id in [Catalog.HEALTH_POTION, Catalog.ATTACK_RUNE, Catalog.GUARD_RUNE, Catalog.ENERGY_POTION]:

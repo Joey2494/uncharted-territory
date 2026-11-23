@@ -6,6 +6,7 @@ const GRID_GAP: float = 16.0
 const MAX_COLUMNS: int = 4
 
 signal back_requested
+signal preview_requested
 signal level_selected(level_id: StringName)
 
 @onready var start_button: Button = %BackButton
@@ -18,6 +19,7 @@ var _buttons: Dictionary = {}
 
 
 func _ready() -> void:
+	%PreviewButton.pressed.connect(func() -> void: preview_requested.emit())
 	start_button.pressed.connect(func() -> void: back_requested.emit())
 	visibility_changed.connect(_focus_action)
 	%LevelScroll.resized.connect(_update_grid_layout)

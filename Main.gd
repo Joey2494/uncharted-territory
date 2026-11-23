@@ -1,11 +1,14 @@
 extends Node3D
-## 三关共享会话状态、暂停、通关结算及跨关入口。
+## 正式战役和独立试玩共享会话、暂停和结算界面。
 
 const LEVEL02_PATH := "res://scenes/dungeon/Level02Run.tscn"
 const LEVEL03_PATH := "res://scenes/dungeon/Level03Run.tscn"
-const LEVEL_PATHS := {1: "res://Main.tscn", 2: LEVEL02_PATH, 3: LEVEL03_PATH}
+const LEVEL04_PATH := "res://scenes/dungeon/Level04Run.tscn"
+const LEVEL_PATHS := {1: "res://Main.tscn", 2: LEVEL02_PATH, 3: LEVEL03_PATH, 4: LEVEL04_PATH}
 
 @export var level_id: int = 1
+## 试玩直接开局，金币、继续游戏与通关记录只在正式战役中保存。
+@export var practice_run := false
 
 const CHARACTERS = preload("res://scenes/player/character_catalog.gd")
 const PROFILE = preload("res://scripts/integration/player_profile.gd")
@@ -60,8 +63,10 @@ func _ready() -> void:
 	elif level_id == 3:
 		_start_screen.get_node("Center/Card/Padding/Content/Description").text = "第三关 · 潮汐回流工坊\n调节潮位、回流泄压，清除最终守卫后抵达远航出口。"
 		_start_screen.get_node("Center/Card/Padding/Content/Tagline").text = "循着潮汐与回流，开启远航之路。"
-	if level_id > 1:
-		_hud.get_node("LevelObjective").world = _dungeon
+	elif level_id == 4:
+		_start_screen.get_node("Center/Card/Padding/Content/Description").text = "第四关 · 日晷观测站\n穿过折光栈道，击败主穹顶守卫，从北侧升降台离站。"
+		_start_screen.get_node("Center/Card/Padding/Content/Tagline").text = "沿着观测记录，寻找通往穹顶的路。"
+	_hud.get_node("LevelObjective").world = _dungeon
 	_overlay.resume_requested.connect(_resume_playing)
 	_overlay.restart_requested.connect(_on_restart_requested)
 	_overlay.shop_requested.connect(_commerce.open_shop)
@@ -76,7 +81,7 @@ func _ready() -> void:
 	_dungeon.exit_opening_started.connect(_on_exit_opening_started)
 	_commerce.bind_inventory(_items, func() -> bool:
 		var menus := get_node_or_null("MenuNavigation")
-		return _run_state in [RunState.PLAYING, RunState.PAUSED] \
+		return _run_state in [RunState.PLAYING, RunState.PAUSED] and not _is_dungeon_modal_open() \
 			and (menus == null or not menus.settings_screen.visible),
 		func() -> float: return _elapsed_seconds)
 	_commerce.external_pause_state = func() -> bool: return _run_state == RunState.PAUSED
@@ -122,7 +127,7 @@ func _ready() -> void:
 	var victory_presentation := preload("res://scenes/ui/victory_battlefield.gd").new()
 	victory_presentation.name = "VictoryPresentation"
 	add_child(victory_presentation)
-	if CHARACTERS.start_pending:
+	if CHARACTERS.start_pending or practice_run:
 		CHARACTERS.start_pending = false
 		_start_screen.hide()
 		_on_run_started.call_deferred()
@@ -152,7 +157,8 @@ func _on_run_started() -> void:
 	_dungeon.process_mode = Node.PROCESS_MODE_PAUSABLE
 	_hud.show()
 	_dungeon.begin_run()
-	get_node("MenuNavigation").progress.mark_played(level_id)
+	if not practice_run:
+		get_node("MenuNavigation").progress.mark_played(level_id)
 	_commerce.set_run_active(true)
 	_refresh_overlay()
 
@@ -179,7 +185,10 @@ func _on_boss_died() -> void:
 	_boss_bar.show_defeated()
 	_dungeon.unlock_exit()
 	if not _dungeon.is_exit_opening() and not _dungeon.is_exit_open():
-		_hud.show_item_message("已击败%s · 完成泄压并清除其余守卫" % _boss_name if level_id == 3 else "已击败%s · 进入大厅解除出口封印" % _boss_name)
+		var objective := "进入大厅解除出口封印"
+		if level_id == 3: objective = "完成泄压并清除其余守卫"
+		if level_id == 4: objective = "清除主穹顶近卫后前往北侧升降台"
+		_hud.show_item_message("已击败%s · %s" % [_boss_name, objective])
 
 
 ## 以世界真正开始开门的事件提示，不能把提前击败Boss误报为出口已解锁。
@@ -209,7 +218,7 @@ func _on_exit_reached() -> void:
 	MusicManager.play_context(&"victory")
 	# 通关结算：只有这里把本局余额写入永久钱包，且同一局只结算一次。
 	var pending: int = _items.gold
-	_settled = PROFILE.settle_run(_settlement_id, pending)
+	_settled = practice_run or PROFILE.settle_run(_settlement_id, pending)
 	if _settled:
 		_items.gold = 0
 		_items._publish_state()
@@ -223,8 +232,9 @@ func _on_exit_reached() -> void:
 		"boss_name": _boss_name,
 		"boss_defeated": _boss_defeated,
 		"level_id": level_id,
-		"settled_gold": pending if _settled else 0,
+		"settled_gold": pending if _settled and not practice_run else 0,
 		"settlement_ok": _settled,
+		"practice_run": practice_run,
 	}
 	_run_result.merge(_get_completion_snapshot(), true)
 	_player.velocity = Vector3.ZERO
@@ -232,8 +242,9 @@ func _on_exit_reached() -> void:
 	_dungeon.process_mode = Node.PROCESS_MODE_DISABLED
 	_boss_bar.hide()
 	_refresh_overlay()
-	get_node("MenuNavigation").progress.complete(level_id)
-	_hud.show_win_screen(_run_result, LEVEL_PATHS.has(level_id + 1))
+	if not practice_run:
+		get_node("MenuNavigation").progress.complete(level_id)
+	_hud.show_win_screen(_run_result, not practice_run and LEVEL_PATHS.has(level_id + 1))
 	_hud.get_result_screen().settlement_retry_requested.connect(retry_settlement)
 
 
@@ -242,7 +253,10 @@ func _get_completion_snapshot() -> Dictionary:
 	if _dungeon.has_method("get_completion_snapshot"):
 		return _dungeon.get_completion_snapshot()
 	if _rune_puzzle != null:
-		return {"puzzle_solved": _rune_puzzle.is_solved(), "reward_claimed": _rune_puzzle.is_reward_claimed()}
+		var snapshot := {"puzzle_solved": _rune_puzzle.is_solved(), "reward_claimed": _rune_puzzle.is_reward_claimed()}
+		if level_id == 1 and preload("res://scenes/ui/castle_objective_presenter.gd").read(_dungeon).complete:
+			snapshot.completion_summary = "失落石堡 · 主线目标已全部完成"
+		return snapshot
 	if level_id == 2:
 		return {"puzzle_solved": _dungeon.puzzle.get_state() >= _dungeon.puzzle.State.OPEN,
 			"reward_claimed": _dungeon.puzzle.get_state() == _dungeon.puzzle.State.CLAIMED}
@@ -279,7 +293,7 @@ func _on_player_death_animation_finished() -> void:
 
 ## 暂停与指引共用世界冻结机制。终局和切换期间拒绝状态变更。
 func set_paused(value: bool) -> bool:
-	if _transition_queued:
+	if _transition_queued or _is_dungeon_modal_open():
 		return false
 	if value and _run_state == RunState.PLAYING:
 		_set_play_mode(RunState.PAUSED)
@@ -291,7 +305,7 @@ func set_paused(value: bool) -> bool:
 
 
 func open_guide() -> bool:
-	if _transition_queued or _run_state != RunState.PLAYING:
+	if _transition_queued or _run_state != RunState.PLAYING or _is_dungeon_modal_open():
 		return false
 	_set_play_mode(RunState.GUIDE)
 	return true
@@ -330,8 +344,13 @@ func _resume_playing() -> void:
 		set_paused(false)
 
 
+## 路线图与机关面板自行处理关闭按键，防止同一帧叠开共享暂停界面。
+func _is_dungeon_modal_open() -> bool:
+	return _dungeon.has_method("is_modal_open") and _dungeon.is_modal_open()
+
+
 func _input(event: InputEvent) -> void:
-	if event.is_echo() or not event.is_action_pressed("pause"):
+	if event.is_echo() or not event.is_action_pressed("pause") or _is_dungeon_modal_open():
 		return
 	var navigation := get_node_or_null("MenuNavigation")
 	if navigation != null and navigation.load_error.visible:
@@ -357,7 +376,7 @@ func _on_restart_requested() -> void:
 func restart_run() -> bool:
 	if _transition_queued or _run_state not in [RunState.PAUSED, RunState.DEAD, RunState.VICTORY]:
 		return false
-	if _run_state == RunState.VICTORY:
+	if _run_state == RunState.VICTORY or practice_run:
 		return request_scene_change("", {"character_id": _player.character_id, "start_run": true})
 	return request_scene_change("")
 
@@ -376,9 +395,16 @@ func advance_to_next_level() -> bool:
 
 
 func get_next_level_block_reason() -> String:
+	if practice_run:
+		return "已完成独立试玩 · 可再次挑战，或返回关卡选择"
+	var progress: RefCounted = get_node("MenuNavigation").progress
 	if not LEVEL_PATHS.has(level_id + 1):
+		# 测试版允许从第四关直接开局，只有四个真实通关记录才算全战役完成。
+		for id in progress.LEVEL_IDS:
+			if not progress.is_completed(id):
+				return "已完成战役末关 · 可返回关卡选择查看通关进度"
 		return "已完成全部关卡 · 可再次挑战，或返回关卡选择 / 主菜单"
-	if not get_node("MenuNavigation").progress.is_unlocked(StringName("level%d" % (level_id + 1))):
+	if not progress.is_unlocked(StringName("level%d" % (level_id + 1))):
 		return "下一关尚未解锁 · 请先完成本关，或返回关卡选择"
 	return ""
 
@@ -419,8 +445,9 @@ func _change_scene(destination: String) -> void:
 	var tree := get_tree()
 	var was_paused := tree.paused
 	_commerce.close_all()
-	tree.paused = false
-	var error := tree.reload_current_scene() if destination.is_empty() else tree.change_scene_to_file(destination)
+	tree.paused = true
+	var path := scene_file_path if destination.is_empty() else destination
+	var error: Error = await preload("res://scripts/integration/resource_transition.gd").change(tree,path)
 	if error != OK:
 		var failed_request := _transition_snapshot.duplicate(true)
 		CHARACTERS.selected_id = failed_request.character_id
@@ -439,7 +466,7 @@ func _change_scene(destination: String) -> void:
 
 ## 存档失败时可在胜利页重试结算；同一局不会重复入账。
 func retry_settlement() -> void:
-	if _run_state != RunState.VICTORY or _settled: return
+	if practice_run or _run_state != RunState.VICTORY or _settled: return
 	var pending: int = _items.gold
 	_settled = PROFILE.settle_run(_settlement_id, pending)
 	if _settled:

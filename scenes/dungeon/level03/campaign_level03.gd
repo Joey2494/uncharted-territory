@@ -22,7 +22,7 @@ func begin_run() -> bool:
 	if _terminal or _run_active or get_tree().paused or _player.is_dead(): return false
 	_run_active = true
 	_record_location()
-	feedback.emit("靠近检修沙盘按 E，了解潮位如何改变通路。")
+	feedback.emit("入口东侧有生命药剂。查阅沙盘后，向北前往 B 中央潮井。")
 	return true
 
 func is_run_active() -> bool:
@@ -79,12 +79,12 @@ func get_completion_snapshot() -> Dictionary:
 ## 正式关卡把路线放入共享暂停指南，独立预览仍由原 HUD 提供 Tab 路线图。
 func get_route_reference() -> Dictionary:
 	return {"title": "潮汐工坊 · 路线与回流", "body":
-		"A 入口检修台 → B 中央潮井（只有 B 可切换潮位）\n"
+		"A 入口：东侧拾取生命药剂；向北到 B，只有中央潮井可以切换潮位。\n"
 		+ "低潮西路：B—C—D。C 沉沙库清敌后取得导体；D 折流廊调整方向。\n"
-		+ "高潮东路：B—E—F—H。E 清场后通往 F 蓄能工房；H 为可选花园奖励。\n"
+		+ "高潮主线：B 向东到 E，清场后北上 F 蓄能。F 西侧有星蓝药剂和高架手柄；东侧 H 花园为可选奖励。\n"
 		+ "F 手柄：开启两种潮位均可通行的 F—B 高架，以及低潮可走的 C—I 维修路。\n"
 		+ "回流顺序：D 东向 → 升潮 → F 蓄能 → 开 F 手柄 → 降潮 → D 西向 → I 泄压。\n"
-		+ "储能在降潮和调向后保留。I 泄压后打开 B—G；清除 G 守卫后进入 J 远航出口。\n"
+		+ "I 泄压后经 C 回到 B，向北穿过中心闸。闸后左侧有守护符文；清除 G 守卫后进入 J 出口。\n"
 		+ "I 手柄还可打开低潮的 I—D 小回环；B 重置台连续确认两次重置机关，清场和奖励保留。"}
 
 ## 向共享目标展示器提供只读信息；展示层不能修改潮位或资源。
@@ -99,15 +99,22 @@ func get_hud_objective() -> Dictionary:
 	if _active_room != &"":
 		title = "清除 %s 守卫 · 剩余 %d" % [_active_room, _progress.get_remaining_enemies(_active_room)]
 		category = "战斗"
+	elif _last_room == &"H":
+		category = "支线任务"
+		title = "奖励已领取，向西返 F" if _inventory.has_claimed(REWARD_ID) else "可选：领取花园符文，再向西返 F"
 	elif is_completion_ready():
 		title = "步入 J 远航出口" if is_exit_open() else "等待远航出口开启"
 	elif _storage == Storage.RELEASED:
-		title = "前往 G，清除最终守卫"
+		title = "经 C 回 B，穿过北闸到 G" if _last_room in [&"C", &"I", &"D"] else "穿过 B 北闸，进入 G 闸庭"
 	elif _storage == Storage.STORED:
-		if not _highwalk: title = "打开 F 高架与维修门手柄"
-		elif _high: title = "返回 B，降低水位"
-		elif _conductor != Conductor.WEST: title = "前往 D，将导体转向西方"
-		else: title = "前往 I，操作泄压装置"
+		if not _highwalk:
+			title = "打开 F 西侧高架手柄" if _high else "到 B 升高水位，经 E 返回 F 开手柄"
+		elif _high:
+			title = "走西侧高架回 B，降低水位" if _last_room == &"F" else "返回 B，降低水位"
+		elif _conductor != Conductor.WEST:
+			title = "沿低潮西路经 C 到 D，转向西方"
+		else:
+			title = "到 C 向北进 I，启动泄压装置"
 		category = "解谜"
 	elif _conductor != Conductor.RACK:
 		if _conductor != Conductor.EAST: title = "返回 B，降低水位后前往 D" if _high else "前往 D，将导体转向东侧"
@@ -116,11 +123,13 @@ func get_hud_objective() -> Dictionary:
 		elif not _progress.is_complete(&"F"): title = "前往 F，清除蓄能工房守卫"
 		else: title = "操作 F 蓄能器，保存能量"
 		category = "解谜"
+	elif _last_room == &"C" and _progress.is_complete(&"C") and not _high:
+		title = "在 C 西侧托架按 E 取导体"
 	elif _last_room != &"A":
 		title = "返回 B，降低水位后前往 C" if _high else "低潮进入 C，清敌后取用导体"
 	var direction: String = ["导体在 C", "导体手持", "导体东向 F", "导体西向 I"][_conductor]
 	var storage: String = ["未蓄能", "已蓄能", "已释放"][_storage]
-	return {"id": "level03_" + String(_last_room), "title": title, "category": category,
+	return {"id": "level03_" + (String(_active_room) if _active_room != &"" else title), "title": title, "category": category,
 		"progress": "探索 %d/%d" % [get_visited_count(), get_room_count()], "completed": completed,
-		"resource_summary": "%s · %s\nF %s · G %s" % ["高水位" if _high else "低水位", direction,
+		"resource_summary": "%s · %s\nF %s · I %s" % ["高水位" if _high else "低水位", direction,
 			storage, "已泄压" if _storage == Storage.RELEASED else "未泄压"]}

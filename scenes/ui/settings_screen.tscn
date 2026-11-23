@@ -38,7 +38,7 @@ mouse_filter = 2
 
 [node name="Card" type="PanelContainer" parent="Center"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(600, 0)
+custom_minimum_size = Vector2(620, 0)
 layout_mode = 2
 
 [node name="StoneSurface" type="ColorRect" parent="Center/Card"]
@@ -50,14 +50,15 @@ mouse_filter = 2
 
 [node name="Padding" type="MarginContainer" parent="Center/Card"]
 layout_mode = 2
-theme_override_constants/margin_left = 40
-theme_override_constants/margin_top = 24
-theme_override_constants/margin_right = 40
-theme_override_constants/margin_bottom = 20
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 18
 
 [node name="Content" type="VBoxContainer" parent="Center/Card/Padding"]
+unique_name_in_owner = true
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 
 [node name="Eyebrow" type="Label" parent="Center/Card/Padding/Content"]
 layout_mode = 2
@@ -69,7 +70,7 @@ horizontal_alignment = 1
 [node name="TitleLabel" type="Label" parent="Center/Card/Padding/Content"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 36
+theme_override_font_sizes/font_size = 32
 text = "游戏设置"
 horizontal_alignment = 1
 
@@ -84,48 +85,106 @@ horizontal_alignment = 1
 [node name="Divider" type="HSeparator" parent="Center/Card/Padding/Content"]
 layout_mode = 2
 
-[node name="FullscreenButton" type="CheckButton" parent="Center/Card/Padding/Content"]
+[node name="SettingsScroll" type="ScrollContainer" parent="Center/Card/Padding/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 380)
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_scroll_mode = 0
+follow_focus = true
+
+[node name="Options" type="VBoxContainer" parent="Center/Card/Padding/Content/SettingsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="ResolutionRow" type="HBoxContainer" parent="Center/Card/Padding/Content/SettingsScroll/Options"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Center/Card/Padding/Content/SettingsScroll/Options/ResolutionRow"]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+text = "窗口分辨率"
+
+[node name="ResolutionOption" type="OptionButton" parent="Center/Card/Padding/Content/SettingsScroll/Options/ResolutionRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DisplayHint" type="Label" parent="Center/Card/Padding/Content/SettingsScroll/Options"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 2
+text = "全屏使用桌面分辨率；退出全屏后恢复所选窗口尺寸。"
+
+[node name="DisplayModes" type="HBoxContainer" parent="Center/Card/Padding/Content/SettingsScroll/Options"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="FullscreenButton" type="CheckButton" parent="Center/Card/Padding/Content/SettingsScroll/Options/DisplayModes"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 text = "全屏显示"
 
-[node name="VsyncButton" type="CheckButton" parent="Center/Card/Padding/Content"]
+[node name="VsyncButton" type="CheckButton" parent="Center/Card/Padding/Content/SettingsScroll/Options/DisplayModes"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 text = "垂直同步"
 
-[node name="VolumeLabel" type="Label" parent="Center/Card/Padding/Content"]
+[node name="QualityRow" type="HBoxContainer" parent="Center/Card/Padding/Content/SettingsScroll/Options"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Center/Card/Padding/Content/SettingsScroll/Options/QualityRow"]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+text = "画面质量"
+
+[node name="QualityOption" type="OptionButton" parent="Center/Card/Padding/Content/SettingsScroll/Options/QualityRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="QualityHint" type="Label" parent="Center/Card/Padding/Content/SettingsScroll/Options"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 2
+text = "低：优先性能　中：标准效果　高：更平滑的边缘与阴影"
+
+[node name="VolumeLabel" type="Label" parent="Center/Card/Padding/Content/SettingsScroll/Options"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "主音量  80%"
 
-[node name="VolumeSlider" type="HSlider" parent="Center/Card/Padding/Content"]
+[node name="VolumeSlider" type="HSlider" parent="Center/Card/Padding/Content/SettingsScroll/Options"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
 max_value = 100.0
 value = 80.0
 
-[node name="MusicVolumeLabel" type="Label" parent="Center/Card/Padding/Content"]
+[node name="MusicVolumeLabel" type="Label" parent="Center/Card/Padding/Content/SettingsScroll/Options"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "背景音乐  65%"
 
-[node name="MusicVolumeSlider" type="HSlider" parent="Center/Card/Padding/Content"]
+[node name="MusicVolumeSlider" type="HSlider" parent="Center/Card/Padding/Content/SettingsScroll/Options"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
 max_value = 100.0
 value = 65.0
 
-[node name="StatusLabel" type="Label" parent="Center/Card/Padding/Content"]
+[node name="StatusLabel" type="Label" parent="Center/Card/Padding/Content/SettingsScroll/Options"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 22)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.76, 0.65, 0.42, 1)
 theme_override_font_sizes/font_size = 13
+autowrap_mode = 2
 horizontal_alignment = 1
 text = "设置自动保存"
 

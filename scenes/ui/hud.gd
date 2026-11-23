@@ -65,6 +65,10 @@ var _tutorial_message: String = ""
 var _tutorial_move_directions: Array[String] = []
 var _revealed_actions: Array[String] = []
 var _nearby_prompt: String = ""
+var hint_dock: Node
+var _feedback_queue: Array[Dictionary] = []
+var _feedback_active := {}
+var _feedback_clock := 0.0
 
 
 func _ready() -> void:
@@ -87,16 +91,14 @@ func _ready() -> void:
 	%CharacterCooldown.hide()
 	item_message.hide()
 	update_pickup_prompt("")
+	hint_dock = preload("res://scenes/ui/right_hint_dock.gd").new()
+	hint_dock.name = "RightHintDock"
+	add_child(hint_dock)
 
 
 func _process(delta: float) -> void:
 	_update_combat_cooldowns()
-	if _message_remaining > 0.0:
-		_message_remaining = maxf(0.0, _message_remaining - delta)
-		if _message_remaining == 0.0:
-			item_message.text = ""
-			item_message.hide()
-			_update_feedback_visibility()
+	if is_instance_valid(hint_dock) and hint_dock.is_running(): _advance_feedback(delta)
 
 
 func bind_combat_actions(player: CharacterBody3D) -> void:
@@ -298,12 +300,18 @@ func update_attack_buff(_multiplier: float, _remaining: float) -> void:
 func update_pickup_prompt(message: String) -> void:
 	_nearby_prompt = message
 	pickup_prompt.text = message
-	pickup_prompt.visible = not message.is_empty() and _tutorial_message.is_empty()
+	pickup_prompt.visible = not message.is_empty() and _tutorial_message.is_empty() and _feedback_active.is_empty()
 	_update_feedback_visibility()
 
 
 func _update_feedback_visibility() -> void:
 	feedback_panel.visible = pickup_prompt.visible or item_message.visible
+
+func has_pickup_prompt() -> bool:
+	return not _nearby_prompt.is_empty() and _tutorial_message.is_empty()
+
+func has_feedback_message() -> bool:
+	return not _feedback_active.is_empty()
 
 
 func set_tutorial_guidance(message: String, revealed: Array[String], move_directions: Array[String] = []) -> void:
@@ -320,11 +328,60 @@ func set_tutorial_guidance(message: String, revealed: Array[String], move_direct
 	update_pickup_prompt(_nearby_prompt)
 
 
-func show_item_message(message: String) -> void:
-	item_message.text = message
-	item_message.visible = not message.is_empty()
-	_message_remaining = 3.0
-	_update_feedback_visibility()
+func show_item_message(message: String, priority: int = -1) -> void:
+	if message.is_empty():
+		_feedback_queue.clear()
+		_feedback_active.clear()
+		_message_remaining = 0.0
+		_sync_feedback()
+		return
+	if priority < 0: priority = feedback_priority(message)
+	if _feedback_active.get("text","") == message: return
+	for pending in _feedback_queue:
+		if pending.text == message: return
+	var entry := {"text":message,"priority":priority,"remaining":3.0,
+		"expires":_feedback_clock+(2.8 if priority >= 80 else 18.0)}
+	if _feedback_active.is_empty():
+		_begin_feedback(entry)
+	elif priority > int(_feedback_active.priority) or priority >= 80:
+		# Resume ordinary messages after a warning; never replay an old telegraph.
+		if int(_feedback_active.priority) < 80 and _message_remaining > 0.0:
+			_feedback_active.remaining = _message_remaining
+			_feedback_queue.push_front(_feedback_active)
+		_begin_feedback(entry)
+	else:
+		if _feedback_queue.size() < 16: _feedback_queue.append(entry)
+
+static func feedback_priority(message: String) -> int:
+	for word in ["危险","狂暴","蓄力","齐射","缠绕","迟缓","沙咒","横扫","冲锋","诅咒","躲避","震荡","骨刺"]:
+		if message.contains(word): return 100
+	for word in ["无法","不足","失败","未能"]:
+		if message.contains(word): return 60
+	return 30
+
+func _begin_feedback(entry: Dictionary) -> void:
+	_feedback_active = entry
+	_message_remaining = float(entry.remaining)
+	_sync_feedback()
+
+func _advance_feedback(delta: float) -> void:
+	_feedback_clock += delta
+	if not _feedback_active.is_empty():
+		if (feedback_panel.is_visible_in_tree() and hint_dock.current == feedback_panel) or (is_instance_valid(hint_dock.bubbles) and hint_dock.bubbles.feedback_visible): _message_remaining = maxf(0.0,_message_remaining-delta)
+		if _feedback_clock >= float(_feedback_active.expires) or _message_remaining <= 0.0:
+			_feedback_active.clear()
+	_feedback_queue = _feedback_queue.filter(func(entry: Dictionary) -> bool: return float(entry.expires) > _feedback_clock)
+	if _feedback_active.is_empty() and not _feedback_queue.is_empty():
+		var index := 0
+		for i in _feedback_queue.size():
+			if int(_feedback_queue[i].priority) > int(_feedback_queue[index].priority): index = i
+		_begin_feedback(_feedback_queue.pop_at(index))
+	else: _sync_feedback()
+
+func _sync_feedback() -> void:
+	item_message.text = _feedback_active.get("text","")
+	item_message.visible = not _feedback_active.is_empty()
+	update_pickup_prompt(_nearby_prompt)
 
 
 func update_hp_bar(current: int, maximum: int) -> void:

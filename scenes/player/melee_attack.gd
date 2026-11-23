@@ -157,7 +157,9 @@ func _detect_hits() -> void:
 		var ray := PhysicsRayQueryParameters3D.create(
 			ray_start, ray_end, obstruction_collision_mask, [attacker.get_rid()]
 		)
-		if not space.intersect_ray(ray).is_empty():
+		var obstruction := space.intersect_ray(ray)
+		# 可碎掩体既是世界遮挡也是可攻击目标。剑可击中先碰到的箱面。
+		if not obstruction.is_empty() and obstruction.collider != receiver:
 			continue
 		_hit_targets[receiver_id] = true
 		hit_detected.emit(receiver, _current_damage)
