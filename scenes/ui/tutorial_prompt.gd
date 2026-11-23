@@ -19,24 +19,25 @@ func _ready() -> void:
 	style.set_corner_radius_all(6)
 	style.shadow_color = Color(0, 0, 0, 0.45)
 	style.shadow_size = 10
-	style.content_margin_left = 18
-	style.content_margin_right = 18
-	style.content_margin_top = 12
-	style.content_margin_bottom = 16
+	style.content_margin_left = 12
+	style.content_margin_right = 12
+	style.content_margin_top = 8
+	style.content_margin_bottom = 10
 	add_theme_stylebox_override("panel", style)
 	var content := VBoxContainer.new()
 	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	content.add_theme_constant_override("separation", 10)
+	content.add_theme_constant_override("separation", 6)
 	add_child(content)
 	var header := HBoxContainer.new()
 	header.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content.add_child(header)
 	_caption = _label("", 13, Color("c2a66a"))
+	_caption.clip_text = true
 	_caption.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(_caption)
 	skip_button = Button.new()
 	skip_button.name = "SkipTutorialButton"
-	skip_button.text = "Enter · 跳过教程"
+	skip_button.text = "Enter · 跳过"
 	skip_button.focus_mode = Control.FOCUS_NONE
 	skip_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	skip_button.add_theme_font_size_override("font_size", 13)
@@ -53,9 +54,9 @@ func _ready() -> void:
 		skip_button.add_theme_stylebox_override(state, button_style)
 	header.add_child(skip_button)
 	skip_button.pressed.connect(func() -> void: skip_requested.emit())
-	var row := HBoxContainer.new()
+	var row := VBoxContainer.new()
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_theme_constant_override("separation", 18)
+	row.add_theme_constant_override("separation", 6)
 	content.add_child(row)
 	_keys = HBoxContainer.new()
 	_keys.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -67,13 +68,25 @@ func _ready() -> void:
 	words.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	words.add_theme_constant_override("separation", 4)
 	row.add_child(words)
-	_title = _label("", 25, Color("f0dcae"))
+	_title = _label("", 18, Color("f3ce78"))
 	_title.name = "TutorialStep"
 	words.add_child(_title)
-	_detail = _label("", 15, Color("c6bdab"))
+	_detail = _label("", 13, Color("c6bdab"))
 	_detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	words.add_child(_detail)
 	hide()
+
+func set_dock_compact(compact: bool, text_scale: float = 1.0) -> void:
+	_detail.visible = not compact
+	_font(_title,roundi((15 if compact else 18)*text_scale))
+	_font(_detail,roundi(13*text_scale))
+	_font(_caption,roundi(11*text_scale))
+	_font(skip_button,roundi(12*text_scale))
+	for cap in _keys.get_children():
+		_font(cap.get_child(0),roundi(14*text_scale))
+
+func _font(node: Control, size: int) -> void:
+	if node.get_theme_font_size("font_size") != size: node.add_theme_font_size_override("font_size",size)
 
 func _label(text: String, font_size: int, color: Color) -> Label:
 	var label := Label.new()
@@ -96,14 +109,17 @@ func set_lesson(step: String, move_directions: Array[String] = []) -> void:
 		modulate.a = 1.0
 		return
 	var lesson: Dictionary = REFERENCE.LESSONS[step]
-	_caption.text = "新手教程  ·  %d / 7" % lesson.number
+	_caption.text = "教程 %d/7" % lesson.number
 	_title.text = lesson.title
 	_detail.text = lesson.detail
 	for child in _keys.get_children():
 		_keys.remove_child(child)
 		child.queue_free()
 	for key in lesson.keys:
-		_keys.add_child(REFERENCE.keycap(key))
+		var cap: PanelContainer = REFERENCE.keycap(key)
+		cap.custom_minimum_size = Vector2(28,28)
+		cap.get_child(0).add_theme_font_size_override("font_size",14)
+		_keys.add_child(cap)
 	if step == "move":
 		_update_movement_progress(move_directions)
 	modulate.a = 0.0
@@ -112,7 +128,7 @@ func set_lesson(step: String, move_directions: Array[String] = []) -> void:
 	_fade.tween_property(self, "modulate:a", 1.0, 0.22).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 func _update_movement_progress(completed: Array[String]) -> void:
-	_caption.text = "新手教程  ·  1 / 7  ·  移动 %d / 4" % completed.size()
+	_caption.text = "1/7 · %d/4" % completed.size()
 	for i in range(_keys.get_child_count()):
 		var cap: PanelContainer = _keys.get_child(i)
 		var key: String = REFERENCE.LESSONS.move.keys[i]

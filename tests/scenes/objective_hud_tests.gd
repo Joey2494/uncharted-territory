@@ -63,7 +63,7 @@ func run() -> void:
 	verify("击败灾厄巨蝎","0/1")
 	root.size = Vector2i(720,720)
 	await frames(5)
-	check(not panel.visible and host._boss_bar.visible, "compact combat retains the existing Boss-bar priority")
+	check(panel.visible and panel._compact and host._boss_bar.visible, "compact combat retains both the current quest and Boss health bar")
 	check(map.get_node("Boss").take_damage(999), "actual Boss defeat advances the real room state")
 	check(not host._boss_bar.visible and host._boss_bar.is_defeated(), "Boss death immediately hides the defeated health bar")
 	await frames(2)
@@ -93,10 +93,10 @@ func run() -> void:
 
 func puzzle_checks() -> void:
 	await go(Vector3(-34,0.05,-26))
-	verify("启动回廊主供能","未供电")
+	verify("检查断流档案室供能","未供电")
 	check(panel.get_node("%ObjectiveCategory").text in ["支线任务","任务更新"], "optional room is presented as a side objective")
 	check(await interact("CoreRack"), "unpowered rack can be inspected")
-	verify("启动回廊主供能","未供电")
+	verify("检查断流档案室供能","未供电")
 	var map: Node3D = host._dungeon
 	await go(map.get_node("Regions/Hub").global_position + Vector3.UP * 0.05)
 	for enemy in ["Hub1","Hub2"]: map.get_node("Enemies/"+enemy).take_damage(999)
@@ -105,30 +105,30 @@ func puzzle_checks() -> void:
 	await go(map.get_node("Devices/Relay").global_position + Vector3(0,0.05,1.35))
 	check(host._items.try_interact_nearest(), "main relay supplies the upgraded archive")
 	await go(Vector3(-34,0.05,-26))
-	verify("过桥接通检修线","门锁 0/2")
+	verify("观察档案室机关与线路","门锁 0/2")
 	check(await interact("CoreRack"), "rack provides the two real cores")
 	check(await interact("ReceiverA"), "first receiver accepts one core")
-	verify("过桥接通检修线","门锁 1/2")
+	verify("观察档案室机关与线路","门锁 1/2")
 	check(await interact("ReceiverB"), "second receiver accepts one core")
-	verify("过桥接通检修线","门锁 2/2")
+	verify("观察档案室机关与线路","门锁 2/2")
 	check(not map.get_node("Gates/Vault").is_open(), "two powered receivers without maintenance do not open the vault")
 	check(await interact("ResetConsole") and await interact("ResetConsole"), "confirmed reset returns cores")
-	verify("过桥接通检修线","门锁 0/2")
+	verify("观察档案室机关与线路","门锁 0/2")
 	check(await interact("CoreRack"), "retrieve cores after reset")
 	check(await interact("BridgeSocket",Vector3(1.25,0.05,0)), "power the temporary bridge")
 	check(await interact("Lever"), "actual maintenance lever completes the permanent return path")
-	verify("为双接收器供能","门锁 0/2")
+	verify("观察档案室机关与线路","门锁 0/2")
 	check(panel.get_node("%ObjectiveCategory").text == "步骤完成", "maintenance completion acknowledges the step without completing the whole puzzle")
 	check(await interact("BridgeSocket",Vector3(1.25,0.05,0)), "recover bridge core")
 	check(await interact("ReceiverA"), "power first receiver after repair")
-	verify("为双接收器供能","门锁 1/2")
+	verify("观察档案室机关与线路","门锁 1/2")
 	if "--capture" in OS.get_cmdline_user_args(): await capture("objective-side-routing")
 	check(await interact("ReceiverB"), "second receiver starts the actual vault opening")
-	verify("等待密室开启","开启中")
+	verify("等待奖励密室暗门开启","开启中")
 	await create_timer(1.05).timeout
-	verify("领取密室奖励","待领取")
+	verify("进入奖励密室领取奖励","待领取")
 	check(await interact("Reward"), "actual inventory accepts the unique reward")
-	verify("返回主路继续探索","支线完成")
+	verify("断流档案室奖励已领取","支线完成")
 	check(host._items.rune_count == 1 and panel.get_node("%ObjectiveCategory").text == "目标完成", "tracker celebrates only the successful reward delivery")
 	await create_timer(1.65).timeout
 	await go(Vector3(0,0.05,2))
@@ -137,15 +137,15 @@ func puzzle_checks() -> void:
 	for dimensions in [Vector2i(1280,720),Vector2i(720,720),Vector2i(480,800),Vector2i(640,360)]:
 		root.size = dimensions
 		await frames(5)
-		verify("返回主路继续探索","支线完成")
+		verify("断流档案室奖励已领取","支线完成")
 		if "--capture" in OS.get_cmdline_user_args(): await capture("objective-compact")
 
 func verify(title: String, progress: String) -> void:
 	check(panel.get_node("%ObjectiveTask").text == title and panel.get_node("%ObjectiveDetail").text == progress, "actual objective and relevant progress: "+title+" / "+progress)
-	var height_limit := 84 if panel.get_node("%ObjectiveResources").visible else 64
-	check(panel.size.x <= 288 and panel.size.y <= height_limit, "tracker retains its compact footprint with one archive resource row")
+	check(root.get_visible_rect().grow(1).encloses(panel.get_global_rect()), "unified quest, optional context and resource rows remain inside the viewport")
 	var label: Label = panel.get_node("%ObjectiveTask")
-	check(label.get_theme_font("font").get_string_size(label.text,HORIZONTAL_ALIGNMENT_LEFT,-1,label.get_theme_font_size("font_size")).x <= label.size.x, "short task title remains fully readable")
+	if label.is_visible_in_tree():
+		check(label.get_visible_line_count() == label.get_line_count() and label.size.y >= label.get_minimum_size().y, "optional task title wraps fully without truncation")
 
 func boot(level: int = 2) -> void:
 	paused = false

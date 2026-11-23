@@ -329,8 +329,21 @@ func take_damage(amount: int) -> bool:
 		_phase_two=true
 		# Phase two changes attack cadence only; every room keeps a single species.
 		state_changed.emit("沙王狂暴 · 攻击与收招加速")
-	elif not is_boss() and enemy_id!="tomb_sword" and state!=State.STRIKE:
+	elif _stagger_on_hit():
 		state=State.HURT
 		_remaining=0.08
 		_clear_warning()
 	return true
+
+## 保留最新主分支的子类硬直挂钩；普通命中不打断已执行的动作。
+func _stagger_on_hit() -> bool:
+	return not is_boss() and enemy_id!="tomb_sword" and state!=State.STRIKE
+
+## 主分支第四关观测站的机关行进标记仍调用此方法。
+## 第三关普通攻击不调用它，不会生成预警或攻击范围。
+func _disc(at: Vector3, radius: float, degrees: float, inner := 0.0) -> void:
+	var node:=MeshInstance3D.new()
+	node.mesh=FX.sector(radius,degrees,inner)
+	_warning.add_child(node)
+	node.global_position=at+Vector3.UP*0.05
+	node.rotation.y=atan2(-_direction.x,-_direction.z)

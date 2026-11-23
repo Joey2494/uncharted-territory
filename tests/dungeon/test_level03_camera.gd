@@ -1,5 +1,5 @@
 extends SceneTree
-## 正式第三关直接复用第一关的脚本、参数与跟随构图，使用隔离存档验证。
+## 墓穴专用相机继承共享构图，验证高墙淡出、原生敌人轮廓和隔离存档。
 ## 实战截图另由 test_level03_enemy_integration.gd -- --capture 验证。
 const Profile = preload("res://scripts/integration/player_profile.gd")
 const Progress = preload("res://scripts/integration/campaign_progress.gd")
@@ -42,9 +42,11 @@ func run() -> void:
 	var reference: Camera3D = first.get_node("Camera3D")
 	var preview: Node3D = load("res://scenes/dungeon/level03/Level03Preview.tscn").instantiate()
 	var preview_camera: Camera3D = preview.get_node("Camera3D")
-	check(preview_camera.get_script() == reference.get_script(), "独立预览直接复用第一关相机脚本")
-	for key in ["pitch_degrees","minimum_distance","fov","near","far","follow_speed","zoom_speed","actor_padding"]:
+	var tomb_script = load("res://scenes/dungeon/level03/tomb_camera.gd")
+	check(preview_camera.get_script() == tomb_script and tomb_script.get_base_script() == load("res://scenes/dungeon/level03/tide_camera.gd") and tomb_script.get_base_script().get_base_script() == reference.get_script(), "墓穴专用相机继承共享相机")
+	for key in ["near","far","follow_speed","zoom_speed","actor_padding"]:
 		check(is_equal_approx(float(preview_camera.get(key)),float(reference.get(key))), "预览相机参数与第一关相同：" + key)
+	check(is_equal_approx(preview_camera.pitch_degrees,55.0) and is_equal_approx(preview_camera.minimum_distance,15.0) and is_equal_approx(preview_camera.fov,60.0),"恢复墓穴相机俯角、最短距离与视场")
 	preview.free()
 	for size in [Vector2i(1280,720),Vector2i(1920,1080),Vector2i(720,720)]:
 		root.size = size
@@ -59,10 +61,10 @@ func run() -> void:
 		camera = map.get_node("Camera3D")
 		for enemy in map.get_node("Enemies").get_children(): enemy.set_physics_process(false)
 		await frames()
-		check(camera.get_script() == reference.get_script(), "%s 正式入口直接使用第一关相机" % size)
-		check(not host.get_node("UILayer/ResponsiveLayout").compact_combat_layout and not host._commerce.external_shortcut_layout, "第三关使用第一关的 HUD 与取景布局配置")
-		check(is_equal_approx(camera.rotation_degrees.x,-reference.pitch_degrees), "实际俯角与第一关一致")
-		for key in ["pitch_degrees","minimum_distance","fov","near","far","follow_speed","zoom_speed","actor_padding"]:
+		check(camera.get_script() == tomb_script, "%s 正式入口使用墓穴专用相机" % size)
+		check(host.get_node("UILayer/ResponsiveLayout").compact_combat_layout and host._commerce.external_shortcut_layout, "第三关保留美术 HUD 并接入稳定战斗布局")
+		check(is_equal_approx(camera.rotation_degrees.x,-55.0), "实际俯角使用墓穴构图")
+		for key in ["near","far","follow_speed","zoom_speed","actor_padding"]:
 			check(is_equal_approx(float(camera.get(key)),float(reference.get(key))), "正式入口参数与第一关相同：" + key)
 		camera.reset_follow()
 		var before: Vector3 = camera._focus

@@ -21,7 +21,7 @@ func run() -> void:
 	progress.complete(1)
 	check(progress.is_unlocked(&"level3") and not progress.is_completed(&"level2"), "第三关不依赖第二关通关记录")
 	progress.complete(2)
-	check(progress.is_unlocked(&"level3") and progress.recommended_level() == &"level3", "第二关完成后推荐并解锁第三关")
+	check(progress.is_unlocked(&"level3") and progress.recommended_level() == &"level4", "第三关仍可选择，测试版推荐最高可选关卡")
 	var legacy := ConfigFile.new()
 	legacy.set_value("campaign", "completed", ["level1", "level2"])
 	legacy.set_value("campaign", "played", ["level1", "level2"])
@@ -51,6 +51,11 @@ func run() -> void:
 
 func frames(count: int = 8) -> void:
 	for i in count: await physics_frame
+
+	# Transitions now await real threaded resources, not a fixed frame budget.
+	var deadline := Time.get_ticks_msec()+15000
+	while root.get_node_or_null("LoadingScreen") != null and Time.get_ticks_msec() < deadline:
+		await process_frame
 
 func go(point: Vector3) -> void:
 	host._player.global_position = point
@@ -136,7 +141,7 @@ func third_route() -> void:
 	check(objective.has_all(["id", "title", "category", "progress", "completed"]), "第三关目标提供共享展示协议")
 	check(objective.completed is Array and objective.resource_summary.contains("低水位"), "常驻目标协议包含完成列表和潮汐资源状态")
 	await frames()
-	check(host._hud.get_node("LevelObjective/%ObjectiveResources").text.contains("导体在 C"), "共享 HUD 实际显示第三关持续资源状态")
+	check(host._hud.get_node("LevelObjective/%ObjectiveResources").text.contains("导体在沉沙库"), "共享 HUD 实际显示第三关持续资源状态")
 	await go(map.get_node("Rooms/J").global_position)
 	host._on_exit_reached()
 	check(host.get_run_state() == host.RunState.PLAYING, "提前到出口或伪发出口信号不能结算")
@@ -153,7 +158,12 @@ func third_route() -> void:
 	await clear_room(&"E")
 	await clear_room(&"F")
 	await use_station(&"charge")
+	await use_station(&"tide")
+	check(map.get_hud_objective().title.contains("升高水位"), "提前降潮但未开手柄时先提示升潮才能到达 F")
+	await use_station(&"tide")
 	await use_station(&"highwalk")
+	await go(map.get_node("Rooms/H").global_position + Vector3(0, 0.05, 2))
+	check(map.get_hud_objective().category == "支线任务" and map.get_hud_objective().title.contains("西返 F"), "花园提示可选奖励和明确返程方向")
 	await use_station(&"tide")
 	await use_station(&"director")
 	# 最终守卫允许测试定位；泄压仍是不可绕过的独立胜利条件。
@@ -172,7 +182,7 @@ func third_route() -> void:
 	check(host.get_run_state() == host.RunState.VICTORY and map.is_victorious(), "I 泄压、G 清场、门打开并走入 J 才通关")
 	check(host.get_node("MenuNavigation").progress.is_completed(&"level3"), "第三关完成写入进度")
 	var result: Control = host._hud.get_result_screen()
-	check(result != null and not result.next_level_button.visible and not host.advance_to_next_level(), "第三关终局没有第四关按钮且拒绝越界跳转")
+	check(result != null and result.next_level_button.visible and host.get_next_level_block_reason().is_empty(), "第三关实际通关后结算页开放第四关")
 	check(result.summary_label.text.contains("沙缚王") and result.summary_label.text.contains("守卫") and result.get_node("%PuzzleLabel").text.contains("潮汐"), "结算如实显示沙缚王、守卫和潮汐机关")
 	check(not host._settled and PROFILE.coins == wallet_before and host._items.gold == 37 and host._settlement_id not in PROFILE.settled_runs, "第三关结算保存失败回滚钱包并保留本局金币")
 	check(result.get_node("%SettlementLabel").text.contains("金币保存失败") and result._retry.visible, "第三关结算显示金币失败文案和实际重试按钮")
@@ -200,6 +210,7 @@ func result_layout(screen: Control) -> void:
 		root.size = dimensions
 		await frames()
 		var panels: Array[Control] = [screen.get_node("%ResultDetails"), screen.get_node("%RewardsPanel"), screen.get_node("%SettlementLabel"), screen.get_node("%ProgressLabel"), screen.restart_button, screen.get_node("%LevelSelectButton"), screen.get_node("%MainMenuButton")]
+		panels.append(screen.next_level_button)
 		if screen._retry.visible: panels.append(screen._retry)
 		var viewport := root.get_visible_rect()
 		var bounded := true

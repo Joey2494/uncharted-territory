@@ -247,6 +247,11 @@ func frames(count: int) -> void:
 	for i in count:
 		await physics_frame
 		await process_frame
+	# Transitions now await real threaded resources, not a fixed frame budget.
+	var deadline := Time.get_ticks_msec()+15000
+	while root.get_node_or_null("LoadingScreen") != null and Time.get_ticks_msec() < deadline:
+		await process_frame
+
 func check(ok: bool, label: String) -> void:
 	checks += 1
 	print(("PASS " if ok else "FAIL ")+label)

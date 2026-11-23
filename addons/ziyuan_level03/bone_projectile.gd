@@ -53,5 +53,7 @@ func _physics_process(delta: float) -> void:
 			if accepted and sand_curse and not guarded:
 				source.status_requested.emit(target,"slow",1.4,0.6)
 				if target.has_method("apply_level03_slow"): target.apply_level03_slow(1.4,0.6)
+		elif receiver is Node and receiver.is_in_group("breakable_cover"):
+			receiver.take_damage(damage)
 		FX.burst(get_parent(),global_position,Color("78684a"),0.35)
 	queue_free()

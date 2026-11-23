@@ -1,5 +1,5 @@
 extends SceneTree
-## 前两关衔接回归（第三关为终关）。定位玩家以隔离移动距离，用真实伤害、交互与物理出口推进。
+## 前两关衔接回归。定位玩家以隔离移动距离，用真实伤害、交互与物理出口推进。
 
 const FIRST := "res://Main.tscn"
 const SECOND := "res://scenes/dungeon/Level02Run.tscn"
@@ -55,6 +55,14 @@ func defeat(map: Node, paths: Array) -> void:
 		check(map.get_node(path).take_damage(999), path + " 实际死亡")
 
 func scene_ready() -> void:
+	# Scene handoff now includes actual threaded resources and optional baked art.
+	# A fixed four frames can exit while loading is still in progress.
+	var deadline := Time.get_ticks_msec()+45000
+	while Time.get_ticks_msec() < deadline:
+		await process_frame
+		if current_scene == null or root.get_node_or_null("LoadingScreen") != null: continue
+		if current_scene.get("_transition_queued") == true or current_scene.get("_transition_executing") == true: continue
+		break
 	for i in 4:
 		await process_frame
 

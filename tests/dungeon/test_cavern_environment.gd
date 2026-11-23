@@ -22,6 +22,13 @@ func run() -> void:
 		var box: BoxShape3D = body.get_node("CollisionShape3D").shape
 		var mesh: MeshInstance3D = visual.get_node("FracturedBoulder")
 		check(mesh.mesh.get_aabb().size.is_equal_approx(box.size),"boulder bounds still advertise the original collider dimensions")
+		var points: PackedVector3Array = mesh.mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
+		var outward := true
+		for i in range(0,points.size(),3):
+			var normal := (points[i+2]-points[i]).cross(points[i+1]-points[i]).normalized()
+			var center := (points[i]+points[i+1]+points[i+2])/3.0
+			outward = outward and normal.dot(center) > 0.0
+		check(outward,"single-sided boulder surfaces face outward, including the roof and base")
 	var hub: Node3D = map.get_node("Regions/Hub")
 	var signature := geometry_signature(hub)
 	var colliders := physics_signature(hub)
@@ -58,6 +65,7 @@ func inspect_region(region: Node3D) -> void:
 	var floor_clear := true
 	var occlusion := true
 	var height_variation := false
+	var solid_shells := true
 	var foreground_clear := true
 	var half: Vector2 = region.dimensions*0.5
 	for visual: Node3D in roots:
@@ -65,6 +73,7 @@ func inspect_region(region: Node3D) -> void:
 		if kind == "wall":
 			occlusion = occlusion and visual.get_parent().is_in_group("camera_occluders")
 			height_variation = height_variation or visual.get_meta("peripheral_depth") < -3.0
+			solid_shells = solid_shells and verify_solid_shell(visual)
 		for node in descendants(visual):
 			static_only = static_only and not (node is CollisionObject3D or node is CollisionShape3D or node is NavigationRegion3D) and node.get_script() == null
 			if not node is MeshInstance3D: continue
@@ -95,7 +104,29 @@ func inspect_region(region: Node3D) -> void:
 	check(clear and floor_clear,String(region.name)+": central combat area, route marks and corridor lane remain exposed")
 	check(occlusion and foreground_clear,String(region.name)+": low foreground and existing wall fade protect the camera view")
 	check(height_variation,String(region.name)+": peripheral cliffs provide real vertical rock relief")
+	check(solid_shells,String(region.name)+": thick rock shells have sealed tops, backs, bases and doorway reveals")
 	check(region.find_children("Decor_*","Node3D",true,false).is_empty(),String(region.name)+": no old banners, masonry pillars or bookshelves remain")
+
+func verify_solid_shell(visual: Node3D) -> bool:
+	if not visual.get_meta("closed_shell",false) or visual.get_meta("rock_thickness",0.0) < 2.0: return false
+	var mesh: ArrayMesh = visual.get_node("RockFaceAndStalactites").mesh
+	var points: PackedVector3Array = mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
+	var count: int = visual.get_meta("shell_vertex_count",0)
+	if count < 12 or count > points.size(): return false
+	# Check the welded shell itself, excluding rooted mineral teeth. A thin sheet or a
+	# missing cap leaves edges with only one incident triangle even if its bounds look thick.
+	var edges := {}
+	var volume := 0.0
+	for i in range(0,count,3):
+		volume += points[i].dot(points[i+1].cross(points[i+2]))/6.0
+		for j in 3:
+			var a := str(Vector3i((points[i+j]*10000.0).round()))
+			var b := str(Vector3i((points[i+(j+1)%3]*10000.0).round()))
+			var key := a+"|"+b if a < b else b+"|"+a
+			edges[key] = edges.get(key,0)+1
+	for usage: int in edges.values():
+		if usage != 2: return false
+	return absf(volume) > 4.0
 
 func verify_camera_fade(map: Node3D) -> void:
 	map.begin_run()
@@ -134,7 +165,8 @@ func physics_signature(region: Node3D) -> Array:
 func geometry_signature(region: Node3D) -> Array:
 	var result: Array = []
 	for visual in geology(region):
-		for mesh: MeshInstance3D in visual.get_children():
+		for mesh in visual.get_children():
+			if not mesh is MeshInstance3D: continue
 			result.append([String(region.get_path_to(mesh)),hash(mesh.mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX])])
 	return result
 func geology(node: Node) -> Array[Node3D]:

@@ -3,7 +3,9 @@ extends Node
 const SUITES := ["test_secret_door", "test_room_progress", "test_gate_lifecycle",
 	"test_gate_integration", "test_level02_layout",
 	"test_energy_relay", "test_level02_integration", "test_level02_navigation", "test_level02_spawn",
-	"test_campaign_flow", "test_export_presentation", "capture_campaign"]
+	"test_campaign_flow", "test_export_presentation", "capture_campaign",
+	"test_level04_routes", "test_level04_combat", "test_level04_camera_run", "test_level04_menu",
+	"test_level04_geometry", "test_level04_instruments", "test_level04_dome_visibility", "test_level04_campaign"]
 
 func _ready() -> void:
 	_launch.call_deferred()
@@ -11,13 +13,15 @@ func _ready() -> void:
 func _launch() -> void:
 	var tree := get_tree()
 	var args := OS.get_cmdline_user_args()
-	if not args.has("--week09-test"):
-		var error := tree.change_scene_to_file("res://Main.tscn")
+	var suite_flag := "--observatory-test" if args.has("--observatory-test") else "--week09-test"
+	if not args.has(suite_flag):
+		var scene := "res://scenes/dungeon/Level04Practice.tscn" if args.has("--observatory") else "res://Main.tscn"
+		var error := tree.change_scene_to_file(scene)
 		if error != OK:
-			push_error("无法加载第一关：%s" % error)
+			push_error("无法加载 %s（%s）" % [scene, error_string(error)])
 			tree.quit(1)
 		return
-	var index := args.find("--week09-test") + 1
+	var index := args.find(suite_flag) + 1
 	if index >= args.size() or (args[index] != "smoke" and not args[index] in SUITES):
 		push_error("无效的测试包自检名称")
 		tree.quit(2)

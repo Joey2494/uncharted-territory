@@ -1,7 +1,7 @@
 extends RefCounted
 ## Scene-local facades share one authoritative in-memory state per save file.
 static var override_path: String = ""
-const LEVEL_IDS := ["level1", "level2", "level3"]
+const LEVEL_IDS := ["level1", "level2", "level3", "level4"]
 
 class SessionState:
 	var message: String = ""

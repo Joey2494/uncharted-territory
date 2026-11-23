@@ -2,7 +2,7 @@ extends CanvasLayer
 ## 独立预览显示当前位置、潮位和供电反馈。Esc 暂停，Tab 打开路线图。
 
 const MAP := "　　　　　　　　　J 远航出口\n　　　　　　　　　│\n　　　　　　I　　G 中心闸庭　F 蓄能工房 ─ H\n　　　　　　│　　│　　　╱　│\nD 折流廊 ─ C ─ B 中央潮井 ─ E 浮栈战区\n　　　　　　　　　│\n　　　　　　　　　A 入口检修台"
-const GUIDE := "低水位通 C、D 和 I。高水位通 E、F 和 H。\nF 手柄可同时打开 C–I 维修门和两潮位通行的 F–B 高架。\nD 的 △ 端口接 F；□ 端口接 I。储能器在输入中断时仍保留能量。\nI 泄压后可打开 I–D 小回环。B 的重置台需要按两次 E 确认。"
+const GUIDE := "主线：低潮西路 C、D；高潮东路 E、F。F 向西是返程高架，向东的 H 花园奖励可跳过。\nF 手柄可同时打开 C–I 维修门和两潮位通行的 F–B 高架。\nD 的 △ 端口接 F；□ 端口接 I。储能器在输入中断时仍保留能量。\nI 泄压后经 C 回 B，穿过北闸去 G。A 有生命药剂，F 西侧有星蓝药剂，北闸后左侧有守护符文。B 的重置台需要按两次 E 确认。"
 
 var _level: Node3D
 var _player: CharacterBody3D

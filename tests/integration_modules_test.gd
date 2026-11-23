@@ -25,7 +25,8 @@ func run() -> void:
 	Progress.override_path = "res://.godot/integration_progress.cfg"
 	if FileAccess.file_exists(Progress.override_path): DirAccess.remove_absolute(Progress.override_path)
 	var progress := Progress.new()
-	check(progress.is_unlocked(&"level1") and progress.is_unlocked(&"level2") and progress.is_unlocked(&"level3"), "test build opens all campaign levels")
+	for level_id in [&"level1", &"level2", &"level3", &"level4"]:
+		check(progress.is_unlocked(level_id), "test build opens " + String(level_id))
 	progress.complete(1)
 	check(Progress.new().is_unlocked(&"level2"), "completion persists unlock")
 	for level in [1, 2]:
@@ -95,5 +96,7 @@ func run() -> void:
 			check(not menu._enabled, "death closes commerce")
 			main.free()
 			await frames()
+	root.get_node("MusicManager").stop_music()
+	await create_timer(0.2).timeout
 	print("INTEGRATION: %d checks, %d failures" % [checks, failures])
 	quit(1 if failures else 0)
