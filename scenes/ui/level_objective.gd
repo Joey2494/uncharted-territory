@@ -122,7 +122,7 @@ func refresh() -> void:
 	%ObjectiveDetail.text = context.progress
 	%ObjectiveResources.text = context.get("resource_summary","")
 	%ObjectiveResources.visible = not %ObjectiveResources.text.is_empty()
-	%OptionalContext.visible = not world.has_method("get_storage_state") and world.get_current_room_id() in [world.ARCHIVE,world.VAULT]
+	%OptionalContext.visible = context.category == "支线任务" if world.has_method("optional_count") else (not world.has_method("get_storage_state") and world.get_current_room_id() in [world.ARCHIVE,world.VAULT])
 	_apply_density()
 
 func _apply_density() -> void:

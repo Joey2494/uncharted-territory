@@ -3,7 +3,7 @@ extends RefCounted
 const LEGACY = preload("res://scenes/ui/objective_presenter.gd")
 
 static func read(world: Node3D) -> Dictionary:
-	var result := _third(world) if world.has_method("get_storage_state") else _second(world)
+	var result := _fourth(world) if world.has_method("optional_count") else (_third(world) if world.has_method("get_storage_state") else _second(world))
 	var completed: Array[String] = []
 	var current: int = result.tasks.size()
 	for i in result.tasks.size():
@@ -25,6 +25,7 @@ static func read(world: Node3D) -> Dictionary:
 
 static func _context(world: Node3D) -> Dictionary:
 	var context: Dictionary = LEGACY.read(world).duplicate(true)
+	if world.has_method("optional_count"): return context
 	if world.has_method("get_storage_state"):
 		var conductor: String = ["导体在沉沙库","导体已取用","导体接入蓄能工房","导体接入维修井"][world._conductor]
 		var energy: String = ["未蓄能","已蓄能","已泄压"][world._storage]
@@ -37,6 +38,24 @@ static func _context(world: Node3D) -> Dictionary:
 			3: context.title = "进入奖励密室领取奖励"
 			4: context.title = "断流档案室奖励已领取"
 	return context
+
+static func _fourth(world: Node3D) -> Dictionary:
+	var combat: Node = world.combat
+	var tasks: Array[Dictionary] = []
+	for room: String in ["B", "F", "H", "I"]:
+		if room == "F":
+			tasks.append(_task("calibrated", "检查曝光记录室密码柜", "观察曝光轮与试片，校准密码柜以接通北门", "校准曝光记录室密码柜 ×1", int(world.puzzles.calibrated), 1, world.puzzles.calibrated))
+		var done: bool = combat.is_clear(room)
+		var total: int = combat.ROSTERS[room].size() + (1 if combat.REINFORCEMENTS.has(room) else 0)
+		var count := total if done else 0
+		if combat.active_room == room:
+			count = total - combat.enemy_count() - (0 if combat._reinforced else 1)
+		var task := _task("combat_" + room, "清除" + world.NAMES[room] + "守卫", "沿主路进入" + world.NAMES[room] + "，清除守卫后继续北行", "击败守卫 ×%d" % total, maxi(0, count), total, done)
+		task.active = combat.active_room == room
+		tasks.append(task)
+	tasks.append(_task("gate", "等待北侧升降台通路开启", "清除主穹顶完整守卫名单后，等待实体闸门完全开启", "等待北侧闸门开启 ×1", int(world.is_exit_open()), 1, world.is_exit_open()))
+	tasks.append(_task("exit", "登上北侧升降台", "穿过主穹顶北门，到升降台中央离站", "抵达升降台中央 ×1", int(world.won), 1, world.won))
+	return {"tasks": tasks, "chapter": "穿越日晷观测站", "ending": "已登上北侧升降台，完成观测站主线"}
 
 static func _task(id: String, title: String, detail: String, target: String, count: int, total: int, done: bool) -> Dictionary:
 	return {"id":id,"title":title,"detail":detail,"target":target,"count":count,"total":total,"done":done}

@@ -61,8 +61,8 @@ func _apply_layout() -> void:
 	var viewport_size := get_viewport().get_visible_rect().size
 	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
 		return
-	if is_instance_valid(_camera) and _camera.has_method("is_puzzle_framed"):
-		_apply_level02_layout(viewport_size)
+	if is_instance_valid(_camera) and (compact_combat_layout or _camera.has_method("is_puzzle_framed")):
+		_apply_compact_combat_layout(viewport_size)
 		return
 	var wide := viewport_size.x >= WIDE_WIDTH
 	var half_width := (viewport_size.x - MARGIN * 2.0 - GAP) * 0.5
@@ -127,8 +127,8 @@ func _apply_layout() -> void:
 			_camera.set_safe_frame(Rect2(clear.position / viewport_size, clear.size / viewport_size))
 
 
-## 二关统一使用紧凑边缘HUD。区域切换不再隐藏操作栏，也不由临时消息决定镜头。
-func _apply_level02_layout(viewport: Vector2) -> void:
+## 紧凑战斗布局将控件放在画面边缘。区域切换不再隐藏操作栏，也不由临时消息决定镜头。
+func _apply_compact_combat_layout(viewport: Vector2) -> void:
 	var ui_scale := (0.72 if viewport.x < 900.0 else 0.8) if viewport.y < 900.0 else 1.0
 	var margin := 16.0
 	for control in [_stats, _resources, _cooldowns, _hotbar, _boss_bar, _objective, _shop_shortcut]:

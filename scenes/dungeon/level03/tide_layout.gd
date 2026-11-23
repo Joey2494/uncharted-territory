@@ -32,7 +32,8 @@ const ROUTES := {
 	&"EF": [Rect2(22.5, -17, 5, 10)],
 	&"FH": [Rect2(32, -26.5, 8, 5)],
 	&"FB": [Rect2(10, -26.5, 8, 5), Rect2(10, -21.5, 5, 17)],
-	&"BG": [Rect2(-2.5, -17, 5, 7)],
+	# 闸门北侧的战前整备位只连通 BG；与 G 房及门南侧均保留实体边界。
+	&"BG": [Rect2(-2.5, -17, 5, 7), Rect2(-6.5, -16.8, 4, 2.7)],
 	&"GJ": [Rect2(-2.5, -41, 5, 10)],
 	&"ID": [Rect2(-51.5, -26.5, 19.5, 5), Rect2(-51.5, -21.5, 5, 14.5)],
 }
@@ -155,8 +156,11 @@ func _build_conduits() -> void:
 	add_child(_outbound)
 	add_child(_returning)
 	# 三角端口通 F，方形端口通 I。光路与踏板使用不同标识。
-	var outward := [Vector2(-4, 2), Vector2(-48, 2), Vector2(-48, -13), Vector2(25, -13), Vector2(25, -22)]
-	var reverse := [Vector2(25, -22), Vector2(25, -14), Vector2(-49, -14), Vector2(-49, -3), Vector2(-25, -3), Vector2(-25, -22)]
+	# 供能线贴着实际走廊铺设，避免将悬空连线误认为一条可走的捷径。
+	var outward := [Vector2(-49, 1.45), Vector2(24.6, 1.45), Vector2(24.6, -22)]
+	var reverse := [Vector2(25, -22), Vector2(25, -24.8), Vector2(12.5, -24.8),
+		Vector2(12.5, -6.8), Vector2(6.8, -6.8), Vector2(6.8, -1.4),
+		Vector2(-49, -1.4), Vector2(-49, -0.6), Vector2(-25.6, -0.6), Vector2(-25.6, -22)]
 	_wire(self, outward, _wire_off, 0.17, 0.18)
 	_wire(self, reverse, _wire_off, 0.17, 0.18)
 	_wire(_outbound, outward, Color("ffba58"), 0.21, 0.12)

@@ -1,0 +1,342 @@
+extends Node3D
+## 日晷观测站遭遇控制器。房门由宿主统一管理，此处仅在越过内线与完整清除名单时发信号。
+signal battle_started(room: String)
+signal battle_cleared(room: String)
+signal feedback(message: String)
+
+const FACTORY := preload("res://addons/ziyuan_level03/factory.gd")
+const GUARD := preload("res://scenes/dungeon/level04/observatory_guard.gd")
+const CRATE := preload("res://scenes/dungeon/level04/observatory_crate.gd")
+const SWEEP := preload("res://scenes/dungeon/level04/observatory_sweep.gd")
+const ROSTERS := {
+	"B": [["bone_axe",Vector2(-6,1)],["bone_axe",Vector2(6,-1)],["bone_spike",Vector2(-1,-5)]],
+	"D": [["tomb_sword",Vector2(-3.5,3.8)],["bone_spike",Vector2(-4.8,-3.5)]],
+	"F": [["bone_spike",Vector2(-4,-3)],["bone_spike",Vector2(4,-3)]],
+	"H": [["bone_spike",Vector2(4,-3)],["bone_axe",Vector2(-4,0.5)]],
+	"I": [["chain_jailer",Vector2(-4,-2)],["bone_spike",Vector2(5,-3.5)]],
+}
+const REINFORCEMENTS := {"F": Vector2(3,-4.8), "H": Vector2(-3.5,-4)}
+const CAGE_SIZE := Vector3(1.8,1.7,1.5)
+var active_room := ""
+var demo_done := false
+var cage_side := 0
+var requested_cage_side := 0
+var half_announced := false
+var _level: Node3D
+var _player: CharacterBody3D
+var _layout: Node3D
+var _cleared := {}
+var _enemies: Array[CharacterBody3D] = []
+var _sweeps := {}
+var _markers := {}
+var _cage: StaticBody3D
+var _model_cage: MeshInstance3D
+var _demo_running := false
+var _demo_threshold: MeshInstance3D
+var _reinforced := false
+var _warning_left := -1.0
+var _spawn_serial := 0
+var _stopped := false
+var prepared_dome_boss: CharacterBody3D
+var _jailer: CharacterBody3D
+var _advance_paused_light := false
+var _paths: AStarGrid2D
+var _next_side := -1
+var _queued_side := 0
+
+func setup(level: Node3D) -> void:
+	_level = level
+	_layout = level.layout
+	_player = level.get_node("Player")
+	for spec in [["A",Vector2(-2.6,0)],["B",Vector2(-2.2,0)],["B",Vector2(0,0)]]:
+		var crate := CRATE.new()
+		add_child(crate)
+		crate.position = _at(spec[0],spec[1],0)
+		crate.build(_layout)
+	_build_cage()
+	for room: String in REINFORCEMENTS:
+		var marker := Node3D.new()
+		add_child(marker)
+		marker.position = _at(room,REINFORCEMENTS[room],0)
+		_layout.block(marker,Vector3(0,0.07,0),Vector3(3.4,0.055,1.25),Color("d27d39"),true)
+		for x in [-1.6,1.6]:
+			_layout.block(marker,Vector3(x,0.87,-0.3),Vector3(0.15,1.7,0.15),Color("ffba52"),true)
+		_layout.caption(marker,"援军将至",Vector3(0,2.2,0))
+		_markers[room] = marker
+		marker.hide()
+	for room: String in ["H","I"]:
+		var light := SWEEP.new()
+		add_child(light)
+		light.build(_layout,_layout.room_center(room),Vector2(9.3,7.2) if room == "H" else Vector2(11.2,9.1))
+		_sweeps[room] = light
+	_demo_threshold = _layout.block(self,_at("H",Vector2(0,3),0.065),Vector3(6.4,0.05,0.09),Color("81e5bd"),true)
+	_demo_threshold.hide()
+
+func _at(room: String, xz: Vector2, height: float) -> Vector3:
+	var center: Vector3 = _layout.room_center(room)
+	return center + Vector3(xz.x,height,xz.y)
+
+func _build_cage() -> void:
+	var neutral := _at("F",Vector2(0,2),4.4)
+	_cage = _layout.solid(self,neutral,CAGE_SIZE,Color("4f666b"))
+	_cage.name = "CounterweightCage"
+	for x in [-0.74,-0.25,0.25,0.74]:
+		for z in [-0.765,0.765]:
+			_layout.block(_cage,Vector3(x,0,z),Vector3(0.10,1.62,0.07),Color("b6945f"))
+	for side in [-1,1]:
+		var slot := _at("F",Vector2(side*4,2),0.055)
+		for edge in [-1,1]:
+			_layout.block(self,slot+Vector3(0,0,edge*0.88),Vector3(2.1,0.035,0.07),Color("dcb071"))
+			_layout.block(self,slot+Vector3(edge,0,0),Vector3(0.07,0.035,1.8),Color("dcb071"))
+	var model := Node3D.new()
+	add_child(model)
+	model.position = _at("D",Vector2(5.5,-2.2),0)
+	_layout.solid(model,Vector3(0,0.46,0),Vector3(2.8,0.92,1.55),Color("43545c"))
+	for x in [-0.87,0,0.87]:
+		_layout.block(model,Vector3(x,1.0,0),Vector3(0.76,0.09,1.35),Color("a58d69") if x!=0 else Color("4f666b"))
+	_model_cage = _layout.block(model,Vector3(0,1.62,0),Vector3(0.46,0.5,0.48),Color("d7ab67"))
+	_layout.caption(model,"F 双廊缩景 · 吊笼停在亮框内",Vector3(0,2.15,0))
+
+func set_cage(side: int) -> bool:
+	if _stopped or not can_process() or side not in [-1,1] or active_room == "F" or not is_clear("D"): return false
+	requested_cage_side = side
+	_try_place_cage()
+	return true
+
+func _try_place_cage() -> void:
+	if requested_cage_side == cage_side or active_room == "F": return
+	var target := _at("F",Vector2(requested_cage_side*4,2),CAGE_SIZE.y*0.5)
+	var offset := _player.global_position - target
+	if absf(offset.x) <= CAGE_SIZE.x*0.5+0.6 and absf(offset.z) <= CAGE_SIZE.z*0.5+0.6: return
+	cage_side = requested_cage_side
+	_cage.global_position = target
+	_model_cage.position = Vector3(cage_side*0.87,1.29,0)
+
+func is_clear(room: String) -> bool:
+	return _cleared.has(room)
+
+func enemy_count() -> int:
+	return _enemies.size()
+
+func boss_guard() -> CharacterBody3D:
+	return _jailer if is_instance_valid(_jailer) else null
+
+func shutter_available() -> bool:
+	return not _stopped and active_room == "I" and not _advance_paused_light and _sweeps.I.active
+
+func operate_shutter() -> bool:
+	if not can_process() or not shutter_available(): return false
+	var light: Node3D = _sweeps.I
+	if light.choose(-light.side):
+		feedback.emit("已调百叶 · 本轮扫%s侧" % ("东" if light.side > 0 else "西"))
+	else:
+		# 锁定与实扫期间保留本轮几何，扳杆只把下一轮的预选侧翻转。
+		_queued_side = light.side if _queued_side == 0 else -_queued_side
+		feedback.emit("本轮已锁定 · 下一轮预选%s侧" % ("东" if _queued_side > 0 else "西"))
+	return true
+
+func update_room(room: String, delta: float) -> void:
+	if _stopped or not can_process() or _player.is_dead(): return
+	_try_place_cage()
+	if active_room != "":
+		_tick_battle(delta)
+		return
+	if _demo_running and room != "H":
+		_sweeps.H.stop()
+		_demo_running = false
+	if not ROSTERS.has(room) or is_clear(room): return
+	var point: Vector3 = _player.global_position - _layout.room_center(room)
+	if room == "H" and not demo_done:
+		if not _demo_running:
+			_sweeps.H.begin(-1,true)
+			_demo_running = true
+			feedback.emit("百叶试车 · 青光演示不伤人，观察另一侧的暗带")
+		if _sweeps.H.advance(delta,[]):
+			_demo_running = false
+			demo_done = true
+			_demo_threshold.show()
+			feedback.emit("演示完毕 · 跨过亮起的内线迎战")
+		return
+	if room == "D" and point.x > 3.5: return
+	if room == "H" and point.z > 3.0: return
+	if room == "I" and point.z > 5.5: return
+	if room in ["B","F"] and point.z > 4.5: return
+	_begin_battle(room)
+
+func _begin_battle(room: String) -> void:
+	active_room = room
+	_reinforced = not REINFORCEMENTS.has(room)
+	_warning_left = -1
+	_paths = null
+	battle_started.emit(room)
+	for spec in ROSTERS[room]:
+		_spawn(spec[0],spec[1])
+	if room in ["H","I"]:
+		_next_side = -1
+		_sweeps[room].begin(_next_side,false)
+		feedback.emit("百叶运行 · 琥珀光选侧，红光锁定，白光扫过")
+
+## 战役 HUD 在玩家进场前订阅真正的执刑官；入场前隐藏模型、碰撞及战斗处理。
+func prepare_dome_boss() -> void:
+	for spec in ROSTERS["I"]:
+		if spec[0] == "chain_jailer":
+			prepared_dome_boss = _create_guard("I", spec[0], spec[1])
+			prepared_dome_boss.hide()
+			prepared_dome_boss.collision_layer = 0
+			prepared_dome_boss.collision_mask = 0
+			prepared_dome_boss.get_node("HealthLabel").hide()
+			return
+
+func _create_guard(room: String, kind: String, xz: Vector2) -> CharacterBody3D:
+	var guard := FACTORY.create(kind)
+	guard.set_script(GUARD)
+	guard.enemy_id = kind
+	guard.encounter = self
+	guard.bind_target(_player)
+	_spawn_serial += 1
+	guard.name = "%s_Guard%d" % [room,_spawn_serial]
+	guard.set_meta("room",room)
+	guard.position = _at(room,xz,0.06)
+	add_child(guard)
+	# 保留既有招式与血量，为多敌叠加降低每次失误的代价。
+	guard.definition.damage = 2 if kind in ["chain_jailer","tomb_sword"] else 1
+	guard.died.connect(_on_guard_dead.bind(guard))
+	return guard
+
+func _spawn(kind: String, xz: Vector2) -> void:
+	var guard: CharacterBody3D
+	if kind == "chain_jailer" and is_instance_valid(prepared_dome_boss):
+		guard = prepared_dome_boss
+		guard.collision_layer = 4
+		guard.collision_mask = 3
+		guard.show()
+	else:
+		guard = _create_guard(active_room,kind,xz)
+	_enemies.append(guard)
+	guard.set_encounter_active(true)
+	if kind == "chain_jailer":
+		_jailer = guard
+		if guard == prepared_dome_boss: guard.start_dome_encounter()
+
+func _on_guard_dead(guard: CharacterBody3D) -> void:
+	_enemies.erase(guard)
+	if guard == _jailer: _jailer = null
+
+func _tick_battle(delta: float) -> void:
+	if active_room == "F" and not _reinforced and _enemies.is_empty() and _warning_left < 0:
+		_warn_reinforcement(1.1)
+	if active_room in ["H","I"]:
+		var light: Node3D = _sweeps[active_room]
+		if _handle_half_health(light): return
+		if _enemies.is_empty() and _reinforced:
+			_finish_battle()
+			return
+		if active_room == "H" and not _reinforced and _warning_left < 0 and light.elapsed+delta >= SWEEP.LOCK_END:
+			_warn_reinforcement(SWEEP.ROUND_END-light.elapsed)
+		var targets: Array = [_player]
+		targets.append_array(_enemies)
+		if light.advance(delta,targets):
+			if _stopped or _player.is_dead(): return
+			_next_side = _queued_side if _queued_side != 0 else -light.side
+			_queued_side = 0
+			light.begin(_next_side,false)
+	if _stopped or _player.is_dead(): return
+	if _warning_left >= 0:
+		_warning_left -= delta
+		if _warning_left <= 0: _release_reinforcement()
+	if _enemies.is_empty() and _reinforced: _finish_battle()
+
+func _handle_half_health(light: Node3D) -> bool:
+	if active_room != "I": return false
+	if _advance_paused_light:
+		if is_instance_valid(_jailer) and _jailer.advancing: return true
+		_advance_paused_light = false
+		light.begin(_next_side,false)
+	if not half_announced and is_instance_valid(_jailer) and _jailer.hp*2 <= _jailer.max_hp and light.elapsed < SWEEP.CHOOSE:
+		half_announced = true
+		_advance_paused_light = true
+		_next_side = light.side
+		light.stop()
+		var target := _at("I",Vector2(5.4,2.0),0)
+		_jailer.announce_advance(target)
+		_jailer.state_changed.emit("举链开道")
+		feedback.emit("执刑官举链开道 · 让出东侧扳杆路线，收链后反击")
+		return true
+	return false
+
+func _warn_reinforcement(duration: float) -> void:
+	_warning_left = duration
+	_markers[active_room].show()
+	feedback.emit("标记门已亮 · 长剑墓卫即将入场")
+
+func _release_reinforcement() -> void:
+	var spawn_xz: Vector2 = REINFORCEMENTS[active_room]
+	# 避免刷新在玩家身体中；门灯两侧也处于同一片预告区内。
+	for dx: float in [0.0,-1.35,1.35]:
+		var spot := spawn_xz + Vector2(dx,0)
+		var target := _at(active_room,spot,0.06)
+		if _player.global_position.distance_to(target) < 1.15: continue
+		_spawn("tomb_sword",spot)
+		_reinforced = true
+		_warning_left = -1
+		_markers[active_room].hide()
+		return
+	_warning_left = 0.0
+
+func _finish_battle() -> void:
+	var room := active_room
+	if _sweeps.has(room): _sweeps[room].stop()
+	_cleared[room] = true
+	active_room = ""
+	battle_cleared.emit(room)
+
+func stop() -> void:
+	_stopped = true
+	for light in _sweeps.values(): light.stop()
+	for marker in _markers.values(): marker.hide()
+	for guard in _enemies: guard.set_encounter_active(false)
+
+## 仅在敌人被墙挡住时生成该场地的可行走网格；按身体宽度排除窄缝，地面射线排除地板以外的格点。
+func _build_paths() -> void:
+	_paths = AStarGrid2D.new()
+	_paths.region = Rect2i(-11,-9,23,19)
+	_paths.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
+	_paths.update()
+	var sphere := SphereShape3D.new()
+	sphere.radius = 0.52
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.shape = sphere
+	query.collision_mask = 1
+	var space := get_world_3d().direct_space_state
+	for x in range(-11,12):
+		for z in range(-9,10):
+			var pos := _at(active_room,Vector2(x,z),0.85)
+			query.transform.origin = pos
+			var floor_hit := space.intersect_ray(PhysicsRayQueryParameters3D.create(pos,pos-Vector3.UP*1.4,1))
+			var blocked := floor_hit.is_empty() or not space.intersect_shape(query,1).is_empty()
+			_paths.set_point_solid(Vector2i(x,z),blocked)
+
+func _nearest_cell(world: Vector3) -> Vector2i:
+	var local: Vector3 = world - _layout.room_center(active_room)
+	var point := Vector2(local.x,local.z)
+	var cell := Vector2i(point.round())
+	if _paths.is_in_boundsv(cell) and not _paths.is_point_solid(cell): return cell
+	var nearest := cell
+	var distance := INF
+	for x in range(cell.x-3,cell.x+4):
+		for z in range(cell.y-3,cell.y+4):
+			var candidate := Vector2i(x,z)
+			var d := point.distance_squared_to(Vector2(candidate))
+			if d < distance and _paths.is_in_boundsv(candidate) and not _paths.is_point_solid(candidate):
+				nearest = candidate
+				distance = d
+	return nearest
+
+func next_corner(from: Vector3, to: Vector3) -> Vector3:
+	if _paths == null: _build_paths()
+	var a := _nearest_cell(from)
+	var b := _nearest_cell(to)
+	if not _paths.is_in_boundsv(a) or not _paths.is_in_boundsv(b): return from
+	var path := _paths.get_id_path(a,b,true)
+	if path.size() <= 1: return to
+	return _at(active_room,Vector2(path[1]),from.y)

@@ -2,7 +2,7 @@ extends Area3D
 
 const Catalog = preload("res://data/item_catalog.gd")
 
-@export_enum("生命药剂", "攻击强化符文", "守护符文", "遗迹手炮", "弹药") var item_type: int = 0
+@export_enum("生命药剂", "攻击强化符文", "守护符文", "遗迹手炮", "弹药", "星蓝药剂") var item_type: int = 0
 @export_range(1, 99, 1) var quantity: int = 1
 @export_range(0.5, 3.0, 0.1) var interaction_distance: float = 1.5
 @export var show_prompt_quantity: bool = false

@@ -2,8 +2,6 @@ extends SceneTree
 ## 源项目和 Windows 测试包共用的界面验收，检查实物路牌及标签真实字符边界。
 
 const DUNGEON := preload("res://scenes/dungeon/DungeonTest.tscn")
-const START := "UILayer/StartScreen/Center/Card/Padding/Content/StartButton"
-const GUIDE := "UILayer/RunOverlay/Corner/GuideButton"
 const PROFILE := preload("res://scripts/integration/player_profile.gd")
 const PROGRESS := preload("res://scripts/integration/campaign_progress.gd")
 const SIGNS := {
@@ -87,7 +85,7 @@ func run() -> void:
 	change_scene_to_file("res://scenes/dungeon/Level02Run.tscn")
 	await settle_layout()
 	var second := current_scene
-	check_label(second.get_node("UILayer/StartScreen/Center/Card/Padding/Content/Description"), "第二关菜单")
+	check_label(second.get_node("UILayer/StartScreen").get_node("%StatusLabel"), "第二关菜单")
 	await check_guide(second, "第二关")
 	root.size = Vector2i(720, 720)
 	second._boss_bar.show()
@@ -98,19 +96,32 @@ func run() -> void:
 	second._hud.show_item_message("前厅与档案室已供能 · 演示槽内能源可按 E 取回")
 	await settle_layout()
 	check(camera.get_safe_frame().is_equal_approx(compact_frame), "临时提示不会改变窄窗战斗取景")
+	root.get_node("MusicManager").stop_music()
+	second.queue_free()
+	await settle_layout()
+	# 允许后台音频线程在固定帧率快速测试结束前释放播放实例。
+	OS.delay_msec(150)
+	await process_frame
 	print("EXPORT_PRESENTATION: ", checks, " checks, ", failures, " failures")
 	quit(1 if failures else 0)
 
 
 ## 整合版通过设置打开可滚动的操作指南，检查实际可见的按键说明。
 func check_guide(host: Node, title: String) -> void:
-	host.get_node(START).pressed.emit()
-	host.get_node(GUIDE).pressed.emit()
+	host._on_run_started()
+	check(host.set_paused(true), title + "开始游戏后可打开暂停菜单")
+	var settings_button := host._commerce.pause_menu.get_node("%SettingsButton") as Button
+	check(settings_button.is_visible_in_tree(), title + "暂停菜单的设置按钮可见")
+	settings_button.pressed.emit()
 	var settings: Control = host.get_node("MenuNavigation").settings_screen
 	settings.get_node("%ControlsGuideButton").pressed.emit()
 	await settle_layout()
 	var guide := settings.get_node("ControlsGuide")
-	var first_detail := guide.find_child("Bindings", true, false).get_child(0).get_child(1).get_child(1) as Label
+	var bindings := guide.find_child("Bindings", true, false)
+	var first_row := bindings.find_children("*", "HBoxContainer", false, false)[0]
+	var first_detail := first_row.get_child(1).get_child(1) as Label
 	check_label(first_detail, title + "操作指南")
 	settings.go_back()
 	settings.go_back()
+	check(host.set_paused(false), title + "关闭操作指南后可恢复探索")
+	await settle_layout()

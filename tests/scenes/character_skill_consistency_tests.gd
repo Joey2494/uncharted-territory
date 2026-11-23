@@ -85,15 +85,13 @@ func preview_roles() -> void:
 func start_role(id: String) -> void:
 	if host.get_run_state() != host.RunState.MENU:
 		host.get_node("RunBindings").return_to_menu()
-		await frames(10)
-		host = current_scene
+		await wait_for_handoff()
 	var nav: Node = host.get_node("MenuNavigation")
 	host._start_screen.start_button.pressed.emit()
 	nav.character_select.show_selection(id)
 	nav.character_select.get_node("%ConfirmButton").pressed.emit()
 	nav.level_select.get_level_button(&"level1").pressed.emit()
-	await frames(10)
-	host = current_scene
+	await wait_for_handoff()
 	host.get_node("RunBindings").tutorial.skip()
 	host._player._invulnerability_remaining = 100000.0
 	check(host._player.character_id == id and host.get_run_state() == host.RunState.PLAYING, "actual menu selection creates the intended player: "+id)

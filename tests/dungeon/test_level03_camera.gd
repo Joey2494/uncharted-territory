@@ -43,7 +43,7 @@ func run() -> void:
 	var preview: Node3D = load("res://scenes/dungeon/level03/Level03Preview.tscn").instantiate()
 	var preview_camera: Camera3D = preview.get_node("Camera3D")
 	var tomb_script = load("res://scenes/dungeon/level03/tomb_camera.gd")
-	check(preview_camera.get_script() == tomb_script and tomb_script.get_base_script() == reference.get_script(), "墓穴专用相机继承共享相机")
+	check(preview_camera.get_script() == tomb_script and tomb_script.get_base_script() == load("res://scenes/dungeon/level03/tide_camera.gd") and tomb_script.get_base_script().get_base_script() == reference.get_script(), "墓穴专用相机继承共享相机")
 	for key in ["near","far","follow_speed","zoom_speed","actor_padding"]:
 		check(is_equal_approx(float(preview_camera.get(key)),float(reference.get(key))), "预览相机参数与第一关相同：" + key)
 	check(is_equal_approx(preview_camera.pitch_degrees,55.0) and is_equal_approx(preview_camera.minimum_distance,15.0) and is_equal_approx(preview_camera.fov,60.0),"恢复墓穴相机俯角、最短距离与视场")
@@ -62,7 +62,7 @@ func run() -> void:
 		for enemy in map.get_node("Enemies").get_children(): enemy.set_physics_process(false)
 		await frames()
 		check(camera.get_script() == tomb_script, "%s 正式入口使用墓穴专用相机" % size)
-		check(not host.get_node("UILayer/ResponsiveLayout").compact_combat_layout and not host._commerce.external_shortcut_layout, "第三关使用第一关的 HUD 与取景布局配置")
+		check(host.get_node("UILayer/ResponsiveLayout").compact_combat_layout and host._commerce.external_shortcut_layout, "第三关保留美术 HUD 并接入稳定战斗布局")
 		check(is_equal_approx(camera.rotation_degrees.x,-55.0), "实际俯角使用墓穴构图")
 		for key in ["near","far","follow_speed","zoom_speed","actor_padding"]:
 			check(is_equal_approx(float(camera.get(key)),float(reference.get(key))), "正式入口参数与第一关相同：" + key)

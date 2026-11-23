@@ -90,6 +90,8 @@ func _refresh_result() -> void:
 	%PuzzleLabel.text = "%s：%s" % [_run_result.get("puzzle_name", "档案机关" if _run_result.get("level_id", 1) == 2 else "符文机关"), "已解开" if _run_result.get("puzzle_solved", false) else "未解开"]
 	%RewardLabel.text = "%s：%s" % [_run_result.get("reward_name", "密室奖励"), "已领取" if _run_result.get("reward_claimed", false) else "未领取"]
 	%SettlementLabel.text = ("通关结算：+%d 金币 · 已存入永久钱包" % _run_result.get("settled_gold", 0)) if settlement_ok else "金币保存失败，请检查存储权限"
+	if _run_result.get("practice_run", false):
+		%SettlementLabel.text = "独立试玩已结束 · 本局金币和进度不计入战役"
 	_queue_layout()
 
 

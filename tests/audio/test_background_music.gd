@@ -144,11 +144,9 @@ func test_game_flow() -> void:
 	check(unchanged,"all six existing effects retain their bus and polyphony")
 	check(host._player.get_node("EnergyShock").try_cast() and cues.count(&"spell")==1,"real spell still triggers its original sound once")
 	check(not host._player.get_node("EnergyShock").try_cast() and cues.count(&"spell")==1,"rejected spell still cannot duplicate its sound")
-	# Exercise HP damage rather than the knight's existing initial shield absorption.
-	host._player.shield = 0
-	check(host._player.take_damage(1) and cues.count(&"hurt")==1,"accepted damage still plays the original hurt cue")
+	check(host._player.take_damage(host._player.shield + 1) and host._player.hp == host._player.max_hp - 1 and cues.count(&"hurt")==1,"accepted damage still plays the original hurt cue")
 	host._items.potion_count = 1
-	check(host._items.try_use_potion() and cues.count(&"item_use")==1,"successful healing retains its gameplay and sound")
+	check(host._items.try_use_potion() and host._player.hp == host._player.max_hp and cues.count(&"item_use")==1,"successful healing retains its gameplay and sound")
 	check(host.set_paused(true),"existing pause state remains available")
 	await delay(0.12)
 	check(not sfx.can_process() and voice.can_process() and not voice.stream_paused,"paused effects and continuous music keep independent lifecycles")

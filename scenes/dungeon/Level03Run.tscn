@@ -37,8 +37,10 @@ total_rooms = 10
 [node name="ResponsiveLayout" type="Node" parent="UILayer"]
 process_mode = 3
 script = ExtResource("6_layout")
+compact_combat_layout = true
 
 [node name="CommerceLayer" parent="." instance=ExtResource("9_commerce")]
 external_pause = true
+external_shortcut_layout = true
 
 [node name="LevelObjective" parent="UILayer/HUD" instance=ExtResource("objective")]

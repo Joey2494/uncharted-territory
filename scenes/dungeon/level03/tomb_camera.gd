@@ -1,4 +1,4 @@
-extends "res://scenes/dungeon/follow_camera.gd"
+extends "res://scenes/dungeon/level03/tide_camera.gd"
 ## Art-only visibility for tall walls above the original low whitebox colliders.
 func _update_occluders(actors: Array[Node3D], delta: float) -> void:
 	super._update_occluders(actors,delta)
