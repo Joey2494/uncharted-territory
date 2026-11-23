@@ -31,6 +31,8 @@ func can_interact(player: CharacterBody3D) -> bool:
 
 
 func get_interaction_prompt() -> String:
+	if action == &"reset":
+		return level.get_reset_prompt()
 	return "[E] " + caption
 
 

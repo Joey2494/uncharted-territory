@@ -22,6 +22,8 @@ func _ready() -> void:
 	%ConfirmButton.pressed.connect(_confirm)
 	%UnlockButton.pressed.connect(_purchase)
 	%BackButton.pressed.connect(func() -> void: back_requested.emit())
+	%MechanicsButton.pressed.connect(_show_mechanics)
+	%CloseMechanicsButton.pressed.connect(_close_mechanics)
 	visibility_changed.connect(_update_preview)
 	_update_preview()
 	_queue_layout()
@@ -64,9 +66,11 @@ func _refresh() -> void:
 	%SkillName.text = ability.name
 	%SkillIcon.texture = ability.icon
 	%SkillTitleRow.tooltip_text = "%s\n%s\n初始能量 %d" % [ability.name, ability.description, int(data.energy)]
-	%SkillCooldown.text = "冷却 %s 秒" % CATALOG.seconds(ability.cooldown) if ability.active else "无独立主动技能"
+	%SkillCooldown.text = CATALOG.cooldown_text(id)
+	%MechanicsTitle.text = dossier.name + " · 机制说明"
+	%MechanicsText.text = DOSSIERS.mechanics_text(id)
 	%InfoScroll.scroll_vertical = 0
-	%ActionLabel.text = {"knight":"沉身蓄力 · 破势斜斩", "lan":"双刃交错突袭", "iron":"迅捷举盾 · 沉劲重击", "astra":"蓝光流转 · 奥术凝聚"}[id]
+	%ActionLabel.text = "外观动作预览 · " + {"knight":"剑盾演示", "lan":"双刃演示", "iron":"举盾演示", "astra":"施法演示"}[id]
 	%ConfirmButton.disabled = not owned
 	%UnlockButton.visible = not owned
 	%UnlockButton.text = "解锁角色 · %d 金币" % PROFILE.PRICES.get(id, 0)
@@ -75,6 +79,15 @@ func _refresh() -> void:
 	%PreviewStage.show_character(id)
 	_sync_action_focus()
 	_queue_layout()
+
+func _show_mechanics() -> void:
+	%MechanicsScroll.scroll_vertical = 0
+	%MechanicsOverlay.show()
+	%CloseMechanicsButton.grab_focus()
+
+func _close_mechanics() -> void:
+	%MechanicsOverlay.hide()
+	if is_visible_in_tree(): %MechanicsButton.grab_focus()
 
 func _sync_action_focus() -> void:
 	for button: Button in [%ConfirmButton, %UnlockButton]:
@@ -114,8 +127,25 @@ func _confirm() -> void:
 	character_confirmed.emit(StringName(get_selected_id()))
 
 func _input(event: InputEvent) -> void:
-	if not is_visible_in_tree() or event.is_echo():
+	if not is_visible_in_tree():
 		return
+	if %MechanicsOverlay.visible:
+		if event.is_action_pressed("ui_cancel"):
+			get_viewport().set_input_as_handled()
+			_close_mechanics()
+		elif event.is_action_pressed("ui_left") or event.is_action_pressed("ui_right"):
+			get_viewport().set_input_as_handled()
+		elif event.is_action_pressed("ui_up") or event.is_action_pressed("ui_down"):
+			get_viewport().set_input_as_handled()
+			%MechanicsScroll.scroll_vertical += -64 if event.is_action_pressed("ui_up") else 64
+		elif event.is_action_pressed("ui_focus_next") or event.is_action_pressed("ui_focus_prev"):
+			get_viewport().set_input_as_handled()
+			if %CloseMechanicsButton.has_focus():
+				%MechanicsScroll.grab_focus()
+			else:
+				%CloseMechanicsButton.grab_focus()
+		return
+	if event.is_echo(): return
 	if event.is_action_pressed("ui_left"):
 		get_viewport().set_input_as_handled()
 		_cycle(-1)
@@ -130,6 +160,7 @@ func _update_preview() -> void:
 	if not is_node_ready():
 		return
 	var active := is_visible_in_tree()
+	if not active: %MechanicsOverlay.hide()
 	%PreviewViewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS if active else SubViewport.UPDATE_DISABLED
 	%PreviewStage.process_mode = Node.PROCESS_MODE_INHERIT if active else Node.PROCESS_MODE_DISABLED
 
@@ -161,6 +192,8 @@ func _layout_page() -> void:
 	var confirm_width := minf(300, size.x-margin*2-176)
 	_place(%ConfirmButton, Vector2(size.x-margin-confirm_width,size.y-74), Vector2(confirm_width,44))
 	_place(%HintLabel, Vector2(margin,size.y-24), Vector2(size.x-margin*2,20))
+	var details_size := Vector2(minf(760,size.x-40),minf(700,size.y-40))
+	_place(%MechanicsPanel,(size-details_size)*0.5,details_size)
 
 func _place(control: Control, at: Vector2, dimensions: Vector2) -> void:
 	control.position = at

@@ -24,7 +24,7 @@ func run() -> void:
 	check(button.is_visible_in_tree(), "选关页提供独立试玩")
 	button.pressed.emit()
 	button.pressed.emit()
-	await frames(12)
+	await wait_handoff(PRACTICE)
 	check(current_scene.scene_file_path == PRACTICE, "多次点击进入同一个试玩场景")
 	if current_scene.scene_file_path == PRACTICE:
 		await check_hud_and_inputs()
@@ -33,7 +33,7 @@ func run() -> void:
 		if failures == 0:
 			# 从选关第二次开始，加上击败首领后离站的完整回程，检查通关也不会写盘。
 			current_scene.get_node("MenuNavigation").level_select.get_node("%PreviewButton").pressed.emit()
-			await frames(12)
+			await wait_handoff(PRACTICE)
 			await route(0)
 			if failures == 0: await check_victory()
 	check(progress.played == ["level2"] and progress.completed.is_empty(), "保留正式战役的游玩和通关记录")
@@ -100,7 +100,7 @@ func check_restarts() -> void:
 	var restart: Button = current_scene._commerce.pause_menu.get_node("%RestartButton")
 	check(restart.is_visible_in_tree(), "暂停页显示重新挑战")
 	restart.pressed.emit()
-	await frames(12)
+	await wait_handoff(PRACTICE, first)
 	check_fresh_run(first, "暂停重开")
 	var second := current_scene.get_instance_id()
 	current_scene._player.take_damage(999)
@@ -111,7 +111,7 @@ func check_restarts() -> void:
 	check(is_instance_valid(result) and result.is_visible_in_tree(), "死亡动画结束后显示共享失败页")
 	if not is_instance_valid(result): return
 	result.get_node("%RestartButton").pressed.emit()
-	await frames(12)
+	await wait_handoff(PRACTICE, second)
 	check_fresh_run(second, "死亡重试")
 
 func check_fresh_run(previous: int, source: String) -> void:
@@ -125,7 +125,7 @@ func check_pause_return() -> void:
 	var back: Button = current_scene._commerce.pause_menu.get_node("%MainMenuButton")
 	check(back.is_visible_in_tree() and back.text.contains("关卡选择"), "试玩暂停页提供返回选关")
 	back.pressed.emit()
-	await frames(10)
+	await wait_handoff(MENU)
 	check(current_scene.scene_file_path == MENU and current_scene.get_node("MenuNavigation").level_select.is_visible_in_tree(), "从暂停直接回到选关")
 
 func check_victory() -> void:
@@ -137,7 +137,7 @@ func check_victory() -> void:
 	check(result.get_node("%SettlementLabel").text.contains("试玩") and not result.next_level_button.visible, "结算标明试玩且结束于第四关")
 	host.retry_settlement()
 	result.get_node("%LevelSelectButton").pressed.emit()
-	await frames(10)
+	await wait_handoff(MENU)
 	check(current_scene.scene_file_path == MENU and current_scene.get_node("MenuNavigation").level_select.is_visible_in_tree(), "从胜利页直接回到选关")
 
 func tap(key: Key) -> void:

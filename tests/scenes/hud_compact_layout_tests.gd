@@ -139,6 +139,8 @@ func interaction_checks() -> void:
 		host._items._publish_state()
 		await frames(5)
 		verify_layout("after inventory/shop refresh "+str(dimensions))
+	host._hud.show_item_message("")
+	await frames(6)
 	await click(host._hud.get_node("%TutorialPrompt").skip_button)
 	check(not host._hud.get_node("%TutorialPrompt").visible and host.get_node("RunBindings").tutorial.finished, "tutorial skip button still completes and hides the tutorial")
 	verify_layout("after tutorial skip")

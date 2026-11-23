@@ -20,7 +20,7 @@ func run() -> void:
 	check(is_instance_valid(selector) and selector.is_visible_in_tree() and not selector.disabled,"选关页正式第四关卡片")
 	if selector:
 		selector.pressed.emit()
-		await frames(18)
+		await wait_handoff(FOURTH)
 		host = current_scene
 		check(host.scene_file_path == FOURTH and host.get_run_state() == host.RunState.PLAYING,"从正式卡片进入战役宿主")
 		if not failures: await play_campaign()
@@ -42,6 +42,12 @@ func play_campaign() -> void:
 	check(hud.hp_bar.is_visible_in_tree() and hud.energy_bar.is_visible_in_tree() and hud.hotbar.is_visible_in_tree(),"生命、能量与快捷道具均可见")
 	check(progress.get_last_played_level() == &"level4" and not progress.is_completed(&"level4"),"进房写最近游玩，尚未通关")
 	check(hud.total_rooms == 12 and hud.room_segments.get_child_count() == 12,"按 12 个房间显示探索段")
+	var tracker: Control = hud.get_node("LevelObjective")
+	check(tracker._snapshot.tasks.size() == 7 and tracker._snapshot.tasks[0].id == "combat_B", "统一任务栏读取第四关主线，不访问第二关接口")
+	check(tracker.quest_map.open_map() and paused, "统一地图按钮可打开第四关地图")
+	check(tracker.quest_map.view.snapshot.rooms.size() == 12 and tracker.quest_map.view.snapshot.paths.size() == 11 and tracker.quest_map.view.snapshot.target.id == "combat_B", "第四关地图来自十二房和实际通路，标记首个主线目标")
+	tracker.quest_map.close_map()
+	check(not paused and host.get_run_state() == host.RunState.PLAYING, "统一地图关闭后恢复原战役")
 	var player: CharacterBody3D = level.player
 	player.take_damage(player.shield+1)
 	await frames(3)
@@ -51,6 +57,7 @@ func play_campaign() -> void:
 	check(absf(hud.energy_bar.value-player.energy) < 1 and player.energy < player.max_energy,"真实消耗驱动能量条")
 	check(not host._boss_bar.visible,"终战前隐藏首领面板")
 	await clear("B",1,3)
+	check(tracker._snapshot.tasks[0].done and tracker._snapshot.tasks[tracker._snapshot.current].id == "calibrated", "实际清场推进统一任务栏到密码柜")
 	await go("C",0,0)
 	await use(&"p_safe")
 	if failures: return
@@ -89,6 +96,7 @@ func play_campaign() -> void:
 	check(not result.next_level_button.visible and not host.advance_to_next_level(),"第四关作为末关收尾")
 	check(host._run_result.rooms_visited == 8 and host._run_result.rooms_total == 12,"零支线结算显示探索八房")
 	check(progress.is_completed(&"level4") and PROFILE.coins == 50+earnings,"通关记录与本局余额写入档案")
+	check(tracker._snapshot.complete and tracker.get_node("%QuestTask").text == "关卡目标已完成", "实际登台同步更新统一任务栏完成状态")
 	host._on_exit_reached()
 	check(PROFILE.coins == 50+earnings,"重复出口信号不重复发奖")
 
@@ -97,7 +105,7 @@ func continue_and_lose() -> void:
 	change_scene_to_file("res://Main.tscn")
 	await frames(14)
 	current_scene._start_screen.get_node("%ContinueButton").pressed.emit()
-	await frames(16)
+	await wait_handoff(FOURTH)
 	host = current_scene
 	check(host.scene_file_path == FOURTH and host.get_run_state() == host.RunState.PLAYING,"从主菜单继续正式第四关")
 	if failures: return

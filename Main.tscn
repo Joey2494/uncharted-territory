@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/ui/start_screen.tscn" id="1_start_screen"]
 [ext_resource type="PackedScene" path="res://scenes/dungeon/DungeonTest.tscn" id="2_dungeon"]
@@ -9,6 +9,8 @@
 
 [ext_resource type="PackedScene" path="res://scenes/ui/RunOverlay.tscn" id="8_run_overlay"]
 [ext_resource type="PackedScene" path="res://scenes/ui/CommerceLayer.tscn" id="9_commerce"]
+[ext_resource type="PackedScene" path="res://scenes/ui/CastleQuest.tscn" id="castle_quest"]
+[ext_resource type="PackedScene" path="res://scenes/ui/CastleHints.tscn" id="castle_hints"]
 
 [node name="Main" type="Node3D"]
 process_mode = 3
@@ -37,3 +39,7 @@ script = ExtResource("6_layout")
 
 [node name="CommerceLayer" parent="." instance=ExtResource("9_commerce")]
 external_pause = true
+
+[node name="LevelObjective" parent="UILayer/HUD" instance=ExtResource("castle_quest")]
+
+[node name="CastleHints" parent="UILayer/HUD" instance=ExtResource("castle_hints")]

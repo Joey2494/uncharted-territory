@@ -1,10 +1,11 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
+[ext_resource type="Script" path="res://scripts/rendering/static_art_provider.gd" id="static_art"]
 [ext_resource type="Script" path="res://scenes/dungeon/level03/level03_preview.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player/PlayerKnight.tscn" id="2"]
-[ext_resource type="Script" path="res://scenes/dungeon/level03/tide_camera.gd" id="3"]
+[ext_resource type="Script" path="res://scenes/dungeon/level03/tomb_camera.gd" id="3"]
 [ext_resource type="Script" path="res://scenes/dungeon/components/room_progress_controller.gd" id="4"]
-[ext_resource type="Script" path="res://scenes/dungeon/level03/tide_layout.gd" id="5"]
+[ext_resource type="Script" path="res://scenes/dungeon/level03/tomb_layout.gd" id="5"]
 [ext_resource type="Script" path="res://scenes/dungeon/level03/tide_hud.gd" id="6"]
 
 [ext_resource type="PackedScene" path="res://scenes/items/HealthPotion.tscn" id="arrival_potion"]
@@ -13,13 +14,18 @@
 
 [sub_resource type="Environment" id="Environment_preview"]
 background_mode = 1
-background_color = Color(0.05, 0.09, 0.11, 1)
-ambient_light_source = 3
-ambient_light_color = Color(0.82, 0.9, 0.96, 1)
-ambient_light_energy = 0.64
+background_color = Color(0.020, 0.016, 0.011, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.57, 0.54, 0.47, 1)
+ambient_light_energy = 0.38
+tonemap_mode = 2
 
 [node name="Level03Preview" type="Node3D"]
 script = ExtResource("1")
+
+[node name="StaticArtCache" type="Node" parent="."]
+script = ExtResource("static_art")
+family = "tomb"
 
 [node name="Layout" type="Node3D" parent="."]
 script = ExtResource("5")
@@ -54,7 +60,10 @@ position = Vector3(0, 0.05, 25)
 [node name="Camera3D" type="Camera3D" parent="."]
 current = true
 script = ExtResource("3")
-fov = 50.0
+pitch_degrees = 55.0
+minimum_distance = 15.0
+occluder_transparency = 0.97
+fov = 60.0
 near = 0.1
 far = 120.0
 
@@ -63,8 +72,12 @@ environment = SubResource("Environment_preview")
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
 rotation = Vector3(-0.9, -0.65, 0)
-light_color = Color(1, 0.93, 0.82, 1)
-light_energy = 0.9
+light_color = Color(0.96, 0.88, 0.73, 1)
+light_energy = 0.28
+shadow_enabled = true
+shadow_bias = 0.12
+shadow_normal_bias = 1.4
+directional_shadow_max_distance = 60.0
 
 [node name="HUD" type="CanvasLayer" parent="."]
 process_mode = 3

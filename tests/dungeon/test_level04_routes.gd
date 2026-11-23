@@ -20,6 +20,15 @@ func check(ok: bool, message: String) -> void:
 func frames(n: int) -> void:
 	for i in n: await physics_frame
 
+func wait_handoff(path: String, previous_id := 0) -> void:
+	var deadline := Time.get_ticks_msec() + 45000
+	while Time.get_ticks_msec() < deadline:
+		await process_frame
+		if current_scene != null and current_scene.scene_file_path == path and current_scene.get_instance_id() != previous_id and root.get_node_or_null("LoadingScreen") == null:
+			await frames(3)
+			return
+	check(false, "异步加载完成：" + path)
+
 func run() -> void:
 	var masks := range(16)
 	for arg in OS.get_cmdline_user_args():

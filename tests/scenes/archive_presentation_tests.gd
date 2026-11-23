@@ -46,18 +46,26 @@ func run() -> void:
 	verify_resources("手持 2｜托架 0｜桥 0｜门锁 0/2")
 	for dimensions in [Vector2i(1280, 720), Vector2i(720, 720)]:
 		root.size = dimensions
-		await frames(5)
+		host._hud.show_item_message("")
+		await frames(8)
 		verify_resources("手持 2｜托架 0｜桥 0｜门锁 0/2")
 		var prompt: Label = host._hud.pickup_prompt
-		for line in prompt.text.split("\n"):
-			check(prompt.get_theme_font("font").get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, prompt.get_theme_font_size("font_size")).x <= prompt.size.x, "当前对象每行操作提示可完整容纳")
+		if not prompt.is_visible_in_tree() or prompt.get_visible_line_count() != prompt.get_line_count() or prompt.size.y < prompt.get_minimum_size().y:
+			print("ARCHIVE_DOCK_DIAGNOSTIC "+str({"window":dimensions,"visible":prompt.is_visible_in_tree(),"lines":prompt.get_line_count(),"shown":prompt.get_visible_line_count(),"size":prompt.size,"min":prompt.get_minimum_size(),"slot":host._hud.hint_dock.reserved_rect,"feedback":host._hud._feedback_active,"text":prompt.text}))
+		check(prompt.is_visible_in_tree() and prompt.get_visible_line_count() == prompt.get_line_count() and prompt.size.y >= prompt.get_minimum_size().y, "右侧当前对象提示换行后完整可读，无截断或遮挡")
+		if "--capture" in OS.get_cmdline_user_args():
+			var out := OS.get_environment("GODOT_TEST_OUTPUT_DIR")
+			DirAccess.make_dir_recursive_absolute(out)
+			await process_frame
+			RenderingServer.force_draw()
+			check(root.get_texture().get_image().save_png(out.path_join("archive-prompt-%dx%d.png" % [dimensions.x,dimensions.y])) == OK,"实际档案室右侧长提示截图")
 		var camera: Camera3D = host._dungeon.get_node("Camera3D")
 		for name in ["CoreRack", "BridgeSocket", "Lever", "ReceiverA", "ReceiverB", "Inspect", "Hints", "ResetConsole"]:
 			var label: Label3D = puzzle.get_node(name + "/Caption")
 			var origin := camera.unproject_position(label.global_position)
 			var top := camera.unproject_position(label.global_position + camera.global_basis.y * label.pixel_size * label.font_size * label.scale.y)
 			check(origin.distance_to(top) >= 13.5 and origin.distance_to(top) <= 17.0, "完整取景时短标签保持可读屏幕字号：" + name)
-	check(panel.get_node("%ObjectiveTask").text == "为双接收器供能", "回收后的常驻下一步仍来自真实检修线")
+	check(panel.get_node("%ObjectiveTask").text == "观察档案室机关与线路", "回收后的常驻下一步仍来自真实检修线")
 	await use_control("ReceiverA")
 	verify_resources("手持 1｜托架 0｜桥 0｜门锁 1/2")
 	await approach("ReceiverB")
@@ -97,7 +105,7 @@ func verify_resources(expected: String) -> void:
 	var label := panel.get_node_or_null("%ObjectiveResources")
 	check(label != null and label.visible and label.text == expected, "常驻真实能源归属：" + expected)
 	if label != null:
-		check(label.get_theme_font("font").get_string_size(label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, label.get_theme_font_size("font_size")).x <= label.size.x, "能源归属整行可读")
+		check(label.get_visible_line_count() == label.get_line_count() and label.size.y >= label.get_minimum_size().y, "能源归属自动换行后完整可读")
 
 func approach(name: String, offset := Vector3(0, 0.05, 1.35)) -> void:
 	await go(puzzle.get_node(name).global_position + offset)
