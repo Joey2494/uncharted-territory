@@ -14,7 +14,7 @@ signal hit_detected(target: Node, amount: int)
 @export var show_windup_preview: bool = false
 @export_range(1, 100, 1) var attack_damage: int = 1
 @export_range(0.5, 5.0, 0.1) var attack_range: float = 2.2
-@export_range(10.0, 170.0, 1.0) var attack_arc_degrees: float = 110.0
+@export_range(10.0, 170.0, 1.0) var attack_arc_degrees: float = 100.0
 @export_range(0.1, 4.0, 0.1) var attack_height: float = 1.6
 @export_range(0.0, 1.0, 0.01) var windup_duration: float = 0.08
 @export_range(0.01, 1.0, 0.01) var active_duration: float = 0.12
@@ -51,6 +51,12 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func try_attack() -> bool:
+	var loadout := get_parent().get_node_or_null("WeaponLoadout")
+	if player_input_enabled and loadout != null:
+		return loadout.try_attack()
+	return try_melee_attack()
+
+func try_melee_attack() -> bool:
 	if not is_node_ready() or not can_process() or not attack_enabled or _attacking or _cooldown_remaining > 0.0:
 		return false
 	var ability := get_parent().get_node_or_null("CharacterAbility")
@@ -58,9 +64,6 @@ func try_attack() -> bool:
 		if ability.is_guarding() or ability.is_casting() or get_parent().get_node("EnergyShock").is_action_locked():
 			return false
 		get_parent().get_node("CastAnimation").cancel()
-	var inventory := get_parent().get_node_or_null("ItemInventory")
-	if player_input_enabled and inventory != null and inventory.equipped_weapon == inventory.FIREARM:
-		return get_parent().get_node("Firearm").try_fire()
 	# Snapshot the facing direction: moving or turning does not widen this swing.
 	global_rotation = Vector3(0.0, _facing.global_rotation.y, 0.0)
 	_current_damage = attack_damage
@@ -145,6 +148,9 @@ func _detect_hits() -> void:
 				receiver = parent
 		if receiver == attacker or attacker.is_ancestor_of(receiver):
 			continue
+		if receiver.has_method("get_combat_actor"):
+			receiver = receiver.get_combat_actor()
+			if not is_instance_valid(receiver): continue
 		var receiver_id := receiver.get_instance_id()
 		if _hit_targets.has(receiver_id):
 			continue

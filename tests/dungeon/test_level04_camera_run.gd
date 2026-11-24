@@ -43,11 +43,19 @@ func run() -> void:
 			if combat.active_room == "H":
 				h_age += root.get_process_delta_time()
 				warning = warning or combat._markers.H.visible
-				reinforced = reinforced or combat.enemy_count() == 3
+				reinforced = reinforced or combat.enemy_count() == combat.ROSTERS["H"].size()+1
 				if reinforced and h_age > 6.8:
 					for guard: Node in combat._enemies.duplicate(): guard.take_damage(999)
 		else:
 			walking = level.layout.passage_open("H","I") and player.position.z > i.z + 4.4
+			# Flock contact can move the actor sideways. Align with the real bridge
+			# using movement input before continuing north through the angled wall.
+			if player.position.z > h.z-10 and absf(player.position.x) > 0.18:
+				walking = false
+				Input.action_press("move_right" if player.position.x < 0 else "move_left")
+			else:
+				Input.action_release("move_left")
+				Input.action_release("move_right")
 			if combat.active_room == "I":
 				i_age += root.get_process_delta_time()
 				if i_age > 1.4 and not advance_seen and combat._jailer.hp * 2 > combat._jailer.max_hp:
@@ -74,9 +82,12 @@ func run() -> void:
 			i_drift = maxf(i_drift,absf(distance-i_reference))
 		if advance_finished: break
 	Input.action_release("move_forward")
+	Input.action_release("move_left")
+	Input.action_release("move_right")
 	var ok: bool = warning and reinforced and advance_finished and advanced_distance > 1.5 and not player.is_dead()
 	ok = ok and h_reference > 0 and i_reference > 0 and h_drift < 0.10 and i_drift < 0.10 and max_speed < 12.1
 	print("level04 camera run: warning=%s reinforced=%s half_advance=%s moved=%.2fm H_drift=%.3f I_drift=%.3f max_speed=%.2f" % [warning,reinforced,advance_finished,advanced_distance,h_drift,i_drift,max_speed])
+	if not ok: print("CAMERA_ROUTE_DIAGNOSTIC position=",player.position," room=",combat.active_room," H_clear=",combat.is_clear("H")," I_age=",i_age)
 	level.queue_free()
 	for n in 3: await process_frame
 	quit(0 if ok else 1)

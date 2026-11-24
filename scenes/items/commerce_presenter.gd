@@ -9,8 +9,10 @@ const ICONS := {
 	Catalog.GUARD_RUNE: preload("res://assets/ui/guard_rune.svg"),
 	Catalog.FIREARM: preload("res://assets/ui/gun.svg"),
 	Catalog.AMMO: preload("res://assets/ui/ammo.svg"),
+	Catalog.PISTOL_AMMO: preload("res://assets/weapons/icons/pistol_ammo.svg"),
+	Catalog.COIL_AMMO: preload("res://assets/weapons/icons/coil_ammo.svg"),
 }
-const TINTS := [Color("9dbd8a"), Color("d6b46b"), Color("80c9cb"), Color("d4d9df"), Color("dbab7d"), Color("74bbff")]
+const TINTS := {0:Color.WHITE,1:Color.WHITE,2:Color.WHITE,3:Color.WHITE,4:Color.WHITE,5:Color.WHITE,6:Color.WHITE,7:Color.WHITE}
 
 
 static func item_id(key: StringName) -> int:
@@ -32,10 +34,11 @@ static func description(product: Dictionary, inventory: Node3D) -> String:
 static func products(inventory: Node3D, menu: Node) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for product in Catalog.get_products():
+		if inventory.get_parent().has_node("WeaponLoadout") and product.id in [Catalog.FIREARM,Catalog.AMMO]: continue
 		var error: String = inventory.get_purchase_error(product.id, 1, menu)
 		result.append({
 			"id": StringName(product.key), "name": product.name, "price": product.price,
-			"category": "装备" if product.id == Catalog.FIREARM else "消耗品",
+			"category": "弹药" if product.id in [Catalog.PISTOL_AMMO,Catalog.COIL_AMMO] else "消耗品",
 			"summary": description(product, inventory), "icon": ICONS[product.id],
 			"tint": TINTS[product.id], "owned": inventory.get_count(product.id),
 			"can_buy": error.is_empty(),
@@ -47,6 +50,7 @@ static func products(inventory: Node3D, menu: Node) -> Array[Dictionary]:
 static func backpack(inventory: Node3D, menu: Node) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for product in Catalog.get_products():
+		if inventory.get_parent().has_node("WeaponLoadout") and product.id in [Catalog.FIREARM,Catalog.AMMO]: continue
 		var count: int = inventory.get_count(product.id)
 		if count <= 0:
 			continue
@@ -54,8 +58,8 @@ static func backpack(inventory: Node3D, menu: Node) -> Array[Dictionary]:
 		var usable: bool = menu.allows_inventory_action(inventory, false)
 		if not usable:
 			label = "进入游戏后使用"
-		elif product.id == Catalog.AMMO:
-			label = "弹药已自动入库"
+		elif product.id in [Catalog.AMMO,Catalog.PISTOL_AMMO,Catalog.COIL_AMMO]:
+			label = "备用弹药"
 			usable = false
 		elif product.id == Catalog.FIREARM:
 			label = "切回近战" if inventory.equipped_weapon == Catalog.FIREARM else "装备手炮"
@@ -76,7 +80,7 @@ static func backpack(inventory: Node3D, menu: Node) -> Array[Dictionary]:
 			usable = false
 		result.append({
 			"id": StringName(product.key), "name": product.name, "count": count,
-			"category": "装备" if product.id == Catalog.FIREARM else "消耗品",
+			"category": "弹药" if product.id in [Catalog.PISTOL_AMMO,Catalog.COIL_AMMO] else "消耗品",
 			"description": description(product, inventory), "icon": ICONS[product.id],
 			"tint": TINTS[product.id], "can_use": usable, "use_label": label,
 			"equipped": product.id == Catalog.FIREARM and inventory.equipped_weapon == Catalog.FIREARM,

@@ -409,6 +409,7 @@ func _summon_requested(enemy_id: String, point: Vector3, source: CharacterBody3D
 	point.y = 0.05
 	var summon := _spawn_enemy(enemy_id, &"G", point, "G_Summon%d" % (_summons.size() + 1))
 	summon.set_meta("summoned", true)
+	summon.set_meta("is_summoned", true)
 	_summons.append(summon)
 	summon.set_encounter_active(true)
 

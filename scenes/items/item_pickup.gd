@@ -2,7 +2,7 @@ extends Area3D
 
 const Catalog = preload("res://data/item_catalog.gd")
 
-@export_enum("生命药剂", "攻击强化符文", "守护符文", "遗迹手炮", "弹药", "星蓝药剂") var item_type: int = 0
+@export_enum("生命药剂", "攻击强化符文", "守护符文", "旧手炮奖励", "旧弹药奖励", "星蓝药剂", "黄铜手枪弹", "线圈磁芯弹") var item_type: int = 0
 @export_range(1, 99, 1) var quantity: int = 1
 @export_range(0.5, 3.0, 0.1) var interaction_distance: float = 1.5
 @export var show_prompt_quantity: bool = false
@@ -15,6 +15,16 @@ var _base_height: float
 
 
 func _ready() -> void:
+	# Migrate authored old loot to supplies, never to a character weapon.
+	if item_type == Catalog.FIREARM:
+		item_type = Catalog.COIL_AMMO
+		quantity = 12
+	elif item_type == Catalog.AMMO:
+		item_type = Catalog.PISTOL_AMMO
+	if item_type in [Catalog.PISTOL_AMMO,Catalog.COIL_AMMO]:
+		for child in _visuals.get_children(): child.queue_free()
+		var model_path := "res://assets/weapons/models/"+("pistol_ammo" if item_type == Catalog.PISTOL_AMMO else "coil_ammo")+".tscn"
+		_visuals.add_child((load(model_path) as PackedScene).instantiate())
 	_base_height = _visuals.position.y
 	$NameLabel.text = get_display_name()
 

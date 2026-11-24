@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3]
+[gd_scene load_steps=23 format=3]
 
 [ext_resource type="Script" path="res://scenes/player/Player.gd" id="1_player"]
 [ext_resource type="Script" path="res://scenes/player/character_ability.gd" id="19_ability"]
@@ -20,6 +20,8 @@
 [ext_resource type="AnimationLibrary" path="res://assets/characters/kaykit/animations/death.tres" id="17_death"]
 [ext_resource type="Script" path="res://scenes/player/player_death_animation.gd" id="18_death_animation"]
 [ext_resource type="Script" path="res://scenes/items/firearm_attack.gd" id="19_firearm"]
+
+[ext_resource type="Script" path="res://scenes/weapons/weapon_loadout.gd" id="20_weapons"]
 
 [sub_resource type="CapsuleShape3D" id="Shape_player"]
 radius = 0.4
@@ -86,3 +88,6 @@ script = ExtResource("18_death_animation")
 script = ExtResource("19_ability")
 [node name="Firearm" type="Node3D" parent="."]
 script = ExtResource("19_firearm")
+
+[node name="WeaponLoadout" type="Node3D" parent="."]
+script = ExtResource("20_weapons")

@@ -85,7 +85,7 @@ func _apply_layout() -> void:
 	_place(_cooldowns, Vector2(viewport_size.x - MARGIN - cooldown_width, bottom_edge - cooldown_height), Vector2(cooldown_width, cooldown_height))
 	var hotbar_size := _hotbar.get_combined_minimum_size()
 	_place(_hotbar, Vector2((viewport_size.x - hotbar_size.x) * 0.5, bottom_edge - hotbar_size.y), hotbar_size)
-	# Keep the six slots at bottom center. Compact windows lift the existing
+	# Keep the five slots at bottom center. Compact windows lift the existing
 	# corner controls one row rather than overlapping or hiding them.
 	if _hotbar.get_rect().grow(GAP).intersects(_cooldowns.get_rect()):
 		_place(_cooldowns, Vector2(_cooldowns.position.x, _hotbar.position.y - GAP - cooldown_height), Vector2(cooldown_width, cooldown_height))

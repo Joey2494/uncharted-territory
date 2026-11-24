@@ -28,7 +28,7 @@ func run() -> void:
 	hud.show_item_message("沙王狂暴 · 按 E 操作，按 Space 闪避")
 	await frames(3)
 	check(hud.item_message.text.contains("狂暴") and hud._feedback_active.priority == 100,"A real warning class preempts an ordinary notification immediately")
-	check(dock._keys.get_child_count() == 2 and dock._header.text == "提示","Warning panel has distinct E/Space keycaps and the unified 提示 heading")
+	check(dock.bubbles.feedback_visible and not hud.feedback_panel.visible,"Current world bubble presents Space feedback without a duplicate fixed key panel")
 	verify("priority")
 	await capture("01-priority-warning")
 	hud._message_remaining = 0.01
@@ -62,7 +62,7 @@ func run() -> void:
 	await frames(15)
 	hud.show_item_message("")
 	await frames(5)
-	check(hud.pickup_prompt.visible and hud.pickup_prompt.text.contains("生命药剂 ×1"),"Original proximity interaction still supplies the live item name and quantity")
+	check(dock.bubbles.interaction.visible and hud.pickup_prompt.text.contains("生命药剂 ×1"),"Original proximity interaction supplies the live item name and quantity to the world bubble")
 	verify("pickup")
 	await capture("03-right-pickup")
 	check(host._items.try_interact_nearest(),"The relocated prompt retains the actual pickup interaction")
@@ -115,17 +115,26 @@ func boot(level: int) -> void:
 	await frames(15)
 func verify(label: String) -> void:
 	var panel: Control = dock.current
+	var world_bubble := false
+	if dock.bubbles.action.is_visible_in_tree():
+		panel = dock.bubbles.action
+		world_bubble = true
+	elif dock.bubbles.interaction.is_visible_in_tree() and (panel == null or not panel.is_visible_in_tree()):
+		panel = dock.bubbles.interaction
+		world_bubble = true
+	elif panel == hud.get_node("%TutorialPrompt"):
+		world_bubble = true # Tutorial is projected above the actual player too.
 	check(panel != null and panel.is_visible_in_tree(),label+": a hint is actually visible")
 	if panel == null or not panel.visible:
 		print("DOCK_DIAGNOSTIC "+label+" slot="+str(dock.reserved_rect)+" panel="+str(panel)+" rect="+(str(panel.get_global_rect()) if panel != null else "none"))
 		return
 	var rect := panel.get_global_rect()
-	check(root.get_visible_rect().grow(1).encloses(rect) and rect.end.x <= root.get_visible_rect().size.x*0.5,label+": hint fits on the left side")
+	check(root.get_visible_rect().grow(1).encloses(rect),label+": hint fits inside viewport")
 	var clear := true
 	for obstacle in dock.obstacles():
 		if rect.intersects(obstacle): clear = false
 	check(clear,label+": hint avoids actors, enemies, objective, Boss bar, skills and hotbar")
-	check(dock.reserved_rect.grow(1).encloses(rect),label+": hint uses the unified lane")
+	if not world_bubble: check(dock.reserved_rect.grow(1).encloses(rect),label+": ordinary hint uses the unified lane")
 	check(panel.mouse_filter == Control.MOUSE_FILTER_IGNORE,label+": panel does not steal combat input")
 	if panel == hud.feedback_panel:
 		check(dock._header.text == "提示",label+": the panel is named 提示")

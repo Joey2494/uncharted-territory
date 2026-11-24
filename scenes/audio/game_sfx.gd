@@ -54,6 +54,14 @@ func _ready() -> void:
 	if puzzle != null:
 		puzzle.reward_claimed.connect(func() -> void: play_cue(PICKUP))
 	actor.get_node("Firearm").fired.connect(func(_projectile: Node3D) -> void: play_cue(SPELL))
+	if actor.has_node("WeaponLoadout"):
+		actor.get_node("WeaponLoadout").fired.connect(_on_weapon_fired)
+
+func _on_weapon_fired(projectile: Node3D) -> void:
+	_players[SPELL].pitch_scale = {"pistol":1.25,"coil":0.85,"rune":0.9,"practice":1.35,"frost":1.1,"fire":0.7}.get(projectile.weapon_id,1.0)
+	play_cue(SPELL)
+	projectile.impacted.connect(func(target: Node) -> void:
+		if is_instance_valid(target) and target.has_method("take_damage"): play_cue(HIT))
 
 
 func play_cue(cue: StringName) -> void:

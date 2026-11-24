@@ -54,7 +54,7 @@ func _process(delta: float) -> void:
 	var boss = level.combat.boss_guard()
 	$Boss.visible = is_instance_valid(boss) and not boss.is_dead()
 	if $Boss.visible:
-		$Boss/Rows/Name.text = "执刑官　 %d / %d" % [boss.hp,boss.max_hp]
+		$Boss/Rows/Name.text = "%s　 %d / %d" % [boss.boss_name,boss.hp,boss.max_hp]
 		$Boss/Rows/Health.max_value = boss.max_hp
 		$Boss/Rows/Health.value = boss.hp
 	if remaining > 0:
@@ -68,7 +68,7 @@ func _input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 	if overlay.visible: _resume()
 	elif tab: _open_map()
-	else: _show_overlay("观测暂停","J 普攻   K 法术   L 角色技能   空格闪避\nR 回血   F 强化   G 守护   I 换武器   P 商店",true)
+	else: _show_overlay("观测暂停","J 攻击   K 换弹 / 补蓝   L 角色技能   空格闪避\nR 回血   F 强化   G 守护   I 换武器   P 商店",true)
 
 func _open_map() -> void:
 	if level.finished or get_tree().paused: return

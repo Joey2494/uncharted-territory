@@ -1,0 +1,5 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+level04 camera run: warning=true reinforced=true half_advance=true moved=9.43m H_drift=0.000 I_drift=0.000 max_speed=12.00
+WARNING: 2 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+   at: cleanup (core/object/object.cpp:2536)

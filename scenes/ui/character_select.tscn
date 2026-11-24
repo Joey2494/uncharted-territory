@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=13 format=3]
 [ext_resource type="Script" path="res://scenes/ui/character_select.gd" id="1"]
 [ext_resource type="Theme" path="res://scenes/ui/menu_theme.tres" id="2"]
 [ext_resource type="Script" path="res://scenes/ui/character_preview.gd" id="3"]
@@ -30,18 +30,6 @@ border_color = Color(0.43,0.36,0.23,1)
 shadow_color = Color(0,0,0,0.42)
 shadow_size = 12
 shadow_offset = Vector2(0,6)
-
-[sub_resource type="StyleBoxFlat" id="MechanicsFrame"]
-content_margin_left = 24.0
-content_margin_right = 24.0
-content_margin_top = 20.0
-content_margin_bottom = 20.0
-bg_color = Color(0.055,0.065,0.07,1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.43,0.36,0.23,1)
 [node name="CharacterSelect" type="Control"]
 process_mode = 3
 anchors_preset = 15
@@ -86,6 +74,23 @@ theme_override_styles/panel = SubResource("DossierFrame")
 [node name="Body" type="VBoxContainer" parent="Card/InfoCard"]
 mouse_filter = 2
 theme_override_constants/separation = 6
+
+[node name="DetailsNavigation" type="HBoxContainer" parent="Card/InfoCard/Body"]
+theme_override_constants/separation = 8
+
+[node name="SkillJump" type="Button" parent="Card/InfoCard/Body/DetailsNavigation"]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0,32)
+theme_override_font_sizes/font_size = 14
+text = "L 技能数值"
+
+[node name="WeaponsJump" type="Button" parent="Card/InfoCard/Body/DetailsNavigation"]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0,32)
+theme_override_font_sizes/font_size = 14
+text = "专属武器"
 
 [node name="InfoScroll" type="ScrollContainer" parent="Card/InfoCard/Body"]
 unique_name_in_owner = true
@@ -198,23 +203,57 @@ unique_name_in_owner = true
 mouse_filter = 2
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(0.83,0.76,0.61,1)
-autowrap_mode = 2
 
-[node name="SkillCooldown" type="Label" parent="Card/InfoCard/Body/InfoScroll/InfoPanel/SkillTitleRow/SkillDetails"]
+[node name="SkillCooldown" type="RichTextLabel" parent="Card/InfoCard/Body/InfoScroll/InfoPanel/SkillTitleRow/SkillDetails"]
 unique_name_in_owner = true
 mouse_filter = 2
-theme_override_font_sizes/font_size = 12
-theme_override_colors/font_color = Color(0.63,0.65,0.61,1)
-autowrap_mode = 2
+theme_override_font_sizes/normal_font_size = 12
+theme_override_colors/default_color = Color(0.898,0.757,0.486,1)
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
 
-[node name="MechanicsButton" type="Button" parent="Card/InfoCard/Body/InfoScroll/InfoPanel/SkillTitleRow"]
+[node name="SkillDescription" type="RichTextLabel" parent="Card/InfoCard/Body/InfoScroll/InfoPanel"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(76,44)
-size_flags_vertical = 4
-mouse_default_cursor_shape = 2
-theme_override_font_sizes/font_size = 13
-text = "机制说明"
-tooltip_text = "查看属性、按键、技能效果与玩法"
+mouse_filter = 2
+theme_override_font_sizes/normal_font_size = 15
+theme_override_constants/line_separation = 4
+autowrap_mode = 2
+theme_override_colors/default_color = Color(0.898,0.757,0.486,1)
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+
+[node name="PassiveTitle" type="Label" parent="Card/InfoCard/Body/InfoScroll/InfoPanel"]
+mouse_filter = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.83,0.76,0.61,1)
+text = "配装与被动"
+
+[node name="PassiveDescription" type="RichTextLabel" parent="Card/InfoCard/Body/InfoScroll/InfoPanel"]
+unique_name_in_owner = true
+mouse_filter = 2
+theme_override_font_sizes/normal_font_size = 14
+theme_override_constants/line_separation = 4
+autowrap_mode = 2
+theme_override_colors/default_color = Color(0.898,0.757,0.486,1)
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+
+[node name="WeaponsDivider" type="HSeparator" parent="Card/InfoCard/Body/InfoScroll/InfoPanel"]
+
+[node name="WeaponSection" type="Label" parent="Card/InfoCard/Body/InfoScroll/InfoPanel"]
+unique_name_in_owner = true
+mouse_filter = 2
+theme_override_font_sizes/font_size = 17
+theme_override_colors/font_color = Color(0.94,0.82,0.58,1)
+text = "专属双武器 · I 切换"
+
+[node name="WeaponCards" type="VBoxContainer" parent="Card/InfoCard/Body/InfoScroll/InfoPanel"]
+unique_name_in_owner = true
+mouse_filter = 2
+theme_override_constants/separation = 12
 
 [node name="SummaryDivider" type="HSeparator" parent="Card/InfoCard/Body/InfoScroll/InfoPanel"]
 
@@ -297,53 +336,3 @@ theme_override_font_sizes/font_size = 12
 text = "未知之境 · 探索者档案"
 horizontal_alignment = 1
 theme_override_colors/font_color = Color(0.62,0.60,0.53,1)
-
-[node name="MechanicsOverlay" type="Control" parent="."]
-unique_name_in_owner = true
-visible = false
-anchor_right = 1.0
-anchor_bottom = 1.0
-
-[node name="Dim" type="ColorRect" parent="MechanicsOverlay"]
-anchor_right = 1.0
-anchor_bottom = 1.0
-color = Color(0.01,0.015,0.02,0.88)
-
-[node name="MechanicsPanel" type="PanelContainer" parent="MechanicsOverlay"]
-unique_name_in_owner = true
-theme_override_styles/panel = SubResource("MechanicsFrame")
-
-[node name="Body" type="VBoxContainer" parent="MechanicsOverlay/MechanicsPanel"]
-theme_override_constants/separation = 14
-
-[node name="MechanicsTitle" type="Label" parent="MechanicsOverlay/MechanicsPanel/Body"]
-unique_name_in_owner = true
-theme_override_font_sizes/font_size = 22
-theme_override_colors/font_color = Color(0.94,0.82,0.58,1)
-autowrap_mode = 2
-
-[node name="MechanicsScroll" type="ScrollContainer" parent="MechanicsOverlay/MechanicsPanel/Body"]
-unique_name_in_owner = true
-size_flags_vertical = 3
-focus_mode = 2
-horizontal_scroll_mode = 0
-follow_focus = true
-
-[node name="MechanicsText" type="RichTextLabel" parent="MechanicsOverlay/MechanicsPanel/Body/MechanicsScroll"]
-unique_name_in_owner = true
-mouse_filter = 2
-size_flags_horizontal = 3
-theme_override_colors/default_color = Color(0.84,0.83,0.77,1)
-theme_override_constants/line_separation = 4
-theme_override_font_sizes/normal_font_size = 18
-theme_override_font_sizes/bold_font_size = 18
-bbcode_enabled = true
-fit_content = true
-scroll_active = false
-
-[node name="CloseMechanicsButton" type="Button" parent="MechanicsOverlay/MechanicsPanel/Body"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0,44)
-mouse_default_cursor_shape = 2
-theme_override_font_sizes/font_size = 16
-text = "返回角色选择 · Esc"

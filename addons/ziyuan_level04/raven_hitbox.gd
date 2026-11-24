@@ -1,6 +1,8 @@
 extends CharacterBody3D
 ## 鸟群分散时，任一鸟可受击。没有额外生命、掉落或门锁计数。
 var source: WeakRef
+func get_combat_actor() -> Node3D:
+	return source.get_ref() if source else null
 func setup(owner_actor: Node3D) -> void:
 	source = weakref(owner_actor)
 	collision_layer = 4

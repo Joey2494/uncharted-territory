@@ -1,8 +1,8 @@
 extends PanelContainer
-## Six presentation slots. The provider owns inventory, selection and item effects.
+## Five presentation slots. The provider owns inventory, selection and item effects.
 signal selection_requested(index: int, item_id: StringName)
 
-const SLOT_COUNT: int = 6
+const SLOT_COUNT: int = 5
 const SLOT_SIZE: float = 56.0
 var _items: Array[Dictionary] = []
 var _buttons: Array[Button] = []
@@ -62,6 +62,13 @@ func _ready() -> void:
 		count.add_theme_color_override("font_outline_color", Color("12130f"))
 		count.add_theme_constant_override("outline_size", 4)
 		button.add_child(count)
+		var key_label := Label.new()
+		key_label.text = str(index+1)
+		key_label.position = Vector2(4,1)
+		key_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		key_label.add_theme_font_size_override("font_size",13)
+		key_label.add_theme_constant_override("outline_size",3)
+		button.add_child(key_label)
 		button.pressed.connect(_on_slot_pressed.bind(index))
 		_buttons.append(button)
 		_icons.append(icon)
@@ -150,7 +157,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event is InputEventKey and event.pressed:
 		var code: int = event.physical_keycode if event.physical_keycode != 0 else event.keycode
-		if code >= KEY_1 and code <= KEY_6:
+		if code >= KEY_1 and code <= KEY_5:
 			_request_selection(code - KEY_1)
 			get_viewport().set_input_as_handled()
 	elif event is InputEventMouseButton and event.pressed:

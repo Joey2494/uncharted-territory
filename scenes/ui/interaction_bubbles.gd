@@ -138,11 +138,11 @@ func _process(_delta: float) -> void:
 			feedback_visible = place_world(action,host._player.global_position+Vector3.UP*2.2)
 		elif not feedback.contains("按 E") and not feedback.contains("[E]"):
 			var regex := RegEx.new()
-			regex.compile("(?:按\\s*|\\[)([A-Z])")
+			regex.compile("(?:按\\s*|\\[)(Tab|Enter|Esc|[A-Z])(?![A-Za-z])")
 			var match := regex.search(feedback)
 			if match != null:
 				var key: String = match.get_string(1)
-				_copy(action,[key],{"R":"使用生命药剂","F":"使用强化符文","J":"攻击","K":"释放法术","L":"使用角色技能","M":"打开地图"}.get(key,"操作"))
+				_copy(action,[key],{"R":"使用生命药剂","F":"使用强化符文","J":"攻击","K":"补充弹药 / 蓝量","I":"切换武器","L":"使用角色技能","M":"打开地图","Tab":"查看路线图","Enter":"确认","Esc":"返回"}.get(key,"操作"))
 				feedback_visible = place_world(action,host._player.global_position+Vector3.UP*2.2)
 		action.visible = feedback_visible
 		if not feedback_visible and is_instance_valid(target): feedback_visible = interaction.visible

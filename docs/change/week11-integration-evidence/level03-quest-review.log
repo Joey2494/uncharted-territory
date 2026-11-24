@@ -1,0 +1,42 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+CHECK Current real milestone: control (actual control)
+CHECK Current real milestone: c_guards (actual c_guards)
+CHECK Existing nearest-target E interaction: tide
+CHECK Existing nearest-target E interaction: tide
+CHECK Current real milestone: conductor (actual conductor)
+CHECK Existing nearest-target E interaction: conductor
+CHECK Current real milestone: east (actual east)
+CHECK Existing nearest-target E interaction: director
+CHECK Current real milestone: high (actual high)
+CHECK Existing nearest-target E interaction: tide
+CHECK Current real milestone: e_guards (actual e_guards)
+CHECK Current real milestone: f_guards (actual f_guards)
+CHECK Current real milestone: charge (actual charge)
+CHECK Existing nearest-target E interaction: charge
+CHECK Current real milestone: highwalk (actual highwalk)
+CHECK Existing nearest-target E interaction: highwalk
+CHECK Current real milestone: low (actual low)
+CHECK Existing nearest-target E interaction: tide
+CHECK Current real milestone: west (actual west)
+CHECK Existing nearest-target E interaction: director
+CHECK Current real milestone: i_guards (actual i_guards)
+CHECK Current real milestone: i_guards (actual i_guards)
+CHECK Existing nearest-target E interaction: release
+CHECK Current real milestone: release (actual release)
+CHECK Existing nearest-target E interaction: reset
+CHECK Existing nearest-target E interaction: reset
+CHECK Current real milestone: conductor (actual conductor)
+CHECK Existing nearest-target E interaction: conductor
+CHECK Existing nearest-target E interaction: director
+CHECK Existing nearest-target E interaction: tide
+CHECK Existing nearest-target E interaction: charge
+CHECK Existing nearest-target E interaction: highwalk
+CHECK Existing nearest-target E interaction: tide
+CHECK Existing nearest-target E interaction: director
+CHECK Existing nearest-target E interaction: release
+CHECK Current real milestone: g_guards (actual g_guards)
+CHECK Current real milestone: g_guards (actual g_guards)
+CHECK Current real milestone: gate (actual gate)
+CHECK Current real milestone: exit (actual exit)
+PR18_REVIEW_QUEST_RESULT 757 checks, 0 failures

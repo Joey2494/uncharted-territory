@@ -133,20 +133,11 @@ func show_character(id: String) -> void:
 	_animator.advance(0.0)
 	_animator.pause()
 	_skeleton = _avatar.find_child("Skeleton3D", true, false)
-	if id == "knight":
-		_weapon = _skeleton.get_node("RightHandWeapon").get_child(0)
-		_weapon.reparent(_avatar)
-	if id == "lan":
-		# Preview-only short blades; the shared model and combat equipment stay untouched.
-		for side in ["r", "l"]:
-			var grip := Node3D.new()
-			grip.name = "PreviewBladeRight" if side == "r" else "PreviewBladeLeft"
-			var blade := preload("res://assets/characters/kaykit/weapons/sword_1handed.gltf").instantiate()
-			blade.scale = Vector3.ONE * 0.62
-			grip.add_child(blade)
-			_avatar.add_child(grip)
-			if side == "r": _weapon = grip
-			else: _offhand_weapon = grip
+	var old := _skeleton.get_node_or_null("RightHandWeapon")
+	if old != null: old.hide()
+	var weapon_id: String = preload("res://scenes/weapons/weapon_catalog.gd").LOADOUTS[id][0]
+	_weapon = (load("res://assets/weapons/models/"+weapon_id+".tscn") as PackedScene).instantiate()
+	_avatar.add_child(_weapon)
 	if id == "iron":
 		for part in _skeleton.get_node("IronRoundShield").get_children():
 			_shield_parts[part] = part.position
@@ -228,7 +219,9 @@ func _update_pose() -> void:
 			_plant_feet(0.07,0.095)
 			_offset("head",Vector3.RIGHT,0.06+0.08*wind)
 		"lan":
-			_lan_cross_assault(t,height,yaw)
+			var aim := _gesture(t,0.25,0.65,1.5,2.25)
+			_arm("r",_point(Vector3(-0.22,0.65,0.48)*height),aim,Vector3.LEFT)
+			_arm("l",_point(Vector3(0.18,0.5,0.28)*height),0.5*aim,Vector3.RIGHT)
 		"iron":
 			var guard := _gesture(t,0.25,0.80,2.05,2.85)
 			var drive := _gesture(t,1.15,1.35,1.60,2.10)
@@ -282,6 +275,9 @@ func _update_pose() -> void:
 	_skeleton.force_update_all_bone_transforms()
 	if is_instance_valid(_weapon):
 		_weapon.global_transform = _skeleton.global_transform*_skeleton.get_bone_global_pose(_skeleton.find_bone("handslot.r"))
+		if _id in ["lan","astra"]:
+			var size := _weapon.global_basis.get_scale().x
+			_weapon.global_basis = (_avatar.global_basis.orthonormalized()*Basis(Vector3.UP,PI)).scaled(Vector3.ONE*size)
 	if is_instance_valid(_offhand_weapon):
 		_offhand_weapon.global_transform = _skeleton.global_transform*_skeleton.get_bone_global_pose(_skeleton.find_bone("handslot.l"))
 

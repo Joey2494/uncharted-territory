@@ -85,7 +85,7 @@ func play_campaign() -> void:
 	check(host._boss_bar.hp_bar.value == boss.hp and host._boss_bar.hp_bar.max_value == boss.max_hp,"Boss 条跟随实际生命")
 	boss.take_damage(999)
 	await frames(2)
-	check(level.combat.enemy_count() > 0 and not level.is_exit_open() and not progress.is_completed(&"level4"),"执刑官先倒下，近卫仍能守门")
+	check(level.combat.enemy_count() > 0 and not level.is_exit_open() and not progress.is_completed(&"level4"),"女巫先倒下，尖蓟近卫仍能守门")
 	await clear("I",3,4)
 	var earnings: int = level.inventory.gold
 	check(earnings > 0 and PROFILE.coins == 50 and not progress.is_completed(&"level4"),"清敌后本局金币尚未结算")

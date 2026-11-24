@@ -132,7 +132,7 @@ func _physics_process(delta: float) -> void:
 	var direction := offset.normalized()
 	velocity = Vector3.ZERO
 	if _control <= 0:
-		var speed: float = definition.speed * (0.6 if _slow > 0 else 1)
+		var speed: float = definition.speed * (0.7 if _slow > 0 else 1)
 		var desired := direction
 		if enemy_id in ["dawn_shade", "dawn_echo"]:
 			desired = direction.rotated(Vector3.UP, 1.2) if offset.length() < 6 else direction

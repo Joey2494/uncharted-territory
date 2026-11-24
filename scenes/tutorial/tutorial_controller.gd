@@ -19,7 +19,9 @@ var _heal_prepared := false
 func _ready() -> void:
 	items.pickup_succeeded.connect(_on_pickup)
 	player.get_node("MeleeAttack").attack_started.connect(func() -> void: complete("attack"))
-	player.get_node("EnergyShock").released.connect(func(_bolt: Node3D) -> void: complete("spell"))
+	player.get_node("WeaponLoadout").fired.connect(func(_bolt: Node3D) -> void:
+		complete("attack")
+		if player.get_node("WeaponLoadout").active == 1: complete("spell"))
 	player.dodge_started.connect(func() -> void: complete("dodge"))
 	items.item_used.connect(_on_item_used)
 

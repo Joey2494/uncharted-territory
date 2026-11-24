@@ -38,7 +38,6 @@ signal combat_action_requested(action: StringName, pressed: bool)
 @onready var weapon_hint: Label = %WeaponHint
 @onready var hp_state_label: Label = %HPStateLabel
 @onready var weapon_icon: TextureRect = %WeaponIcon
-@onready var weapon_badge: PanelContainer = %WeaponBadge
 @onready var room_badge: PanelContainer = %RoomBadge
 @onready var room_icon: TextureRect = %RoomIcon
 @onready var room_segments: HBoxContainer = %RoomSegments
@@ -49,9 +48,10 @@ signal combat_action_requested(action: StringName, pressed: bool)
 @onready var melee_cooldown: PanelContainer = %MeleeCooldown
 @onready var dodge_cooldown: PanelContainer = %DodgeCooldown
 @onready var skill_cooldown: PanelContainer = %SkillCooldown
+@onready var switch_cooldown: PanelContainer = %SwitchCooldown
+@onready var replenish_cooldown: PanelContainer = %ReplenishCooldown
 
 var _hp_fill: StyleBoxFlat
-var _weapon_badge_style: StyleBoxFlat
 var _result_layer: CanvasLayer
 var _result_screen: Control
 var _room_segment_fills: Array[StyleBoxFlat] = []
@@ -72,11 +72,8 @@ var _feedback_clock := 0.0
 
 
 func _ready() -> void:
-	# Each HUD instance owns its changing styles; other instances keep their colors.
 	_hp_fill = hp_bar.get_theme_stylebox("fill").duplicate() as StyleBoxFlat
 	hp_bar.add_theme_stylebox_override("fill", _hp_fill)
-	_weapon_badge_style = weapon_badge.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
-	weapon_badge.add_theme_stylebox_override("panel", _weapon_badge_style)
 	update_energy_bar(0.0, 0.0)
 	update_gold(0)
 	update_ammo(0)
@@ -84,6 +81,8 @@ func _ready() -> void:
 	update_room_label(0)
 	%TutorialPrompt.skip_requested.connect(func() -> void: skip_tutorial_requested.emit())
 	hotbar.selection_requested.connect(func(index: int, item_id: StringName) -> void: hotbar_selection_requested.emit(index, item_id))
+	replenish_cooldown.activation_requested.connect(func() -> void: combat_action_requested.emit(&"reload_weapon",true))
+	switch_cooldown.activation_requested.connect(func() -> void: combat_action_requested.emit(&"switch_weapon", true))
 	melee_cooldown.activation_requested.connect(func() -> void: combat_action_requested.emit(&"attack", true))
 	skill_cooldown.activation_requested.connect(func() -> void: combat_action_requested.emit(&"skill_1", true))
 	dodge_cooldown.activation_requested.connect(func() -> void: combat_action_requested.emit(&"dodge", true))
@@ -112,7 +111,7 @@ func bind_combat_actions(player: CharacterBody3D) -> void:
 
 func _update_combat_cooldowns() -> void:
 	if not is_instance_valid(_combat_player) or not is_instance_valid(_combat_attack) or not is_instance_valid(_combat_skill):
-		for indicator in [melee_cooldown, dodge_cooldown, skill_cooldown]:
+		for indicator in [melee_cooldown, dodge_cooldown, skill_cooldown, switch_cooldown, replenish_cooldown]:
 			indicator.update_cooldown(0.0, 1.0, "未就绪")
 		%CharacterCooldown.hide()
 		_character_skill_id = ""
@@ -154,13 +153,39 @@ func _update_combat_cooldowns() -> void:
 			attack_block = "施法中"
 	var attack_duration := maxf(_combat_attack.attack_cooldown,
 		_combat_attack.windup_duration + _combat_attack.active_duration + _combat_attack.recovery_duration)
-	var inventory := _combat_player.get_node("ItemInventory")
-	var firearm := _combat_player.get_node("Firearm")
-	var ranged: bool = inventory.equipped_weapon == inventory.FIREARM
-	melee_cooldown.get_node("%AbilityName").text = "手炮" if ranged else "普通攻击"
-	melee_cooldown.icon.texture = preload("res://assets/ui/gun.svg") if ranged else EQUIPPED_WEAPON_ICON
-	if ranged and inventory.ammo <= 0 and attack_block.is_empty(): attack_block = "弹药不足"
-	melee_cooldown.update_cooldown(firearm.get_cooldown_remaining() if ranged else _combat_attack.get_cooldown_remaining(), firearm.cooldown if ranged else attack_duration, attack_block)
+	var loadout := _combat_player.get_node("WeaponLoadout")
+	var switch_block := ""
+	if not loadout.can_switch() and loadout.switch_remaining <= 0:
+		switch_block = blocked if not blocked.is_empty() else ("举盾中" if ability.is_guarding() else "动作中")
+	switch_cooldown.update_cooldown(loadout.switch_remaining,0.2,switch_block)
+	var d: Dictionary = loadout.current()
+	var slot: Dictionary = loadout.slots[loadout.active]
+	var items := _combat_player.get_node("ItemInventory")
+	var is_gun: bool = d.magazine > 0
+	replenish_cooldown.configure_ability("补充弹药" if is_gun else ("补充蓝量" if not d.melee else "无需补给"),preload("res://assets/ui/ammo.svg") if is_gun else preload("res://assets/ui/energy_potion.svg"),"从当前枪械对应的备用弹药装填。" if is_gun else ("消耗一瓶星蓝药剂，恢复20法力；满蓝不消耗。" if not d.melee else "短剑无需弹药或法力。"))
+	var refill_remaining: float = loadout.reload_remaining if is_gun else (items.get_use_cooldown_remaining() if not d.melee else 0.0)
+	replenish_cooldown.update_cooldown(refill_remaining,d.reload if is_gun else items.use_cooldown,loadout.replenishment_block_reason())
+	melee_cooldown.get_node("%AbilityName").text = d.name
+	melee_cooldown.icon.texture = load("res://assets/weapons/icons/"+slot.id+".svg")
+	if loadout.reload_remaining > 0: attack_block = "换弹中"
+	elif loadout.switch_remaining > 0: attack_block = "切换中"
+	elif d.magazine > 0 and slot.ammo <= 0: attack_block = "弹匣已空"
+	elif _combat_player.energy < loadout.cost(): attack_block = "法力不足"
+	melee_cooldown.update_cooldown(slot.cooldown,d.interval,attack_block)
+	weapon_label.text = d.name
+	weapon_hint.text = ""
+	weapon_icon.texture = melee_cooldown.icon.texture
+	if d.magazine > 0:
+		ammo_label.text = "%d/%d" % [slot.ammo,d.magazine]
+		ammo_label.tooltip_text = "弹匣 %d/%d · 备用 %d" % [slot.ammo,d.magazine,loadout.reserve_ammo()]
+	elif loadout.cost() > 0:
+		ammo_label.text = "耗能 %d" % loadout.cost()
+		ammo_label.tooltip_text = "每次攻击消耗法力，当前余量见蓝条"
+	else:
+		ammo_label.text = "∞"
+		ammo_label.tooltip_text = "无消耗"
+
+	skill_cooldown.visible = false
 	var dodge_block := blocked
 	if dodge_block.is_empty():
 		if _combat_player.is_dodging():
@@ -203,7 +228,7 @@ func update_energy_bar(current: float, maximum: float) -> void:
 	energy_bar.max_value = maximum
 	energy_bar.value = clampf(current, 0.0, maximum)
 	energy_text.text = "%s / %s" % [_resource_number(roundi(energy_bar.value)), _resource_number(roundi(maximum))]
-	energy_text.tooltip_text = "技能能量 %s / %s" % [str(energy_bar.value), str(maximum)]
+	energy_text.tooltip_text = "法力 %s / %s" % [str(energy_bar.value), str(maximum)]
 
 
 func update_gold(amount: int) -> void:
@@ -212,6 +237,9 @@ func update_gold(amount: int) -> void:
 
 
 func update_ammo(amount: int) -> void:
+	if is_instance_valid(_combat_player):
+		_update_combat_cooldowns()
+		return
 	ammo_label.text = _resource_number(maxi(amount, 0))
 	ammo_label.tooltip_text = "弹药 %d" % maxi(amount, 0)
 
@@ -247,7 +275,7 @@ func update_inventory(potions: int, runes: int) -> void:
 	set_hotbar_data([
 		{"id": &"health_potion", "icon": POTION_ICON, "count": maxi(potions, 0), "tint": Color("9dbd8a")},
 		{"id": &"attack_rune", "icon": ATTACK_RUNE_ICON, "count": maxi(runes, 0), "tint": Color("d6b46b")},
-		{}, {}, {}, {},
+		{}, {}, {},
 	])
 
 
@@ -421,16 +449,12 @@ func _ensure_room_segments() -> void:
 
 
 func update_weapon_status(has_weapon: bool) -> void:
+	if is_instance_valid(_combat_player):
+		_update_combat_cooldowns()
+		return
 	weapon_label.text = "已装备" if has_weapon else "无武器"
-	var state_color: Color = Color("b99a5c") if has_weapon else Color("9a968b")
-	weapon_label.add_theme_color_override("font_color", state_color)
 	weapon_icon.texture = EQUIPPED_WEAPON_ICON if has_weapon else EMPTY_WEAPON_ICON
-	weapon_icon.self_modulate = state_color if has_weapon else Color("5f6055")
-	_weapon_badge_style.bg_color = Color("242116") if has_weapon else Color("171815")
-	_weapon_badge_style.border_color = Color("806b40") if has_weapon else Color("48463b")
-	_weapon_badge_style.shadow_color = Color(0.73, 0.60, 0.35, 0.18)
-	_weapon_badge_style.shadow_size = 5 if has_weapon else 0
-	weapon_hint.text = "已拾取武器" if has_weapon else "拾取武器后才能攻击"
+	weapon_hint.text = ""
 
 
 func _update_health_feedback(message: String, text_color: Color, fill_color: Color) -> void:
