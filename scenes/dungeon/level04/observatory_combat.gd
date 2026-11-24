@@ -5,7 +5,8 @@ signal battle_cleared(room: String)
 signal feedback(message: String)
 signal cage_landed(first_placement: bool)
 
-const FACTORY := preload("res://addons/ziyuan_level04/factory.gd")
+## 敌人工厂内嵌六个 PackedScene，等战斗节点进入主场景树再解析，避免后台加载房间时递归加载女巫场景。
+@onready var _factory: GDScript = load("res://addons/ziyuan_level04/factory.gd")
 const PLAN := preload("res://scenes/dungeon/level04/observatory_plan.gd")
 const WITCH := preload("res://scenes/dungeon/level04/observatory_witch.gd")
 const CRATE := preload("res://scenes/dungeon/level04/observatory_crate.gd")
@@ -232,7 +233,7 @@ func prepare_dome_boss() -> void:
 			return
 
 func _create_guard(room: String, kind: String, xz: Vector2) -> CharacterBody3D:
-	var guard := FACTORY.create(kind)
+	var guard: CharacterBody3D = _factory.create(kind)
 	if kind == "witch":
 		guard.set_script(WITCH)
 		guard.encounter = self
@@ -366,7 +367,7 @@ func _queue_minion(kind: String, point: Vector3) -> void:
 func _spawn_minion(generation: int, kind: String, point: Vector3) -> void:
 	if generation != _generation or _stopped or active_room != "I" or _player.is_dead(): return
 	if not is_instance_valid(_jailer) or not _jailer.is_encounter_active(): return
-	var minion := FACTORY.create(kind,_player)
+	var minion: CharacterBody3D = _factory.create(kind,_player)
 	if minion == null: return
 	minion.set_meta("is_summoned",true)
 	add_child(minion)
