@@ -73,12 +73,21 @@ func seal_room(id: String, locked: bool) -> void:
 			_room_seals[key] = gate
 		gate.set_combat_locked(locked)
 
+## 返回实际尚未完全开启的每一道门。point 和平面图使用同一关卡坐标，room 为空表示桥闸。
+func passage_locks(a: String, b: String) -> Array[Dictionary]:
+	var locks: Array[Dictionary] = []
+	_append_lock(locks,_gates.get(_key(a,b)),"")
+	_append_lock(locks,_room_seals.get(a+b),a)
+	_append_lock(locks,_room_seals.get(b+a),b)
+	return locks
+
+func _append_lock(locks: Array[Dictionary], gate, room: String) -> void:
+	if gate == null or gate.is_open(): return
+	var pos := to_local(gate.global_position)
+	locks.append({"point": Vector2(pos.x,pos.z), "room": room})
+
 func passage_open(a: String, b: String) -> bool:
-	var gate = _gates.get(_key(a, b))
-	if gate == null or not gate.is_open(): return false
-	for key: String in [a+b,b+a]:
-		if _room_seals.has(key) and not _room_seals[key].is_open(): return false
-	return true
+	return _gates.has(_key(a,b)) and passage_locks(a,b).is_empty()
 
 func _build_room(id: String) -> void:
 	var room := Node3D.new()

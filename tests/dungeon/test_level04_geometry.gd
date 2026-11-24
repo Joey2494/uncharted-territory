@@ -106,6 +106,8 @@ func run() -> void:
 				check(intersects(world_point(at-out)+Vector3.UP,world_point(at+out)+Vector3.UP),"全宽封场 " + room + link)
 		layout.seal_room(room,false)
 		await frames(65)
+	await check_map_locks("F","H","E")
+	await check_map_locks("H","I","E")
 	var f := layout.room_center("F") + Vector3.UP
 	check(intersects(f+Vector3(-1,0,-4.5),f+Vector3(2,0,-4.5)),"F 分隔石墙挡射线")
 	check(not intersects(f+Vector3(-1,0,0),f+Vector3(2,0,0)),"F 中段有换廊缺口")
@@ -116,6 +118,29 @@ func run() -> void:
 	arena.queue_free()
 	await frames(2)
 	quit(1 if failures else 0)
+
+## 同一场战斗既有未授权的前路，也有原本已开放的来路。解封动画结束后分别恢复各自门态。
+func check_map_locks(room: String, ahead: String, behind: String) -> void:
+	var edge := room+ahead
+	var bridge: Node3D = layout.get_node(edge+"/Gate")
+	var progress := {"point": Vector2(bridge.position.x,bridge.position.z), "room": ""}
+	var seal := {"point": PLAN.doorway(room,ahead), "room": room}
+	var entry := {"point": PLAN.doorway(room,behind), "room": room}
+	layout.set_passage(room,ahead,false)
+	layout.seal_room(room,true)
+	await frames(65)
+	check(layout.passage_locks(room,ahead) == [progress,seal], "双锁分别落在桥中与门槛 " + edge)
+	check(layout.passage_locks(ahead,room) == [progress,seal], "双向查询同一锁点 " + edge)
+	check(layout.passage_locks(room,behind) == [entry], "已开放的来路仅在门槛封场 " + room+behind)
+	layout.seal_room(room,false)
+	check(layout.passage_locks(room,behind) == [entry], "门槛抬升期间仍有锁点 " + room+behind)
+	await frames(65)
+	check(layout.passage_locks(room,ahead) == [progress], "解封后只剩实体进度闸 " + edge)
+	check(layout.passage_locks(room,behind).is_empty(), "解封后移除来路锁点 " + room+behind)
+	layout.set_passage(room,ahead,true)
+	check(layout.passage_locks(room,ahead) == [progress], "桥闸抬升期间仍有锁点 " + edge)
+	await frames(65)
+	check(layout.passage_locks(room,ahead).is_empty(), "实体确认后移除桥闸锁点 " + edge)
 
 func world_point(point: Vector2) -> Vector3:
 	return Vector3(point.x,0.025,point.y)
