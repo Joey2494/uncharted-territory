@@ -40,6 +40,14 @@ script = ExtResource("5")
 
 [node name="Supplies" type="Node3D" parent="."]
 
+[node name="HighwalkPotion" parent="Supplies" instance=ExtResource("workshop_potion")]
+position = Vector3(12.5, 0, -18)
+visible = false
+
+[node name="ServicePotion" parent="Supplies" instance=ExtResource("arrival_potion")]
+position = Vector3(-47.5, 0, -24)
+visible = false
+
 [node name="ArrivalPotion" parent="Supplies" instance=ExtResource("arrival_potion")]
 position = Vector3(3.1, 0, 23.4)
 

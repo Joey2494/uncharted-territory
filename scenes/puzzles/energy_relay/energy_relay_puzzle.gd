@@ -108,7 +108,7 @@ func get_control_prompt(id: StringName) -> String:
 		&"reset":
 			return "档案室复位 · " + ("等待确认\n[E] 再次确认复位" if _reset_pending else "能源归架、通路收起\n[E] 请求复位")
 		&"reward":
-			return "攻击强化符文 · 待领取\n[E] 领取符文"
+			return "强化符文、生命药剂、星蓝药剂各一份\n[E] 领取档案室补给"
 	var names := {&"rack": "能源托架", &"bridge": "桥台插槽", &"a": "接收器一", &"b": "接收器二", &"lever": "步道开关"}
 	var name: String = names.get(id, "机关")
 	if _state == State.SUPPLY_OFF:
@@ -139,9 +139,9 @@ func get_objective() -> String:
 		State.OPENING:
 			return "档案门 · 正在升起"
 		State.OPEN:
-			return "密室已开放 · 领取攻击强化符文"
+			return "密室已开放 · 领取符文与药剂"
 		State.CLAIMED:
-			return "支线完成 · 已领取攻击强化符文"
+			return "支线完成 · 已领取档案室补给"
 	var line_status := "接通" if _maintenance_latched else "断开"
 	return "档案门 %d/2 · 检修线%s · 手持 %d" % [_cores[&"a"] + _cores[&"b"], line_status, _cores[&"carried"]]
 
@@ -279,12 +279,16 @@ func _confirm_reset() -> void:
 func _claim_reward(player: CharacterBody3D) -> bool:
 	_claiming = true
 	var inventory := player.get_node_or_null("ItemInventory") as Inventory
-	var delivered := inventory != null and inventory.add_item(Inventory.ATTACK_RUNE)
+	var delivered := inventory != null and inventory.grant_reward("level02_archive", {
+		Inventory.ATTACK_RUNE: 1, Inventory.HEALTH_POTION: 1, Inventory.Catalog.ENERGY_POTION: 1})
 	if delivered:
 		_reward_taken = true
 		_state = State.CLAIMED
 		_refresh_devices()
 		reward_claimed.emit()
+		feedback.emit("获得强化符文、生命药剂、星蓝药剂各一份。")
+	else:
+		feedback.emit("背包空间不足，补给仍留在档案室。")
 	_claiming = false
 	return delivered
 
@@ -323,7 +327,7 @@ func _refresh_devices() -> void:
 	$Circuit/LineState.text = "检修线 · 接通" if _maintenance_latched else "检修线 · 断开"
 	$Reward.visible = _state == State.OPEN
 	$Reward.get_node("Base/CollisionShape3D").set_deferred("disabled", _state != State.OPEN)
-	$Reward.set_display("攻击强化符文", _state == State.OPEN)
+	$Reward.set_display("档案室补给", _state == State.OPEN)
 
 func _refresh_passage(passage: Node3D, deployed: bool) -> void:
 	passage.get_node("Deck").visible = deployed

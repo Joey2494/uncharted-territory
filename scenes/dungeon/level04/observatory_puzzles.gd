@@ -190,16 +190,23 @@ func interact(id: StringName) -> bool:
 			turns[i] = (turns[i]+1)%4
 			_refresh_optics()
 		&"p_chart":
-			if not level.inventory.grant_reward(REWARD, {level.inventory.ATTACK_RUNE: 1}):
-				level.note("符文槽已满。星图架会为你保留奖励。")
+			if not level.inventory.grant_reward(REWARD, {level.inventory.ATTACK_RUNE: 1, level.inventory.GUARD_RUNE: 1}):
+				level.note("背包空间不足。星图架会为你保留奖励。")
 				return false
 			mirror_claimed = true
-			level.note("取得攻击强化符文。星图边缘盖着夜班四人的印记。")
+			level.note("取得强化符文与守护符文各一枚。星图边缘盖着夜班四人的印记。")
 		&"p_print":
 			film_claimed = true
 			print_sprite.hide()
 			window_photo.frame = 3
-			level.note("收好合影。北侧升降台的照相窗已换上完整底片。")
+			# 成片先更新结局；留下的值班补给可分别拾取，满包也能完成合影。
+			var medicine := preload("res://scenes/items/HealthPotion.tscn").instantiate() as Node3D
+			medicine.position = _center(&"L") + Vector3(2, 0, 3.7)
+			add_child(medicine)
+			var reserve := preload("res://scenes/items/EnergyPotion.tscn").instantiate() as Node3D
+			reserve.position = _center(&"L") + Vector3(4.2, 0, 3.7)
+			add_child(reserve)
+			level.note("完整合影已送往照相窗。显影盘旁的生命药剂和星蓝药剂可按 E 拾取。")
 		_:
 			display = id
 			status = ""
@@ -300,7 +307,7 @@ func _refresh_optics() -> void:
 					chart.show()
 					chart.scale.z = 0.08
 					chart.create_tween().tween_property(chart, "scale:z", 1, 0.55)
-					level.note("星图展开。室内星图架上有一枚攻击强化符文。")
+					level.note("星图展开。室内星图架上可领取强化与守护两枚符文。")
 				elif not inscription_lit:
 					level.note("光落在遮罩上。南壁空白的星盘仍待显影。")
 				break
