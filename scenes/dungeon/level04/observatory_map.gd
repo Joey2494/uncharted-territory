@@ -25,12 +25,9 @@ func _draw() -> void:
 		var optional := edge[0] in PLAN.OPTIONAL or edge[1] in PLAN.OPTIONAL
 		var color := Color("#74c6b9") if optional else Color("#d2b37b")
 		draw_polyline(line,color if opened else Color("#546064"),2,true)
-		if not opened:
-			var n := PLAN.gate_segment(path)
-			var at := line[n].lerp(line[n+1],0.5)
-			draw_line(at-Vector2(2,2),at+Vector2(2,2),Color("#e69d78"),1.5,true)
-			draw_line(at+Vector2(-2,2),at+Vector2(2,-2),Color("#e69d78"),1.5,true)
-			_locks.append({"point":at,"edge":edge})
+		for lock in level.map_locks(edge):
+			var at := _project(lock.point)
+			_locks.append({"point":at,"edge":edge,"reason":lock.reason})
 	for id: String in PLAN.CENTERS:
 		var pos := _project(PLAN.CENTERS[id])
 		var caption: String = id+" "+SHORT_NAMES[id]
@@ -42,14 +39,21 @@ func _draw() -> void:
 		var color := Color("#87d3c2") if id in PLAN.OPTIONAL else Color("#e7c891")
 		draw_rect(rect,Color("#7bdfee") if id == level.current_room else color.darkened(0.5),false,2 if id == level.current_room else 1)
 		draw_string(FONT,rect.position+Vector2(0,12),caption,HORIZONTAL_ALIGNMENT_CENTER,width,12,color)
+	for lock in _locks:
+		var at: Vector2 = lock.point
+		draw_line(at-Vector2(2,2),at+Vector2(2,2),Color("#e69d78"),1.5,true)
+		draw_line(at+Vector2(-2,2),at+Vector2(2,-2),Color("#e69d78"),1.5,true)
 	var player: Vector3 = level.player.global_position
 	var dot := _project(Vector2(player.x,player.z))
 	draw_circle(dot,3.5,Color("#162d38"))
 	draw_circle(dot,2.3,Color("#7bdfee"))
 
 func _get_tooltip(at_position: Vector2) -> String:
+	var distance := 9.0
+	var tip := ""
 	for lock in _locks:
-		if at_position.distance_to(lock.point) < 9:
-			var reason: String = level.passage_lock_reason(lock.edge)
-			return "%s—%s · %s" % [lock.edge[0],lock.edge[1],reason if reason != "" else "闸门升起中"]
-	return ""
+		var delta := at_position.distance_to(lock.point)
+		if delta < distance:
+			distance = delta
+			tip = "%s—%s · %s" % [lock.edge[0],lock.edge[1],lock.reason]
+	return tip

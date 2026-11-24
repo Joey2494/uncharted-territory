@@ -95,9 +95,14 @@ func _targets() -> Array:
 
 func _get_tooltip(at_position: Vector2) -> String:
 	if not snapshot.get("observatory",false): return ""
+	var distance := 9.0*text_scale
+	var tip := ""
 	for lock in snapshot.locks:
-		if not lock.open and at_position.distance_to(project(lock.point)) <= 9*text_scale:
-			return "%s—%s · %s" % [lock.id[0],lock.id[1],lock.reason if lock.reason != "" else "闸门升起中"]
+		var delta := at_position.distance_to(project(lock.point))
+		if not lock.open and delta <= distance:
+			distance = delta
+			tip = "%s—%s · %s" % [lock.id[0],lock.id[1],lock.reason]
+	if not tip.is_empty(): return tip
 	for room in snapshot.rooms:
 		var rect := Rect2(project(room.bounds.position),room.bounds.size*_factor)
 		if rect.grow(2).has_point(at_position):

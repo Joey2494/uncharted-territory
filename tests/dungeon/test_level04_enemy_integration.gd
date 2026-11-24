@@ -65,6 +65,13 @@ func verify_calibration_first() -> void:
 	player.global_position = level.layout.room_center("F")+Vector3(4,0.06,-1)
 	level._physics_process(0.016)
 	check(combat.active_room == "F" and not combat._window_lights.visible,"crossing the east threshold starts the shared F roster")
+	var locks: Array[Dictionary] = level.map_locks("FH")
+	check(locks.size() == 2,"the trial bridge has a progress gate and a separate F encounter seal")
+	for lock in locks:
+		if lock.room == "F":
+			check(lock.point == level.PLAN.doorway("F","H") and lock.reason.contains("封场"),"encounter tooltip points to the real F threshold")
+		else:
+			check(lock.room == "" and lock.reason.contains("F") and not lock.reason.contains("封场"),"trial bridge tooltip reports its outstanding wing")
 	for enemy in combat._enemies.duplicate(): enemy.take_damage(999)
 	combat.update_room("F",0.016)
 	check(combat._markers.F.visible, "ordinary reinforcement warning still appears on calibration-first route")

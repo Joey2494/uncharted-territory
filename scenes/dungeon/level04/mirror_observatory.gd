@@ -97,6 +97,19 @@ func passage_lock_reason(edge: String) -> String:
 		return "%s封场 · 清除守卫" % NAMES[combat.active_room]
 	return _progress_lock_reason(edge)
 
+## 同一条桥可以同时有桥中的进度闸和门槛处的战斗封条。
+func map_locks(edge: String) -> Array[Dictionary]:
+	var locks: Array[Dictionary] = layout.passage_locks(edge[0],edge[1])
+	for lock in locks:
+		var room: String = lock.room
+		var reason := _progress_lock_reason(edge) if room == "" else ""
+		if room != "" and combat.active_room == room:
+			reason = "%s封场 · 清除守卫" % NAMES[room]
+		lock.reason = reason if reason != "" else "闸门升起中"
+		lock.id = edge
+		lock.open = false
+	return locks
+
 func _progress_lock_reason(edge: String) -> String:
 	match edge:
 		"BC":
@@ -221,8 +234,12 @@ func objective() -> String:
 		return "%s · 清场   场内守卫 %d" % [NAMES[combat.active_room],combat.enemy_count()]
 	if not combat.is_clear("B"): return "北行去 B 装卸场，清除守卫"
 	if not puzzles.calibrated and not combat.is_clear("F"): return "东 · 校准 E 曝光柜　　西 · 清除 F 栈道守卫"
-	if not puzzles.calibrated: return "过横桥去东翼 E · 对照曝光片，校准记录柜"
-	if not combat.is_clear("F"): return "过横桥去西翼 F · 从观察窗看增援侧，再进栈道清场"
+	if not puzzles.calibrated:
+		if current_room == "E": return "在读片台对照曝光片，再校准本室记录柜"
+		return ("过横桥去东翼 E" if current_room == "F" else "前往东翼 E") + " · 校准曝光记录柜"
+	if not combat.is_clear("F"):
+		if current_room == "F": return "在观察窗查看增援侧，跨入栈道内场清除守卫"
+		return ("过横桥去西翼 F" if current_room == "E" else "前往西翼 F") + " · 清除栈道守卫"
 	if not combat.is_clear("H"): return "两侧试车门已开 · 前往 H 观察扫光，跨内线迎战"
 	if not combat.is_clear("I"): return "去 I 主穹顶，击败袍冠女巫与尖蓟近卫"
 	return "穿过北门，在 J 升降台中央离站"
