@@ -78,8 +78,9 @@ func get_hud_objective() -> Dictionary:
 	elif current_room in PLAN.OPTIONAL and not optional_done(current_room):
 		category = "支线任务"
 		title = side_hint().trim_prefix("支线 · ")
-	elif not puzzles.calibrated and combat.is_clear("B"):
-		category = "解谜"
+	elif combat.is_clear("B") and (not puzzles.calibrated or not combat.is_clear("F")):
+		category = "双翼任务"
+		detail = "东翼校准 %d/1 · 西翼清场 %d/1" % [int(puzzles.calibrated), int(combat.is_clear("F"))]
 	var steps: Array[String] = []
 	for id: String in combat.ROSTERS:
 		if combat.is_clear(id): steps.append("combat_" + id)
@@ -89,4 +90,4 @@ func get_hud_objective() -> Dictionary:
 	return {"id":title, "title":title, "category":category, "progress":detail, "completed":steps}
 
 func get_route_reference() -> Dictionary:
-	return {"title":"日晷观测站 · 路线", "body":"按 Tab 打开路线图，查看所在房间与已完成支线。\n主路沿 A—B—C—E—F—H—I—J 北行。E 的曝光记录室控制北门和旧镜室的电源。\nC 西通配重井，E 东通旧镜室，F 西通邮轨检修台，H 东通夜班底片室。"}
+	return {"title":"日晷观测站 · 路线", "body":"A 到达台 → B 装卸场 → C 分度大厅。东去 E 校准曝光柜，西去 F 清除栈道守卫，两翼可任选先后。\n完成一翼可过横桥，完成两翼可从任一侧进 H 试车场。H 清场后直达 I 主穹顶，或在 L 显影后经侧门前往。穹顶清场后登上 J 升降台。\n可选探索：D 配重井通往栈道，G 邮轨检修台连通双翼，K 旧镜室藏有星图。Tab 查看路线图，M 查看任务地图。"}

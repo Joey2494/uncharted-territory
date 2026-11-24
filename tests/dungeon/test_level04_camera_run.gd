@@ -1,5 +1,6 @@
 extends SceneTree
 ## 真实关卡中从 H 入口连续行走至 I。只预置已通过的前段与角色免伤，援军和半血推进走正式状态机。
+const PLAN := preload("res://scenes/dungeon/level04/observatory_plan.gd")
 const SCENE := "res://scenes/dungeon/level04/Level04Preview.tscn"
 
 func _initialize() -> void:
@@ -18,7 +19,14 @@ func run() -> void:
 	level._refresh_gates()
 	var h: Vector3 = level.layout.room_center("H")
 	var i: Vector3 = level.layout.room_center("I")
-	player.position = h + Vector3(0,0.05,10)
+	var wing := "E" if "--east" in OS.get_cmdline_user_args() else "F"
+	var entry := PLAN.bridge_path("H",wing)
+	var door := entry[0]
+	var outward := door.direction_to(entry[1])
+	player.position = Vector3(door.x + outward.x*3,0.05,door.y + outward.y*3)
+	var into_dome := PLAN.bridge_path("H","I")
+	into_dome.append(Vector2(i.x-2.5,i.z+4.4))
+	var waypoint := 0
 	player._invulnerability_remaining = 1000
 	camera.reset_follow()
 	var previous: float = camera._distance
@@ -36,10 +44,13 @@ func run() -> void:
 	var h_age := 0.0
 	var i_age := 0.0
 	var elapsed := 0.0
-	while elapsed < 38.0:
-		var walking: bool
+	while elapsed < 50.0:
+		var next := Vector2(player.position.x,player.position.z)
 		if not combat.is_clear("H"):
-			walking = player.position.z > h.z + (1.9 if combat.demo_done else 5.0)
+			if combat.active_room != "H":
+				next = Vector2(h.x, h.z+4.0)
+				if combat.demo_done and absf(player.position.x-h.x) < 1.0:
+					next = Vector2(h.x,h.z+1.9)
 			if combat.active_room == "H":
 				h_age += root.get_process_delta_time()
 				warning = warning or combat._markers.H.visible
@@ -47,15 +58,11 @@ func run() -> void:
 				if reinforced and h_age > 6.8:
 					for guard: Node in combat._enemies.duplicate(): guard.take_damage(999)
 		else:
-			walking = level.layout.passage_open("H","I") and player.position.z > i.z + 4.4
-			# Flock contact can move the actor sideways. Align with the real bridge
-			# using movement input before continuing north through the angled wall.
-			if player.position.z > h.z-10 and absf(player.position.x) > 0.18:
-				walking = false
-				Input.action_press("move_right" if player.position.x < 0 else "move_left")
-			else:
-				Input.action_release("move_left")
-				Input.action_release("move_right")
+			if level.layout.passage_open("H","I") and combat.active_room != "I":
+				var pos := Vector2(player.position.x,player.position.z)
+				if pos.distance_to(into_dome[waypoint]) < 0.24 and waypoint+1 < into_dome.size():
+					waypoint += 1
+				next = into_dome[waypoint]
 			if combat.active_room == "I":
 				i_age += root.get_process_delta_time()
 				if i_age > 1.4 and not advance_seen and combat._jailer.hp * 2 > combat._jailer.max_hp:
@@ -66,8 +73,7 @@ func run() -> void:
 					advance_seen = true
 				elif advance_seen:
 					advance_finished = true
-		if walking: Input.action_press("move_forward")
-		else: Input.action_release("move_forward")
+		walk_toward(player,next)
 		await process_frame
 		var step := root.get_process_delta_time()
 		elapsed += step
@@ -81,9 +87,7 @@ func run() -> void:
 			if i_reference < 0: i_reference = distance
 			i_drift = maxf(i_drift,absf(distance-i_reference))
 		if advance_finished: break
-	Input.action_release("move_forward")
-	Input.action_release("move_left")
-	Input.action_release("move_right")
+	walk_toward(player,Vector2(player.position.x,player.position.z))
 	var ok: bool = warning and reinforced and advance_finished and advanced_distance > 1.5 and not player.is_dead()
 	ok = ok and h_reference > 0 and i_reference > 0 and h_drift < 0.10 and i_drift < 0.10 and max_speed < 12.1
 	print("level04 camera run: warning=%s reinforced=%s half_advance=%s moved=%.2fm H_drift=%.3f I_drift=%.3f max_speed=%.2f" % [warning,reinforced,advance_finished,advanced_distance,h_drift,i_drift,max_speed])
@@ -91,3 +95,14 @@ func run() -> void:
 	level.queue_free()
 	for n in 3: await process_frame
 	quit(0 if ok else 1)
+
+
+func walk_toward(player: CharacterBody3D, target: Vector2) -> void:
+	var delta := target-Vector2(player.position.x,player.position.z)
+	var direction := Vector2.ZERO if delta.length() < 0.12 else delta.normalized()
+	for action: String in ["move_left","move_right","move_forward","move_backward"]:
+		Input.action_release(action)
+	if absf(direction.x) > 0.05:
+		Input.action_press("move_right" if direction.x > 0 else "move_left",absf(direction.x))
+	if absf(direction.y) > 0.05:
+		Input.action_press("move_backward" if direction.y > 0 else "move_forward",absf(direction.y))

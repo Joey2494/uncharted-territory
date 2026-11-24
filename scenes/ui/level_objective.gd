@@ -85,7 +85,8 @@ func refresh() -> void:
 	for i in status.tasks.size():
 		var task: Dictionary = status.tasks[i]
 		if task.done: _completed[task.id] = task.duplicate()
-		_set_marker(_marks[i].get_child(1),task.done,i == status.current)
+		var active: bool = i == status.current or (status.get("focus",{}).get("id","") == "wings" and task.id == "combat_F")
+		_set_marker(_marks[i].get_child(1),task.done,active)
 		_marks[i].tooltip_text = task.title + (" · 已完成" if task.done else " · 未完成")
 		_history_rows[i].visible = _completed.has(task.id)
 		if _completed.has(task.id):

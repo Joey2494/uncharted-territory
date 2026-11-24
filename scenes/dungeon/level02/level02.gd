@@ -185,7 +185,8 @@ func perform_control(id: StringName, actor: CharacterBody3D) -> bool:
 		if not antechamber_gate.open_gate() or not hub_gate.open_gate():
 			return false
 		shortcut_unlocked = true
-		feedback.emit("回环开启 · 中庭与前厅现在双向连通")
+		$Supplies/ReturnLoopPotion.show()
+		feedback.emit("回环开启 · 通往中庭的转角前有一瓶生命药剂")
 	_refresh_controls()
 	return true
 

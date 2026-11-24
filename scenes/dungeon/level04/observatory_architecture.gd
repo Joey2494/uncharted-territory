@@ -19,8 +19,36 @@ static func dress(layout) -> void:
 	var c: Node3D = layout.get_node("C")
 	for radius: float in [1.8, 2.1, 3.35]:
 		_ring(layout,c,Vector3(0,0.017,0),radius,0.036,COPPER)
-	layout.ground_label(c, "↑ 曝光盘 · 接通栈道", Vector2(0,-4.8),layout.MAIN)
-	layout.ground_label(c, "← 检修吊机 · 可调掩体", Vector2(-4.45,-1.2),layout.SIDE).pixel_size = 0.013
+	# 东西导向牌设在岔口内侧；三片曝光片与西侧齿轮从大厅中央即可分辨。
+	for east in [false,true]:
+		var x := 5.75 if east else -5.75
+		var ink := CYAN if east else COPPER
+		var post = layout.block(c,Vector3(x,1.12,-4.85),Vector3(4.05,0.72,0.17),NIGHT)
+		var title = layout.caption(post,"东 · 校准曝光柜 →" if east else "← 西 · 清除栈道守卫",Vector3(0,0.26,0.51))
+		title.modulate = ink.lightened(0.2)
+		title.pixel_size = 0.011
+		layout.block(c,Vector3(x,0.45,-4.85),Vector3(0.16,0.9,0.16),BRONZE)
+		if east:
+			for k in 3:
+				layout.block(post,Vector3((k-1)*0.36,0.50,0),Vector3(0.23,0.44,0.09),ink,true)
+		else:
+			_ring(layout,post,Vector3(0,0.65,0),0.35,0.085,ink).rotation.x = PI/2
+	# 中庭井底的刻度环位于横桥下方，无碰撞，不形成 C 到 H 的捷径。
+	var dial := Vector3(0,-2.7,-74)
+	_disc(layout,layout,dial,8.5,0.38,NIGHT,false)
+	for radius: float in [4.3,7.9]:
+		_ring(layout,layout,dial+Vector3.UP*0.23,radius,0.10,BRONZE)
+	for k in 12:
+		var theta := k * TAU/12
+		var at := dial + Vector3(sin(theta)*6.9,0.26,cos(theta)*6.9)
+		layout.block(layout,at,Vector3(0.18,0.07,1.05),COPPER).rotation.y = theta
+	for n in 2:
+		var x := (n-0.5)*1.75
+		var pedestal = layout.block(c,Vector3(x,0.65,-6.05),Vector3(1.32,1.24,0.43),STONE)
+		var lamp: MeshInstance3D = layout.block(pedestal,Vector3(0,0.7,0),Vector3(0.95,0.28,0.35),NIGHT)
+		layout._wing_beacons.append(lamp)
+		layout.caption(pedestal,"校准" if n == 0 else "供能",Vector3(0,0.23,0.56))
+	layout.caption(c,"中庭对侧 · 试车场",Vector3(0,2.05,-6.05))
 
 	var d: Node3D = layout.get_node("D")
 	# 深井的暗色井口低于护栏，弯曲的实体护栏把近路与外侧绕行路分开。
@@ -38,6 +66,9 @@ static func dress(layout) -> void:
 	_threshold(layout,d,Vector2(3.5,0),Vector2(0,1),"跨线迎战",true)
 
 	var f: Node3D = layout.get_node("F")
+	_threshold(layout,f,Vector2(-7,4.1),Vector2.RIGHT,"检修口",true)
+	_threshold(layout,f,Vector2(8.1,-1),Vector2.DOWN,"观察窗",true)
+	_threshold(layout,f,Vector2(-8.1,0),Vector2.DOWN,"吊笼检修",true)
 	# 横向开口在中段，两侧腐尸分别有视线；外侧永久石挡与可移动吊笼分开。
 	for z: float in [-4.45,4.45]:
 		var wall = layout.solid(f,Vector3(0.8,0.86,z),Vector3(0.51,1.72,3.75),STONE)
@@ -47,7 +78,9 @@ static func dress(layout) -> void:
 	for x: float in [-4,4]:
 		_ring(layout,f,Vector3(x,0.019,2),1.32,0.045,CYAN)
 	var h: Node3D = layout.get_node("H")
-	_threshold(layout,h,Vector2(0,3),Vector2(1,0),"试车线",false)
+	_threshold(layout,h,Vector2(0,3),Vector2.RIGHT,"试车线",false)
+	for x: float in [-6,6]:
+		_threshold(layout,h,Vector2(x,0),Vector2.DOWN,"试车线",false)
 	for p: Vector2 in [Vector2(-6.6,1.6),Vector2(6.6,-0.8)]:
 		_disc(layout,h,Vector3(p.x,0.64,p.y),0.77,1.28,STONE,true)
 

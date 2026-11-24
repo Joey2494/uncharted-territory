@@ -195,13 +195,13 @@ func use_station(action: StringName) -> bool:
 				message = "先清除 F 的守卫，再打开返程高架。"
 			else:
 				_highwalk = true
-				message = "F–B 高架与 C–I 维修门已解锁。高架在两种水位均可通行。"
+				message = "F–B 高架与 C–I 维修门已解锁。高架两种水位均可通行，中段有星蓝药剂。"
 		&"release":
 			message = _release()
 		&"service":
 			if _storage == Storage.RELEASED:
 				_service = true
-				message = "I–D 维修捷径已打开。"
+				message = "I–D 维修捷径已打开，转角有生命药剂。"
 			else:
 				message = "泄压成功后可开启 I–D 小回环。"
 		&"reward":
@@ -287,8 +287,8 @@ func _garden_reward() -> String:
 	var record := "溢流记录 · 停机后，F 的储能可沿 □ 西向线路回流至 I。"
 	if _inventory.has_claimed(REWARD_ID):
 		return record
-	if _inventory.grant_reward(REWARD_ID, {_inventory.ATTACK_RUNE: 1}):
-		return record + " 获得攻击强化符文 ×1。"
+	if _inventory.grant_reward(REWARD_ID, {_inventory.ATTACK_RUNE: 1, _inventory.Catalog.ENERGY_POTION: 2}):
+		return record + " 获得强化符文 ×1、星蓝药剂 ×2。"
 	return record + " 背包已满，可稍后领取。"
 
 
@@ -480,6 +480,11 @@ func _refresh_world() -> void:
 	_set_blocked(&"FB", not _highwalk)
 	_set_blocked(&"BG", _storage != Storage.RELEASED)
 	_set_blocked(&"ID", _high or not _service)
+	# 未取走的补给跟随通路状态；拾取后节点已释放，调潮或重置不会再次生成。
+	var highwalk_potion := get_node_or_null("Supplies/HighwalkPotion") as Node3D
+	if highwalk_potion: highwalk_potion.visible = _highwalk
+	var service_potion := get_node_or_null("Supplies/ServicePotion") as Node3D
+	if service_potion: service_potion.visible = _service and not _high
 	_station_lamps[&"conductor"].visible = _conductor == Conductor.RACK
 	_station_lamps[&"charge"].visible = _storage == Storage.STORED
 	_station_lamps[&"release"].visible = _storage == Storage.RELEASED or (_storage == Storage.STORED and _conductor == Conductor.WEST and not _high)

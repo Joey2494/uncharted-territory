@@ -52,8 +52,9 @@ func press(host: Node, path: String) -> void:
 			nav.level_select.get_level_button(&"level2").pressed.emit()
 
 func reload_finished() -> void:
-	for i in 4:
-		await process_frame
+	# 整合版通过后台加载器换场，场景就绪后再检查新局的物品与门状态。
+	await scene_changed
+	await frames()
 
 func gate_is_solid(gate: Node3D) -> bool:
 	var axis := gate.global_basis.z
@@ -97,6 +98,7 @@ func run() -> void:
 	check(inv.potion_count == 1, "真实 E 键通过背包拾取到达药剂")
 	var exit_point := floor_point(map, "ExitArea")
 	var relay_control := floor_point(map, "Devices/Relay", Vector3.BACK * 1.35)
+	check(not map.get_node("Supplies/ReturnLoopPotion").visible, "前厅解锁前回环补给不可见")
 	var shortcut_control := floor_point(map, "Devices/Shortcut", Vector3.BACK * 1.35)
 	var antechamber := floor_point(map, "Regions/Antechamber")
 	await go(player, exit_point)
@@ -169,6 +171,12 @@ func run() -> void:
 	action("interact")
 	await create_timer(1.03).timeout
 	check_seals(map, ["HubNorth", "AntechamberWest"], false)
+	await go(player, floor_point(map, "Supplies/ReturnLoopPotion", Vector3.BACK * 0.7))
+	var before_loop: int = player.get_node("ItemInventory").potion_count
+	action("interact")
+	action("interact")
+	await process_frame
+	check(player.get_node("ItemInventory").potion_count == before_loop + 1 and not map.has_node("Supplies/ReturnLoopPotion"), "回环中央按 E 只拾取一份补给")
 	await go(player, floor_point(map, "Regions/Boss", Vector3.BACK * 4.0))
 	check_seals(map, boss_gates, true)
 	check(boss.can_process() and not boss.is_dead(), "真实 Boss 已唤醒")

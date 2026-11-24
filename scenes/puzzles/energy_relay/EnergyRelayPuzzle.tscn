@@ -270,6 +270,6 @@ outline_size = 9
 [node name="Reward" parent="." instance=ExtResource("control")]
 receiver_path = NodePath("..")
 control_id = &"reward"
-caption = "领取攻击强化符文"
+caption = "领取档案室补给"
 short_caption = "符文"
 accent = Color(0.94, 0.69, 0.37, 1)

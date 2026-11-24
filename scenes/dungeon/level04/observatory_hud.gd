@@ -72,7 +72,7 @@ func _input(event: InputEvent) -> void:
 
 func _open_map() -> void:
 	if level.finished or get_tree().paused: return
-	_show_overlay("观测站路线","金线为主路　青线为支路　● 当前位置　✓ 支线完成",true)
+	_show_overlay("观测站路线","金线 主路　◇ 支线　● 你　✓ 已完成　× 悬停查看锁因",true)
 	map.show()
 	map.queue_redraw()
 
