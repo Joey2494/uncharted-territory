@@ -88,17 +88,17 @@ func play_campaign() -> void:
 	check(level.combat.enemy_count() > 0 and not level.is_exit_open() and not progress.is_completed(&"level4"),"女巫先倒下，尖蓟近卫仍能守门")
 	await clear("I",3,4)
 	var earnings: int = level.inventory.gold
-	check(earnings > 0 and PROFILE.coins == 50 and not progress.is_completed(&"level4"),"清敌后本局金币尚未结算")
+	check(earnings > 50 and PROFILE.coins == earnings and not progress.is_completed(&"level4"),"清敌金币实时进入共享钱包")
 	await go("J",0,-2)
 	var result: Control = hud.get_result_screen()
 	check(host.get_run_state() == host.RunState.VICTORY and is_instance_valid(result),"登台打开正式胜利结算")
 	if not result: return
 	check(not result.next_level_button.visible and not host.advance_to_next_level(),"第四关作为末关收尾")
 	check(host._run_result.rooms_visited == 8 and host._run_result.rooms_total == 12,"零支线结算显示探索八房")
-	check(progress.is_completed(&"level4") and PROFILE.coins == 50+earnings,"通关记录与本局余额写入档案")
+	check(progress.is_completed(&"level4") and PROFILE.coins == earnings,"通关写进度且不重复入账金币")
 	check(tracker._snapshot.complete and tracker.get_node("%QuestTask").text == "关卡目标已完成", "实际登台同步更新统一任务栏完成状态")
 	host._on_exit_reached()
-	check(PROFILE.coins == 50+earnings,"重复出口信号不重复发奖")
+	check(PROFILE.coins == earnings,"重复出口信号不重复发奖")
 
 func continue_and_lose() -> void:
 	var wallet: int = PROFILE.coins
@@ -115,7 +115,7 @@ func continue_and_lose() -> void:
 	level.player.take_damage(999)
 	await frames(180)
 	check(host.get_run_state() == host.RunState.DEAD and is_instance_valid(host._hud.get_result_screen()),"死亡显示统一失败面板")
-	check(PROFILE.coins == wallet and progress.is_completed(&"level4"),"失败保留之前的通关记录与钱包余额")
+	check(PROFILE.coins == wallet+8 and progress.is_completed(&"level4"),"失败保留实时入账金币和之前的通关记录")
 
 func key_press(code: Key) -> void:
 	var event := InputEventKey.new()

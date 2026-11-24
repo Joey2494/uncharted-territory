@@ -1,4 +1,8 @@
 extends RefCounted
+class WalletEvents:
+	extends RefCounted
+	signal changed(balance: int)
+static var events := WalletEvents.new()
 ## Shared persistent wallet, character ownership and confirmed selection.
 static var override_path := ""
 static var _loaded_path := ""
@@ -8,6 +12,7 @@ static var _selected_character: String = "knight"
 static var settled_runs: Array = []
 static var message := ""
 const PRICES := {"lan": 100, "iron": 150, "astra": 180}
+const MAX_COINS := 100000000
 
 static func ensure_loaded() -> void:
 	var path := override_path if not override_path.is_empty() else "user://player_profile.cfg"
@@ -85,7 +90,9 @@ static func set_coins(amount: int) -> bool:
 	if amount == coins: return true
 	var previous := coins
 	coins = clampi(amount, 0, 100000000)
-	if save(): return true
+	if save():
+		events.changed.emit(coins)
+		return true
 	coins = previous
 	return false
 
@@ -108,6 +115,7 @@ static func unlock_character(id: String) -> bool:
 		unlocked.erase(id)
 		return false
 	message = "角色已解锁，可选择进入游戏"
+	events.changed.emit(coins)
 	return true
 
 ## 通关结算入账：同一局（run_id）只结算一次；保存失败回滚。

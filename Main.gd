@@ -55,8 +55,8 @@ func _ready() -> void:
 		get_tree().change_scene_to_file.call_deferred("res://tools/export/PackageEntry.tscn")
 		return
 	PROFILE.ensure_loaded()
-	# 本局金币从 0 开始；只有通关结算时才写入永久钱包。
-	_items.gold = 0
+	# Formal campaigns and character purchases share the saved wallet.
+	if not practice_run: _items.bind_shared_wallet()
 	if level_id == 2:
 		_start_screen.get_node("Center/Card/Padding/Content/Description").text = "第二关 · 导能遗迹\n击败灾厄巨蝎，从开启的出口离开。"
 		_start_screen.get_node("Center/Card/Padding/Content/Tagline").text = "循着金线，唤醒沉寂的遗迹。"
@@ -216,10 +216,10 @@ func _on_exit_reached() -> void:
 	# Set the terminal state before any UI signals; death/exit cannot replace it.
 	_run_state = RunState.VICTORY
 	MusicManager.play_context(&"victory")
-	# 通关结算：只有这里把本局余额写入永久钱包，且同一局只结算一次。
+	# Coins were persisted when earned/spent; victory must not credit them again.
 	var pending: int = _items.gold
-	_settled = practice_run or PROFILE.settle_run(_settlement_id, pending)
-	if _settled:
+	_settled = true
+	if practice_run:
 		_items.gold = 0
 		_items._publish_state()
 	_commerce.finish_run()
@@ -232,7 +232,8 @@ func _on_exit_reached() -> void:
 		"boss_name": _boss_name,
 		"boss_defeated": _boss_defeated,
 		"level_id": level_id,
-		"settled_gold": pending if _settled and not practice_run else 0,
+		"settled_gold": 0,
+		"wallet_balance": pending if not practice_run else PROFILE.coins,
 		"settlement_ok": _settled,
 		"practice_run": practice_run,
 	}
@@ -274,8 +275,8 @@ func _on_player_died() -> void:
 	# Stop the run clock and reject victory immediately; keep the world processing
 	# while the already input-locked player completes Death_A.
 	_run_state = RunState.DYING
-	# 死亡、退出、重开都不保留本局金币。
-	_items.gold = 0
+	# Only standalone practice has disposable coins.
+	if practice_run: _items.gold = 0
 	_items._publish_state()
 	_commerce.finish_run()
 	_boss_bar.hide()
@@ -474,11 +475,8 @@ func _change_scene(destination: String) -> void:
 ## 存档失败时可在胜利页重试结算；同一局不会重复入账。
 func retry_settlement() -> void:
 	if practice_run or _run_state != RunState.VICTORY or _settled: return
-	var pending: int = _items.gold
-	_settled = PROFILE.settle_run(_settlement_id, pending)
-	if _settled:
-		_items.gold = 0
-		_items._publish_state()
+	_settled = PROFILE.save()
 	_run_result["settlement_ok"] = _settled
-	_run_result["settled_gold"] = pending if _settled else 0
+	_run_result["wallet_balance"] = PROFILE.coins
+	_run_result["settled_gold"] = 0
 	_hud.get_result_screen().set_run_result(_run_result)
