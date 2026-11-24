@@ -5,11 +5,14 @@ const PLAN := preload("res://scenes/dungeon/level04/observatory_plan.gd")
 const SHORT_NAMES := {"A":"到达台","B":"装卸场","C":"分度厅","D":"配重井","E":"曝光室","F":"折光栈道","G":"邮轨台","H":"试车场","I":"主穹顶","J":"升降台","K":"旧镜室","L":"底片室"}
 var level: Node3D
 var _locks: Array[Dictionary] = []
+var _bounds := Rect2()
+
+func _ready() -> void:
+	_bounds = PLAN.bounds("A")
+	for id: String in PLAN.CENTERS: _bounds = _bounds.merge(PLAN.bounds(id))
 
 func _project(point: Vector2) -> Vector2:
-	var bounds := PLAN.bounds("A")
-	for id: String in PLAN.CENTERS: bounds = bounds.merge(PLAN.bounds(id))
-	return Vector2(24,7)+(point-bounds.position)/bounds.size*(size-Vector2(48,14))
+	return Vector2(24,7)+(point-_bounds.position)/_bounds.size*(size-Vector2(48,14))
 
 func _draw() -> void:
 	if not is_instance_valid(level) or not level.is_node_ready(): return
@@ -32,9 +35,10 @@ func _draw() -> void:
 		var pos := _project(PLAN.CENTERS[id])
 		var caption: String = id+" "+SHORT_NAMES[id]
 		if id in PLAN.OPTIONAL: caption = ("✓" if level.optional_done(id) else "◇") + caption
+		var target: bool = level.combat.is_clear("B") and ((id == "E" and not level.puzzles.calibrated) or (id == "F" and not level.combat.is_clear("F")))
 		var width := FONT.get_string_size(caption,HORIZONTAL_ALIGNMENT_LEFT,-1,12).x+8
 		var rect := Rect2(pos-Vector2(width/2,8),Vector2(width,16))
-		draw_rect(rect,Color("#344448") if level.visited.has(id) else Color("#1c2425"))
+		draw_rect(rect,Color("#665335") if target else (Color("#344448") if level.visited.has(id) else Color("#1c2425")))
 		var color := Color("#87d3c2") if id in PLAN.OPTIONAL else Color("#e7c891")
 		draw_rect(rect,Color("#7bdfee") if id == level.current_room else color.darkened(0.5),false,2 if id == level.current_room else 1)
 		draw_string(FONT,rect.position+Vector2(0,12),caption,HORIZONTAL_ALIGNMENT_CENTER,width,12,color)
