@@ -17,6 +17,9 @@ static func read(world: Node3D) -> Dictionary:
 	result.current = current
 	result.completed = completed
 	result.complete = completed.size() == result.tasks.size()
+	if world.has_method("optional_count") and world.combat.is_clear("B") and world.combat.active_room == "":
+		if not world.puzzles.calibrated and not world.combat.is_clear("F"):
+			result.focus = _task("wings","从分度大厅选择一翼","东翼观察试片并校准曝光柜；西翼清除折光栈道守卫。完成任一目标即可过横桥。","校准曝光柜 · 清除栈道守卫",0,2,false)
 	if world.has_method("get_storage_state") and not result.complete and world._active_room == &"":
 		if world._high and world._storage == world.Storage.EMPTY and result.current in [1,2,3]:
 			result.focus = _task("lower_first","检查中央潮井的潮位总控","返回中央潮井，观察水路与石刻，在潮位总控尝试调节通路","[E] 检查潮位总控 ×1",0,1,false)
@@ -44,13 +47,14 @@ static func _fourth(world: Node3D) -> Dictionary:
 	var tasks: Array[Dictionary] = []
 	for room: String in ["B", "F", "H", "I"]:
 		if room == "F":
-			tasks.append(_task("calibrated", "检查曝光记录室密码柜", "观察曝光轮与试片，校准密码柜以接通北门", "校准曝光记录室密码柜 ×1", int(world.puzzles.calibrated), 1, world.puzzles.calibrated))
+			tasks.append(_task("calibrated", "校准东翼曝光柜", "到东翼曝光记录室观察曝光轮与试片。栈道清场后，可从横桥进入并使用对照片灯。", "校准曝光记录室密码柜 ×1", int(world.puzzles.calibrated), 1, world.puzzles.calibrated))
 		var done: bool = combat.is_clear(room)
 		var total: int = combat.ROSTERS[room].size() + (1 if combat.REINFORCEMENTS.has(room) else 0)
 		var count := total if done else 0
 		if combat.active_room == room:
-			count = total - combat.enemy_count() - (0 if combat._reinforced else 1)
-		var task := _task("combat_" + room, "清除" + world.NAMES[room] + "守卫", "沿主路进入" + world.NAMES[room] + "，清除守卫后继续北行", "击败守卫 ×%d" % total, maxi(0, count), total, done)
+			count = total - combat.enemy_count() - int(combat.REINFORCEMENTS.has(room) and not combat._reinforced)
+		var hints := {"B":"从到达台向北进入装卸场，清场后前往分度大厅。","F":"从分度大厅西门或东翼横桥进入折光栈道。跨入内场后，清除守卫及增援。","H":"双翼已就绪。东西试车门均可进入，先在入口观察扫光，再跨线作战。","I":"直走穹顶或经底片室绕行。进门后可先领邮包，越过门廊再迎战女巫与近卫。"}
+		var task := _task("combat_" + room, "清除" + world.NAMES[room] + "守卫", hints[room], "击败守卫 ×%d" % total, maxi(0, count), total, done)
 		task.active = combat.active_room == room
 		tasks.append(task)
 	tasks.append(_task("gate", "等待北侧升降台通路开启", "清除主穹顶完整守卫名单后，等待实体闸门完全开启", "等待北侧闸门开启 ×1", int(world.is_exit_open()), 1, world.is_exit_open()))

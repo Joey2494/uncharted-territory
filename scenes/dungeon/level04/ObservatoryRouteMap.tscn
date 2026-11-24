@@ -54,11 +54,11 @@ text = "日晷观测站 · 路线图"
 [node name="Legend" type="Label" parent="Overlay/Center/Card/Rows"]
 theme_override_font_sizes/font_size = 15
 horizontal_alignment = 1
-text = "金线 主路　青线 支线　● 当前位置　✓ 已完成"
+text = "金线 主路　◇ 支线　● 你　✓ 已完成　× 悬停查看锁因"
 
 [node name="Map" type="Control" parent="Overlay/Center/Card/Rows"]
 custom_minimum_size = Vector2(408, 308)
-mouse_filter = 2
+mouse_filter = 1
 script = ExtResource("map")
 
 [node name="Resume" type="Button" parent="Overlay/Center/Card/Rows"]

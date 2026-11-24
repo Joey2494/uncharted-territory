@@ -1,24 +1,51 @@
 extends Control
-## 按实际方位画地图。未访问房间保留轮廓，当前位置和支线完成分别标记。
+## Tab 路线图按实际桥廊绘制，悬停闸门可查看当前封锁原因。
 const FONT := preload("res://scenes/ui/dungeon_font.tres")
+const PLAN := preload("res://scenes/dungeon/level04/observatory_plan.gd")
+const SHORT_NAMES := {"A":"到达台","B":"装卸场","C":"分度厅","D":"配重井","E":"曝光室","F":"折光栈道","G":"邮轨台","H":"试车场","I":"主穹顶","J":"升降台","K":"旧镜室","L":"底片室"}
 var level: Node3D
+var _locks: Array[Dictionary] = []
+
+func _project(point: Vector2) -> Vector2:
+	var bounds := PLAN.bounds("A")
+	for id: String in PLAN.CENTERS: bounds = bounds.merge(PLAN.bounds(id))
+	return Vector2(24,7)+(point-bounds.position)/bounds.size*(size-Vector2(48,14))
 
 func _draw() -> void:
-	if not is_instance_valid(level): return
-	var boxes := {}
-	var step := minf(40.0,size.y/8.1)
-	var w := minf(116.0,(size.x-18)/3.2)
-	for id in level.NAMES:
-		var anchor: Vector3 = level.layout.room_center(id)
-		var center := Vector2(size.x*0.5+signf(anchor.x)*(w+8),size.y-step*0.55+anchor.z/24.0*step)
-		boxes[id] = Rect2(center-Vector2(w*0.5,step*0.35),Vector2(w,step*0.7))
-	for edge: String in level.EDGES:
-		draw_line(boxes[edge[0]].get_center(),boxes[edge[1]].get_center(),Color("#7d9196"),1.5,true)
-	for id in boxes:
-		var visited: bool = level.visited.has(id)
-		var color := Color("#edc584") if id in level.MAIN else Color("#73cabc")
-		var rect: Rect2 = boxes[id]
-		if visited: draw_rect(rect,Color("#324652"))
-		draw_rect(rect,color if visited else Color("#60727a"),false,2.4 if id == level.current_room else 1.0)
-		var marker := "●" if id == level.current_room else ("✓" if level.optional_done(id) else "")
-		draw_string(FONT,rect.position+Vector2(0,rect.size.y*0.5+5),marker+id+" "+level.NAMES[id],HORIZONTAL_ALIGNMENT_CENTER,rect.size.x,13,color)
+	if not is_instance_valid(level) or not level.is_node_ready(): return
+	_locks.clear()
+	for edge: String in PLAN.LINKS:
+		var path := PLAN.bridge_path(edge[0],edge[1])
+		var line := PackedVector2Array()
+		for p in path: line.append(_project(p))
+		var opened: bool = level.layout.passage_open(edge[0],edge[1])
+		var optional := edge[0] in PLAN.OPTIONAL or edge[1] in PLAN.OPTIONAL
+		var color := Color("#74c6b9") if optional else Color("#d2b37b")
+		draw_polyline(line,color if opened else Color("#546064"),2,true)
+		if not opened:
+			var n := PLAN.gate_segment(path)
+			var at := line[n].lerp(line[n+1],0.5)
+			draw_line(at-Vector2(2,2),at+Vector2(2,2),Color("#e69d78"),1.5,true)
+			draw_line(at+Vector2(-2,2),at+Vector2(2,-2),Color("#e69d78"),1.5,true)
+			_locks.append({"point":at,"edge":edge})
+	for id: String in PLAN.CENTERS:
+		var pos := _project(PLAN.CENTERS[id])
+		var caption: String = id+" "+SHORT_NAMES[id]
+		if id in PLAN.OPTIONAL: caption = ("✓" if level.optional_done(id) else "◇") + caption
+		var width := FONT.get_string_size(caption,HORIZONTAL_ALIGNMENT_LEFT,-1,12).x+8
+		var rect := Rect2(pos-Vector2(width/2,8),Vector2(width,16))
+		draw_rect(rect,Color("#344448") if level.visited.has(id) else Color("#1c2425"))
+		var color := Color("#87d3c2") if id in PLAN.OPTIONAL else Color("#e7c891")
+		draw_rect(rect,Color("#7bdfee") if id == level.current_room else color.darkened(0.5),false,2 if id == level.current_room else 1)
+		draw_string(FONT,rect.position+Vector2(0,12),caption,HORIZONTAL_ALIGNMENT_CENTER,width,12,color)
+	var player: Vector3 = level.player.global_position
+	var dot := _project(Vector2(player.x,player.z))
+	draw_circle(dot,3.5,Color("#162d38"))
+	draw_circle(dot,2.3,Color("#7bdfee"))
+
+func _get_tooltip(at_position: Vector2) -> String:
+	for lock in _locks:
+		if at_position.distance_to(lock.point) < 9:
+			var reason: String = level.passage_lock_reason(lock.edge)
+			return "%s—%s · %s" % [lock.edge[0],lock.edge[1],reason if reason != "" else "闸门升起中"]
+	return ""

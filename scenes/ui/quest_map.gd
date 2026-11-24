@@ -52,7 +52,7 @@ func _ready() -> void:
 	location = _label(content,"",14,Color("73d5ec"))
 	objective = _label(content,"",15,Color("f3ce78"))
 	view = VIEW.new()
-	view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	view.mouse_filter = Control.MOUSE_FILTER_PASS
 	view.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	content.add_child(view)
 	legend = _label(content,"● 你的位置    ◇ 主线目标    青色：可选路线    × 当前封锁",12,Color("c2c4af"))
@@ -126,6 +126,8 @@ func _refresh() -> void:
 	view.custom_minimum_size = Vector2(0,maxf(100,dimensions.y-270*factor))
 	view.text_scale = factor
 	view.snapshot = DATA.read(tracker.world,tracker._snapshot,host.level_id)
+	if host.level_id == 4:
+		note.text = "菱形房号为可选探索。指向房间可查看名称，指向 × 可查看开门条件。"
 	location.text = "你的位置："+view.snapshot.location
 	var target: Dictionary = view.snapshot.target
 	objective.text = "主线目标已全部完成" if target.is_empty() else "主线目标：%s\n%s  %s" % [target.name,target.action,target.quantity]

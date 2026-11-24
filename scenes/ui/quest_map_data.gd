@@ -18,12 +18,13 @@ static func read(world: Node3D, status: Dictionary, level: int) -> Dictionary:
 		for link: String in OBSERVATORY.LINKS:
 			var a := link.substr(0,1)
 			var b := link.substr(1,1)
-			var p := OBSERVATORY.doorway(a,b)
-			var q := OBSERVATORY.doorway(b,a)
+			var points := OBSERVATORY.bridge_path(a,b)
+			var segment := OBSERVATORY.gate_segment(points)
 			var opened: bool = world.layout.passage_open(a,b)
-			var rect := Rect2(p,Vector2.ZERO).expand(q).grow(2.0)
-			paths.append({"id":link,"bounds":rect,"open":opened,"optional":a in OBSERVATORY.OPTIONAL or b in OBSERVATORY.OPTIONAL})
-			locks.append({"point":(p+q)*0.5,"open":opened})
+			var rect := Rect2(points[0],Vector2.ZERO)
+			for point in points: rect = rect.expand(point)
+			paths.append({"id":link,"points":points,"bounds":rect.grow(2),"open":opened,"optional":a in OBSERVATORY.OPTIONAL or b in OBSERVATORY.OPTIONAL})
+			locks.append({"point":points[segment].lerp(points[segment+1],0.5),"open":opened,"reason":world.passage_lock_reason(link),"id":link})
 	elif level == 3:
 		for id in TIDE.ROOMS:
 			var node: Node3D = world.get_node("Rooms/"+String(id))
@@ -54,7 +55,7 @@ static func read(world: Node3D, status: Dictionary, level: int) -> Dictionary:
 		bounds = bounds.merge(room.bounds)
 		if room.bounds.has_point(_point(player)): location = room.name
 	for path in paths: bounds = bounds.merge(path.bounds)
-	return {"rooms":rooms,"paths":paths,"locks":locks,"player":_point(player),"location":location,"target":target,"bounds":bounds.grow(3)}
+	return {"rooms":rooms,"paths":paths,"locks":locks,"player":_point(player),"location":location,"target":target,"bounds":bounds.grow(3),"observatory":level == 4}
 
 static func goal(world: Node3D, status: Dictionary, level: int) -> Dictionary:
 	if status.is_empty() or status.get("complete",false): return {}
@@ -62,6 +63,8 @@ static func goal(world: Node3D, status: Dictionary, level: int) -> Dictionary:
 	var id: String = task.id
 	var destinations: Dictionary
 	if level == 4:
+		if id == "wings":
+			return {"id":id,"name":"东翼 / 西翼","point":OBSERVATORY.CENTERS.E,"action":task.target,"quantity":"任选先后","markers":[{"id":"E","point":OBSERVATORY.CENTERS.E},{"id":"F","point":OBSERVATORY.CENTERS.F}]}
 		var room: String = {"combat_B":"B","calibrated":"E","combat_F":"F","combat_H":"H","combat_I":"I","gate":"J","exit":"J"}.get(id,"")
 		return {"id":id,"name":OBSERVATORY.NAMES[room],"point":OBSERVATORY.CENTERS[room],"action":task.title,"quantity":"%d/%d" % [task.count,task.total]} if not room.is_empty() else {}
 	elif level == 1:
