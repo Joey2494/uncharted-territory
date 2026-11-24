@@ -55,6 +55,13 @@ func run() -> void:
 	check(puzzles.interact(&"p_dial") and paused and not host.player.can_process(), "读片时角色和战斗冻结")
 	await key(KEY_ENTER)
 	check(puzzles.exposure == 2, "逆转到暮片")
+	check(puzzles.has_method("restore_comparison_lamp"), "F 清场可以给 E 的读片台供电")
+	if puzzles.has_method("restore_comparison_lamp"):
+		check(puzzles.comparison_phases().is_empty(), "供电前不能并排查看试片")
+		puzzles.restore_comparison_lamp()
+		check(puzzles.comparison_phases() == [0, 2], "只保留亲自看过的晨、暮两片")
+		puzzles.operate(&"turn", 0, -1)
+		check(puzzles.comparison_phases() == [0, 2, 1], "新读过的午片入册，保留查看次序")
 	await key(KEY_ESCAPE)
 	check(not paused and puzzles.interact(&"p_safe"), "离台后恢复并可开柜")
 	puzzles.operate(&"digit", 0, 4)

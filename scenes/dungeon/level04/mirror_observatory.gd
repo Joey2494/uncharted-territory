@@ -3,6 +3,7 @@ extends Node3D
 const CHARACTERS := preload("res://scenes/player/character_catalog.gd")
 const STATION := preload("res://scenes/dungeon/level03/tide_station.gd")
 const CATALOG := preload("res://data/item_catalog.gd")
+const MAINTENANCE_POTION := preload("res://scenes/items/HealthPotion.tscn")
 const PLAN := preload("res://scenes/dungeon/level04/observatory_plan.gd")
 const MAIN := ["A","B","C","E","F","H","I","J"]
 const EDGES := PLAN.LINKS
@@ -25,6 +26,7 @@ var won := false
 var elapsed := 0.0
 var _gate_state := {}
 var _labels := {}
+var _wing_lights := -1
 
 func _ready() -> void:
 	$Camera3D.set_safe_frame(Rect2(0.04,0.18,0.91,0.74))
@@ -45,6 +47,8 @@ func _ready() -> void:
 	combat.feedback.connect(note)
 	combat.battle_started.connect(_battle_started)
 	combat.battle_cleared.connect(_battle_cleared)
+	combat.cage_landed.connect(_cage_landed)
+	puzzles.progress_changed.connect(_puzzle_changed)
 	player.died.connect(_die)
 	_refresh_gates()
 
@@ -54,19 +58,79 @@ func _battle_started(id: String) -> void:
 
 func _battle_cleared(id: String) -> void:
 	layout.seal_room(id,false)
+	if id == "F" and not puzzles.calibrated:
+		puzzles.restore_comparison_lamp()
 	_refresh_gates()
 	inventory.grant_reward("observatory_encounter_"+id,{},12 if id != "I" else 25)
-	note("%s清场 · 获得补给金币" % NAMES[id])
+	var message := "%s清场 · 获得补给金币" % NAMES[id]
+	if id == "F":
+		message += "。横桥通往 E，读片台已恢复供电。" if not puzzles.calibrated else "。北侧试车门已开。"
+	note(message)
+
+## 面板操作会暂停世界，校准和显影直接通知门锁，离台后即可通行。
+func _puzzle_changed() -> void:
+	if puzzles.calibrated and not combat.is_clear("F"):
+		combat.light_reinforcement_window()
+	_refresh_gates()
+
+func _cage_landed(first_placement: bool) -> void:
+	if first_placement:
+		var bend: Vector2 = PLAN.maintenance_pickup()
+		var potion := MAINTENANCE_POTION.instantiate() as Node3D
+		potion.position = Vector3(bend.x,0,bend.y)
+		potion.add_to_group("observatory_maintenance_supply")
+		add_child(potion)
+		_refresh_gates()
+	note("吊笼已降在%s廊。" % ("左" if combat.cage_side < 0 else "右"))
+	_claim_rigging()
+
+func _claim_rigging() -> void:
+	if combat.is_clear("F") and not inventory.has_claimed("observatory_rigging"):
+		claim("observatory_rigging",{CATALOG.GUARD_RUNE:1},"检修完成 · 获得守护符文")
+
+## 地图和实体门共用开放条件。战斗封场独立于永久解锁，优先显示当前的封场原因。
+func passage_lock_reason(edge: String) -> String:
+	if edge.length() != 2: return "无通路"
+	if edge not in EDGES: edge = edge[1] + edge[0]
+	if edge not in EDGES: return "无通路"
+	if combat.active_room != "" and edge.contains(combat.active_room):
+		return "%s封场 · 清除守卫" % NAMES[combat.active_room]
+	return _progress_lock_reason(edge)
+
+func _progress_lock_reason(edge: String) -> String:
+	match edge:
+		"BC":
+			if not combat.is_clear("B"): return "待清除 B 装卸场守卫"
+		"EF":
+			if not puzzles.calibrated and not combat.is_clear("F"): return "校准 E 或清除 F 后开放横桥"
+		"EK":
+			if not puzzles.calibrated: return "待校准 E 曝光柜"
+		"DF":
+			if not combat.is_clear("D"): return "先清除 D 守卫，再落下吊笼"
+			if not combat.cage_placed: return "待 D 吊笼落位"
+		"FG","GE":
+			if not combat.is_clear("F"): return "待清除 F 栈道守卫"
+		"FH","EH":
+			if not puzzles.calibrated and not combat.is_clear("F"): return "待校准 E 曝光柜、清除 F 栈道守卫"
+			if not puzzles.calibrated: return "待校准 E 曝光柜"
+			if not combat.is_clear("F"): return "待清除 F 栈道守卫"
+		"HI","HL","LI":
+			if not combat.is_clear("H"): return "待清除 H 试车场守卫"
+			if edge == "LI" and not puzzles.film_developed: return "待 L 灯台显影"
+		"IJ":
+			if not combat.is_clear("I"): return "待击败 I 女巫与近卫"
+	return ""
 
 func _refresh_gates() -> void:
+	# 显影完成时灯台面板仍暂停世界。实体闸恢复处理后再记录其授权，避免漏掉开门动画。
+	if not can_process(): return
+	var powered: bool = combat.is_clear("F")
+	var wing_lights := int(puzzles.calibrated) + 2 * int(powered)
+	if wing_lights != _wing_lights:
+		_wing_lights = wing_lights
+		layout.set_wing_lights(puzzles.calibrated,powered)
 	for edge: String in EDGES:
-		var opened := true
-		match edge:
-			"BC": opened = combat.is_clear("B")
-			"EF","EK": opened = puzzles.calibrated
-			"FG","FH": opened = combat.is_clear("F")
-			"HI","HL": opened = combat.is_clear("H")
-			"IJ": opened = combat.is_clear("I")
+		var opened := _progress_lock_reason(edge).is_empty()
 		if _gate_state.get(edge) != opened:
 			_gate_state[edge] = opened
 			layout.set_passage(edge[0],edge[1],opened)
@@ -106,15 +170,15 @@ func use_station(id: StringName) -> bool:
 	match id:
 		&"left",&"right":
 			var side := -1 if id == &"left" else 1
+			var already_placed: bool = combat.cage_side == side
 			if not combat.set_cage(side):
 				note("吊笼暂不能移位，请先让出停靠区。")
 				return false
 			if combat.requested_cage_side != combat.cage_side:
 				note("已挂好链轮，吊笼将在停靠区腾空后落下。")
-			else:
-				note("吊笼已降在%s廊。" % ("左" if side < 0 else "右"))
-			if combat.is_clear("F") and not inventory.has_claimed("observatory_rigging"):
-				claim("observatory_rigging",{CATALOG.GUARD_RUNE:1},"检修完成 · 获得守护符文")
+			elif already_placed:
+				note("吊笼停在%s廊。" % ("左" if side < 0 else "右"))
+				_claim_rigging()
 			return true
 		&"supply": return claim("observatory_aid",{CATALOG.HEALTH_POTION:1},"已收起生命药剂 · R 使用")
 		&"shutter": return combat.operate_shutter()
@@ -132,7 +196,7 @@ func note(message: String) -> void:
 
 func optional_done(id: String) -> bool:
 	match id:
-		"D": return combat.cage_side != 0
+		"D": return combat.cage_placed
 		"G": return mail.chosen()
 		"K": return puzzles.mirror_claimed
 		"L": return puzzles.film_claimed
@@ -156,9 +220,10 @@ func objective() -> String:
 	if combat.active_room != "":
 		return "%s · 清场   场内守卫 %d" % [NAMES[combat.active_room],combat.enemy_count()]
 	if not combat.is_clear("B"): return "北行去 B 装卸场，清除守卫"
-	if not puzzles.calibrated: return "在 E 记录室读曝光盘，校准三位密码柜"
-	if not combat.is_clear("F"): return "前往 F 栈道，绕过隔墙迎击守卫"
-	if not combat.is_clear("H"): return "去 H 试车场，看一次无伤示范后进入内场"
+	if not puzzles.calibrated and not combat.is_clear("F"): return "东 · 校准 E 曝光柜　　西 · 清除 F 栈道守卫"
+	if not puzzles.calibrated: return "过横桥去东翼 E · 对照曝光片，校准记录柜"
+	if not combat.is_clear("F"): return "过横桥去西翼 F · 从观察窗看增援侧，再进栈道清场"
+	if not combat.is_clear("H"): return "两侧试车门已开 · 前往 H 观察扫光，跨内线迎战"
 	if not combat.is_clear("I"): return "去 I 主穹顶，击败袍冠女巫与尖蓟近卫"
 	return "穿过北门，在 J 升降台中央离站"
 
@@ -173,8 +238,8 @@ func _physics_process(delta: float) -> void:
 	var encounter_room := current_room
 	match current_room:
 		"D": if not combat.is_clear("B"): encounter_room = ""
-		"F": if not combat.is_clear("B") or not puzzles.calibrated: encounter_room = ""
-		"H": if not combat.is_clear("F"): encounter_room = ""
+		"F": if not combat.is_clear("B"): encounter_room = ""
+		"H": if not combat.is_clear("F") or not puzzles.calibrated: encounter_room = ""
 		"I": if not combat.is_clear("H"): encounter_room = ""
 	combat.update_room(encounter_room,delta)
 	if finished: return

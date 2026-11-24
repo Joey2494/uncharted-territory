@@ -1,5 +1,6 @@
 extends Node3D
 ## 曝光盘、双镜和暗房共享本局状态。面板只发操作，世界中的读数与光路取自同一份数据。
+signal progress_changed
 const PANEL := preload("res://scenes/dungeon/level04/observatory_bench.gd")
 const PHOTO := preload("res://scenes/dungeon/level04/night_shift_plates.png")
 const REWARD := "level04_starlight_register"
@@ -28,6 +29,9 @@ var film_developed := false
 var film_claimed := false
 var inscription_lit := false
 var exposure := 0
+var comparison_powered := false
+var _read_phases: Array[int] = []
+var _table_lamp: MeshInstance3D
 var digits := [0, 0, 0]
 var hint_depth := 0
 var plates := [1, 0, 0]
@@ -68,6 +72,8 @@ func _station(id: StringName, room: StringName, x: float, z: float, label: Strin
 
 func _build_exposure() -> void:
 	var dial := _station(&"p_dial", &"E", -2.5, 2.6, "转动曝光轮")
+	_table_lamp = layout.block(dial,Vector3(0,0.58,-0.46),Vector3(1.3,0.12,0.18),CYAN,true)
+	_table_lamp.hide()
 	var wheel := CylinderMesh.new()
 	wheel.top_radius = 0.56
 	wheel.bottom_radius = 0.56
@@ -172,6 +178,18 @@ func _build_darkroom() -> void:
 func modal_open() -> bool:
 	return display != &""
 
+## 发电恢复后，可把转轮上实际看过的片留在灯台。按查看顺序摆放，柜子的顺序仍由玩家读刻字。
+func restore_comparison_lamp() -> void:
+	comparison_powered = true
+	_table_lamp.show()
+
+func comparison_phases() -> Array[int]:
+	if comparison_powered: return _read_phases.duplicate()
+	return []
+
+func _record_exposure() -> void:
+	if exposure not in _read_phases: _read_phases.append(exposure)
+
 func available(id: StringName) -> bool:
 	if modal_open(): return false
 	match id:
@@ -209,6 +227,7 @@ func interact(id: StringName) -> bool:
 			level.note("完整合影已送往照相窗。显影盘旁的生命药剂和星蓝药剂可按 E 拾取。")
 		_:
 			display = id
+			if id == &"p_dial": _record_exposure()
 			status = ""
 			plate_zoom = -1
 			get_tree().paused = true
@@ -227,6 +246,7 @@ func operate(action: StringName, index := 0, delta := 1) -> void:
 		&"p_dial":
 			if action == &"turn":
 				exposure = posmod(exposure + delta, 3)
+				_record_exposure()
 				for i in 3: phase_displays[i].visible = exposure == i
 		&"p_safe":
 			match action:
@@ -240,7 +260,8 @@ func operate(action: StringName, index := 0, delta := 1) -> void:
 						operate(&"close")
 						hood.create_tween().tween_property(hood, "rotation:y", -1.1, 0.42)
 						_refresh_optics()
-						level.note("百叶已开启。北门通往栈道，东侧旧镜室也收到了日光。")
+						progress_changed.emit()
+						level.note("校准完成 · 试车门已开，可从东翼直达 H。" if comparison_powered else "校准完成 · 横桥通往 F，观察窗已照亮东北增援门。")
 						return
 					status = "锁舌没有松动。可离台复看墙片。"
 		&"p_lightbox":
@@ -254,8 +275,10 @@ func operate(action: StringName, index := 0, delta := 1) -> void:
 				plates[index] = posmod(plates[index]+delta, 3)
 				plate_zoom = -1
 				film_developed = plates == [0, 1, 2]
-				status = "显影完成。到台边取下成片。" if film_developed else ""
-				if film_developed: print_sprite.show()
+				status = "显影完成。侧门已开，可到台边取片。" if film_developed else ""
+				if film_developed:
+					print_sprite.show()
+					progress_changed.emit()
 			for i in 3: slide_knobs[i].position.x = (plates[i]-1)*0.64
 			if action in [&"plate",&"undo"] and not film_developed:
 				bench.update_rails()
