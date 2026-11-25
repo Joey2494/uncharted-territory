@@ -67,7 +67,9 @@ func run() -> void:
     check(p.position.z < -33, "玩家实际碰撞移动可穿过已开启暗门")
     p.position = Vector3(-26, 0.05, -39.5)
     await wait_frames()
+    var before_energy: int = p.get_node("ItemInventory").energy_potion_count
     check(puzzle.claim_reward(p), "可领取真实宝箱奖励")
+    check(p.get_node("ItemInventory").energy_potion_count == before_energy + 1, "原有密室宝箱同时发放一瓶星蓝药剂")
     check(not puzzle.claim_reward(p), "奖励不能重复领取")
     game.queue_free()
     await process_frame
@@ -81,5 +83,7 @@ func run() -> void:
     check(not puzzle.get_node("HiddenDoor/CollisionShape3D").disabled, "新一局恢复碰撞")
     game.queue_free()
     await process_frame
+    root.get_node("MusicManager").stop_music()
+    await create_timer(0.3).timeout
     print("SECRET_DOOR: ", checks, " checks, ", failures, " failures")
     quit(1 if failures else 0)

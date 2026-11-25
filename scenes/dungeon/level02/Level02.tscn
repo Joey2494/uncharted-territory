@@ -460,6 +460,10 @@ script = ExtResource("stone_cover")
 
 [node name="Supplies" type="Node3D" parent="."]
 
+[node name="ReturnLoopPotion" parent="Supplies" instance=ExtResource("potion")]
+position = Vector3(0, 0.34, -41)
+visible = false
+
 [node name="ArrivalPotion" parent="Supplies" instance=ExtResource("potion")]
 position = Vector3(-2, 0.34, -4)
 

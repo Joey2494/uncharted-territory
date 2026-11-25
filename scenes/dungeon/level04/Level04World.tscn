@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scenes/dungeon/level04/mirror_observatory.gd" id="1"]
 
@@ -13,6 +13,8 @@
 [ext_resource type="Script" path="res://scenes/dungeon/level04/observatory_puzzles.gd" id="8"]
 
 [ext_resource type="Script" path="res://scenes/dungeon/level04/observatory_mail.gd" id="9"]
+[ext_resource type="Script" path="res://scenes/dungeon/level04/observatory_background_environment.gd" id="10_background"]
+[ext_resource type="Script" path="res://scenes/dungeon/level04/observatory_selected_room_art.gd" id="11_room_art"]
 
 [sub_resource type="Environment" id="Env"]
 background_mode = 1
@@ -49,8 +51,12 @@ minimum_distance = 18.5
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Env")
+script = ExtResource("10_background")
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
 rotation = Vector3(-0.98, -0.51, 0)
 light_color = Color(1, 0.93, 0.8, 1)
 shadow_enabled = true
+
+[node name="SelectedRoomArt" type="Node" parent="."]
+script = ExtResource("11_room_art")

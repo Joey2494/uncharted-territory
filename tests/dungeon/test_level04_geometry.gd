@@ -55,8 +55,12 @@ func run() -> void:
 	for link: String in PLAN.LINKS:
 		var a := link.substr(0,1)
 		var b := link.substr(1,1)
-		var mid := (layout.room_center(a) + layout.room_center(b)) / 2
-		var dir := layout.room_center(a).direction_to(layout.room_center(b))
+		var path := PLAN.bridge_path(a,b)
+		var n := PLAN.gate_segment(path)
+		var middle := (path[n] + path[n+1])*0.5
+		var delta := path[n].direction_to(path[n+1])
+		var mid := Vector3(middle.x,0,middle.y)
+		var dir := Vector3(delta.x,0,delta.y)
 		var across := dir.cross(Vector3.UP)
 		check(layout.room_at(mid) == "", "过桥与进房分别计 " + link)
 		for x: float in [-2.05,0,2.05]:
@@ -69,21 +73,41 @@ func run() -> void:
 	for link: String in PLAN.LINKS:
 		var a := link.substr(0,1)
 		var b := link.substr(1,1)
-		var p := PLAN.doorway(a,b)
-		var q := PLAN.doorway(b,a)
-		var dir := p.direction_to(q)
 		check(layout.passage_open(a,b),"开门动画与物理确认 " + link)
-		# 从第一间房内连续推动标准胶囊，跨过两条真实地板接缝与门口。
-		walker.position = Vector3(p.x-dir.x,0.025,p.y-dir.y)
-		var end := Vector3(q.x+dir.x,0.025,q.y+dir.y)
-		while walker.position.distance_to(end) > 0.01:
-			var step := (end-walker.position).limit_length(0.23)
-			var collision := walker.move_and_collide(step)
-			if collision: break
-			if not intersects(walker.position+Vector3.UP*0.1,walker.position+Vector3.DOWN*0.4):
-				check(false,"桥面缺口 " + link)
-				break
-		check(walker.position.distance_to(end) < 0.04,"胶囊连续过双门槛 " + link)
+		for origin in [a,b]:
+			var target := a if origin == b else b
+			var path := PLAN.bridge_path(origin,target)
+			var leaving := path[0].direction_to(path[1])
+			var arriving := path[-2].direction_to(path[-1])
+			check(layout.room_at(world_point(path[0]-leaving)) == origin,"桥头位于出发房 " + link)
+			check(layout.room_at(world_point(path[-1]+arriving)) == target,"桥尾位于目标房 " + link)
+			path.insert(0,path[0]-leaving)
+			path.append(path[-1]+arriving)
+			walker.position = world_point(path[0])
+			for point in path.slice(1):
+				var end := world_point(point)
+				while walker.position.distance_to(end) > 0.01:
+					var hit := walker.move_and_collide((end-walker.position).limit_length(0.23))
+					if hit: break
+					if not intersects(walker.position+Vector3.UP*0.1,walker.position+Vector3.DOWN*0.4):
+						check(false,"桥面缺口 " + link + str(walker.position))
+						break
+				check(walker.position.distance_to(end)<0.04,"胶囊连续过门与折廊 " + origin + target + str(point))
+	# 通过每个战斗门口的进深与全幅采样验证实体封条，两侧高频复用的门均需独立关闭。
+	for room in ["D","F","H","I"]:
+		layout.seal_room(room,true)
+		await frames(2)
+		for link: String in PLAN.LINKS:
+			if not room in link: continue
+			var path := PLAN.bridge_path(room,link.replace(room,""))
+			var out := path[0].direction_to(path[1])
+			for x: float in [-2.05,0,2.05]:
+				var at := path[0]+out.orthogonal()*x
+				check(intersects(world_point(at-out)+Vector3.UP,world_point(at+out)+Vector3.UP),"全宽封场 " + room + link)
+		layout.seal_room(room,false)
+		await frames(65)
+	await check_map_locks("F","H","E")
+	await check_map_locks("H","I","E")
 	var f := layout.room_center("F") + Vector3.UP
 	check(intersects(f+Vector3(-1,0,-4.5),f+Vector3(2,0,-4.5)),"F 分隔石墙挡射线")
 	check(not intersects(f+Vector3(-1,0,0),f+Vector3(2,0,0)),"F 中段有换廊缺口")
@@ -94,6 +118,32 @@ func run() -> void:
 	arena.queue_free()
 	await frames(2)
 	quit(1 if failures else 0)
+
+## 同一场战斗既有未授权的前路，也有原本已开放的来路。解封动画结束后分别恢复各自门态。
+func check_map_locks(room: String, ahead: String, behind: String) -> void:
+	var edge := room+ahead
+	var bridge: Node3D = layout.get_node(edge+"/Gate")
+	var progress := {"point": Vector2(bridge.position.x,bridge.position.z), "room": ""}
+	var seal := {"point": PLAN.doorway(room,ahead), "room": room}
+	var entry := {"point": PLAN.doorway(room,behind), "room": room}
+	layout.set_passage(room,ahead,false)
+	layout.seal_room(room,true)
+	await frames(65)
+	check(layout.passage_locks(room,ahead) == [progress,seal], "双锁分别落在桥中与门槛 " + edge)
+	check(layout.passage_locks(ahead,room) == [progress,seal], "双向查询同一锁点 " + edge)
+	check(layout.passage_locks(room,behind) == [entry], "已开放的来路仅在门槛封场 " + room+behind)
+	layout.seal_room(room,false)
+	check(layout.passage_locks(room,behind) == [entry], "门槛抬升期间仍有锁点 " + room+behind)
+	await frames(65)
+	check(layout.passage_locks(room,ahead) == [progress], "解封后只剩实体进度闸 " + edge)
+	check(layout.passage_locks(room,behind).is_empty(), "解封后移除来路锁点 " + room+behind)
+	layout.set_passage(room,ahead,true)
+	check(layout.passage_locks(room,ahead) == [progress], "桥闸抬升期间仍有锁点 " + edge)
+	await frames(65)
+	check(layout.passage_locks(room,ahead).is_empty(), "实体确认后移除桥闸锁点 " + edge)
+
+func world_point(point: Vector2) -> Vector3:
+	return Vector3(point.x,0.025,point.y)
 
 func camera_run() -> void:
 	# 延续第三关的连续过门测法。跨过 H/I 门槛后，玩家绕行及近卫刷新不应改变全场取景。
@@ -107,7 +157,7 @@ func camera_run() -> void:
 		await process_frame
 		step_max = maxf(step_max,absf(previous-camera._distance))
 		previous = camera._distance
-	check(step_max <= camera.ZOOM_UNITS_PER_SECOND*root.get_process_delta_time()+0.05, "入场视距每帧遵守速度上限")
+	check(step_max < 0.001 and is_equal_approx(camera._distance,camera.minimum_distance), "入场始终保持固定玩家视距")
 	var stable := camera._distance
 	var actor := Node3D.new()
 	arena.add_child(actor)
@@ -118,4 +168,4 @@ func camera_run() -> void:
 		if n == 20: actor.queue_free()
 		await process_frame
 	check(absf(camera._distance-stable) < 0.02,"穹顶内随增援与移位保持视距")
-	check(camera.is_position_in_frustum(center+Vector3(-8,3,-6)) and camera.is_position_in_frustum(center+Vector3(8,0,6)),"同屏可见两侧行动区")
+	check(camera.is_position_in_frustum(walker.position+Vector3.UP),"固定追随始终保持玩家可见")

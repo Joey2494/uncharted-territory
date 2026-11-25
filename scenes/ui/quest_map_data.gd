@@ -2,29 +2,22 @@ extends RefCounted
 ## Physical floor plans and the journal's current location. Never executes a task.
 const TIDE = preload("res://scenes/dungeon/level03/tide_layout.gd")
 const OBSERVATORY = preload("res://scenes/dungeon/level04/observatory_plan.gd")
+const FOURTH = preload("res://scenes/dungeon/level04/observatory_floor_map.gd")
 
 static func clean_name(value: String) -> String:
 	var parts := value.split(" · ",true,1)
 	return parts[1] if parts.size() == 2 and parts[0].length() == 1 else value
 
 static func read(world: Node3D, status: Dictionary, level: int) -> Dictionary:
+	if level == 4:
+		var snapshot: Dictionary = FOURTH.read(world)
+		snapshot.target = goal(world,status,level)
+		return snapshot
 	var player: Node3D = world.get_node("Player")
 	var rooms: Array[Dictionary] = []
 	var paths: Array[Dictionary] = []
 	var locks: Array[Dictionary] = []
-	if level == 4:
-		for id: String in OBSERVATORY.CENTERS:
-			rooms.append({"id":id,"name":OBSERVATORY.NAMES[id],"bounds":OBSERVATORY.bounds(id),"visited":world.visited.has(id),"optional":id in OBSERVATORY.OPTIONAL})
-		for link: String in OBSERVATORY.LINKS:
-			var a := link.substr(0,1)
-			var b := link.substr(1,1)
-			var p := OBSERVATORY.doorway(a,b)
-			var q := OBSERVATORY.doorway(b,a)
-			var opened: bool = world.layout.passage_open(a,b)
-			var rect := Rect2(p,Vector2.ZERO).expand(q).grow(2.0)
-			paths.append({"id":link,"bounds":rect,"open":opened,"optional":a in OBSERVATORY.OPTIONAL or b in OBSERVATORY.OPTIONAL})
-			locks.append({"point":(p+q)*0.5,"open":opened})
-	elif level == 3:
+	if level == 3:
 		for id in TIDE.ROOMS:
 			var node: Node3D = world.get_node("Rooms/"+String(id))
 			rooms.append({"id":String(id),"name":TIDE.ROOM_NAMES[id],"bounds":node.get_world_bounds(),"visited":id in world._visited,"optional":id == &"H"})
@@ -54,7 +47,7 @@ static func read(world: Node3D, status: Dictionary, level: int) -> Dictionary:
 		bounds = bounds.merge(room.bounds)
 		if room.bounds.has_point(_point(player)): location = room.name
 	for path in paths: bounds = bounds.merge(path.bounds)
-	return {"rooms":rooms,"paths":paths,"locks":locks,"player":_point(player),"location":location,"target":target,"bounds":bounds.grow(3)}
+	return {"rooms":rooms,"paths":paths,"locks":locks,"player":_point(player),"location":location,"target":target,"bounds":bounds.grow(3),"observatory":level == 4}
 
 static func goal(world: Node3D, status: Dictionary, level: int) -> Dictionary:
 	if status.is_empty() or status.get("complete",false): return {}
@@ -62,8 +55,15 @@ static func goal(world: Node3D, status: Dictionary, level: int) -> Dictionary:
 	var id: String = task.id
 	var destinations: Dictionary
 	if level == 4:
+		if id == "wings":
+			return {"id":id,"name":"曝光记录室 / 折光栈道","point":OBSERVATORY.CENTERS.E,"action":FOURTH.chinese_references(task.target),"quantity":"任选先后","markers":[{"id":"E","name":OBSERVATORY.NAMES.E,"point":OBSERVATORY.CENTERS.E},{"id":"F","name":OBSERVATORY.NAMES.F,"point":OBSERVATORY.CENTERS.F}]}
 		var room: String = {"combat_B":"B","calibrated":"E","combat_F":"F","combat_H":"H","combat_I":"I","gate":"J","exit":"J"}.get(id,"")
-		return {"id":id,"name":OBSERVATORY.NAMES[room],"point":OBSERVATORY.CENTERS[room],"action":task.title,"quantity":"%d/%d" % [task.count,task.total]} if not room.is_empty() else {}
+		if room.is_empty(): return {}
+		var point: Vector2 = OBSERVATORY.CENTERS[room]
+		if id == "calibrated": point = _point(world.get_node("Stations/p_safe"))
+		elif id == "gate": point = _point(world.layout._gates.IJ)
+		elif id == "exit": point += Vector2(0,-1.8)
+		return {"id":id,"name":OBSERVATORY.NAMES[room],"point":point,"action":FOURTH.chinese_references(task.title),"quantity":"%d/%d" % [task.count,task.total]}
 	elif level == 1:
 		destinations = {"courtyard":["Regions/Crossroads","回廊中庭"],"guard":["Regions/Crossroads","回廊中庭"],"hall":["Regions/BossArena","守门者大厅"],"boss":["Regions/BossArena","守门者大厅"],"gate":["ExitGate","守门者大厅 · 出口闸门"],"exit":["ExitTrigger","归途出口"]}
 	elif level == 2:

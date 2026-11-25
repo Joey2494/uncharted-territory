@@ -160,10 +160,14 @@ func run() -> void:
 	await use_control(puzzle, player, "Reward")
 	check(reward.can_interact(player) and not reward.try_interact(player) and reward_events == 0, "背包拒绝入包时奖励可重试")
 	inventory.process_mode = Node.PROCESS_MODE_INHERIT
+	inventory.energy_potion_count = inventory.Catalog.MAX_STACK
+	var before_health: int = inventory.potion_count
+	check(not reward.try_interact(player) and inventory.potion_count == before_health and inventory.rune_count == 0, "组合中任一道具满栈时保留整份档案室补给")
+	inventory.energy_potion_count = 0
 	inventory.inventory_changed.connect(func(_p: int, _r: int) -> void: reentrant_claim = reward.try_interact(player))
 	press_e()
 	press_e()
-	check(puzzle.get_state() == puzzle.State.CLAIMED and inventory.rune_count == 1 and reward_events == 1 and not reentrant_claim, "真实 E 发放一次奖励并拒绝同步重入")
+	check(puzzle.get_state() == puzzle.State.CLAIMED and inventory.rune_count == 1 and inventory.potion_count == before_health + 1 and inventory.energy_potion_count == 1 and reward_events == 1 and not reentrant_claim, "真实 E 发放一次奖励并拒绝同步重入")
 	await use_control(puzzle, player, "ResetConsole")
 	await use_control(puzzle, player, "ResetConsole")
 	check(puzzle.get_core_count(&"rack") == 2 and not gate.is_open(), "领奖后可复位机关与实体门")

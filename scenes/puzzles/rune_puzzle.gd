@@ -7,10 +7,14 @@ signal reward_claimed
 
 enum State { READY, RESETTING, OPENING, OPEN, CLAIMED }
 
+const Catalog = preload("res://data/item_catalog.gd")
 const CORRECT_SEQUENCE: Array[int] = [1, 2, 0]
 const SYMBOLS: Array[String] = ["日", "月", "星"]
 @export var opening_gold: int = 40
-@export var reward_items: Dictionary = {0: 2, 1: 2, 2: 1, 3: 1}
+@export var reward_items: Dictionary = {
+	Catalog.HEALTH_POTION: 2, Catalog.ATTACK_RUNE: 2, Catalog.GUARD_RUNE: 1,
+	Catalog.FIREARM: 1, Catalog.ENERGY_POTION: 1,
+}
 
 @onready var _runes: Array[StaticBody3D] = [$SunRune, $MoonRune, $StarRune]
 @onready var _hidden_passage: Node3D = $"../Regions/SecretPassage"
@@ -98,7 +102,11 @@ func claim_reward(player: CharacterBody3D) -> bool:
 	$StatusLabel.text = "共鸣完成 · 奖励已领取"
 	var names := PackedStringArray()
 	for item_id in reward_items:
-		names.append("%s ×%d" % [preload("res://data/item_catalog.gd").get_item(item_id).name, reward_items[item_id]])
+		# 角色专武版本会把旧手炮掉落换成磁芯弹，领取提示应与实际入袋一致。
+		if item_id == Catalog.FIREARM and player.has_node("WeaponLoadout"):
+			names.append("%s ×%d" % [Catalog.get_item(Catalog.COIL_AMMO).name, Catalog.INITIAL_AMMO])
+		else:
+			names.append("%s ×%d" % [Catalog.get_item(item_id).name, reward_items[item_id]])
 	feedback.emit("密室奖励：" + "，".join(names))
 	reward_claimed.emit()
 	return true

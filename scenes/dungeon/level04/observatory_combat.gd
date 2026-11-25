@@ -3,8 +3,11 @@ extends Node3D
 signal battle_started(room: String)
 signal battle_cleared(room: String)
 signal feedback(message: String)
+signal cage_landed(first_placement: bool)
 
-const FACTORY := preload("res://addons/ziyuan_level04/factory.gd")
+## 敌人工厂内嵌六个 PackedScene，等战斗节点进入主场景树再解析，避免后台加载房间时递归加载女巫场景。
+@onready var _factory: GDScript = load("res://addons/ziyuan_level04/factory.gd")
+const PLAN := preload("res://scenes/dungeon/level04/observatory_plan.gd")
 const WITCH := preload("res://scenes/dungeon/level04/observatory_witch.gd")
 const CRATE := preload("res://scenes/dungeon/level04/observatory_crate.gd")
 const SWEEP := preload("res://scenes/dungeon/level04/observatory_sweep.gd")
@@ -20,6 +23,7 @@ const CAGE_SIZE := Vector3(1.8,1.7,1.5)
 var active_room := ""
 var demo_done := false
 var cage_side := 0
+var cage_placed := false
 var requested_cage_side := 0
 var half_announced := false
 var _level: Node3D
@@ -32,7 +36,7 @@ var _markers := {}
 var _cage: StaticBody3D
 var _model_cage: MeshInstance3D
 var _demo_running := false
-var _demo_threshold: MeshInstance3D
+var _window_lights := Node3D.new()
 var _reinforced := false
 var _warning_left := -1.0
 var _spawn_serial := 0
@@ -69,6 +73,7 @@ func setup(level: Node3D) -> void:
 		crate.position = _at(spec[0],spec[1],0)
 		crate.build(_layout)
 	_build_cage()
+	_build_reinforcement_window()
 	for room: String in REINFORCEMENTS:
 		var marker := Node3D.new()
 		add_child(marker)
@@ -84,8 +89,31 @@ func setup(level: Node3D) -> void:
 		add_child(light)
 		light.build(_layout,_layout.room_center(room),Vector2(9.3,7.2) if room == "H" else Vector2(11.2,9.1))
 		_sweeps[room] = light
-	_demo_threshold = _layout.block(self,_at("H",Vector2(0,3),0.065),Vector3(6.4,0.05,0.09),Color("81e5bd"),true)
-	_demo_threshold.hide()
+
+## 过横桥时，玩家能从北侧玻璃看见东北增援门的青灯。作战预警沿用独立的琥珀标记。
+func _build_reinforcement_window() -> void:
+	var frame := Node3D.new()
+	add_child(frame)
+	frame.position = _at("F",Vector2(9.0,-3.6),0)
+	frame.rotation.y = -0.7
+	for x: float in [-1.0,1.0]:
+		_layout.block(frame,Vector3(x,0.85,0),Vector3(0.12,1.7,0.14),Color("#716957"))
+	_layout.block(frame,Vector3(0,1.66,0),Vector3(2.1,0.12,0.14),Color("#a18762"))
+	var glass: MeshInstance3D = _layout.block(frame,Vector3(0,1.0,0),Vector3(1.9,1.17,0.05),Color("#669792"))
+	var tint := StandardMaterial3D.new()
+	tint.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	tint.albedo_color = Color(0.44,0.77,0.78,0.28)
+	glass.material_override = tint
+	add_child(_window_lights)
+	for spot: Vector3 in [frame.position + Vector3.UP*1.75,_at("F",REINFORCEMENTS.F,0.14)]:
+		_layout.block(_window_lights,spot,Vector3(1.9,0.12,0.19),Color("#87e0d8"),true)
+	var placard: Label3D = _layout.caption(_window_lights,"东北增援门",_at("F",REINFORCEMENTS.F,1.85))
+	placard.modulate = Color("#a9f3e5")
+	_window_lights.hide()
+
+func light_reinforcement_window() -> void:
+	if not is_clear("F") and active_room != "F":
+		_window_lights.show()
 
 func _at(room: String, xz: Vector2, height: float) -> Vector3:
 	var center: Vector3 = _layout.room_center(room)
@@ -126,6 +154,9 @@ func _try_place_cage() -> void:
 	cage_side = requested_cage_side
 	_cage.global_position = target
 	_model_cage.position = Vector3(cage_side*0.87,1.29,0)
+	var first_placement := not cage_placed
+	cage_placed = true
+	cage_landed.emit(first_placement)
 
 func is_clear(room: String) -> bool:
 	return _cleared.has(room)
@@ -161,7 +192,6 @@ func update_room(room: String, delta: float) -> void:
 		_sweeps.H.stop()
 		_demo_running = false
 	if not ROSTERS.has(room) or is_clear(room): return
-	var point: Vector3 = _player.global_position - _layout.room_center(room)
 	if room == "H" and not demo_done:
 		if not _demo_running:
 			_sweeps.H.begin(-1,true)
@@ -170,17 +200,17 @@ func update_room(room: String, delta: float) -> void:
 		if _sweeps.H.advance(delta,[]):
 			_demo_running = false
 			demo_done = true
-			_demo_threshold.show()
-			feedback.emit("演示完毕 · 跨过亮起的内线迎战")
+			feedback.emit("演示完毕 · 跨过试车线迎战")
 		return
-	if room == "D" and point.x > 3.5: return
-	if room == "H" and point.z > 3.0: return
-	if room == "I" and point.z > 5.5: return
-	if room in ["B","F"] and point.z > 4.5: return
+	if room == "B":
+		if _player.global_position.z - _layout.room_center("B").z > 4.5: return
+	elif not PLAN.inside_encounter(room,Vector2(_player.global_position.x,_player.global_position.z)):
+		return
 	_begin_battle(room)
 
 func _begin_battle(room: String) -> void:
 	active_room = room
+	if room == "F": _window_lights.hide()
 	_reinforced = not REINFORCEMENTS.has(room)
 	_warning_left = -1
 	_paths = null
@@ -203,7 +233,7 @@ func prepare_dome_boss() -> void:
 			return
 
 func _create_guard(room: String, kind: String, xz: Vector2) -> CharacterBody3D:
-	var guard := FACTORY.create(kind)
+	var guard: CharacterBody3D = _factory.create(kind)
 	if kind == "witch":
 		guard.set_script(WITCH)
 		guard.encounter = self
@@ -337,7 +367,7 @@ func _queue_minion(kind: String, point: Vector3) -> void:
 func _spawn_minion(generation: int, kind: String, point: Vector3) -> void:
 	if generation != _generation or _stopped or active_room != "I" or _player.is_dead(): return
 	if not is_instance_valid(_jailer) or not _jailer.is_encounter_active(): return
-	var minion := FACTORY.create(kind,_player)
+	var minion: CharacterBody3D = _factory.create(kind,_player)
 	if minion == null: return
 	minion.set_meta("is_summoned",true)
 	add_child(minion)

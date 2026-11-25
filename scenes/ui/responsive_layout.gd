@@ -148,6 +148,17 @@ func _apply_compact_combat_layout(viewport: Vector2) -> void:
 	_place(_hotbar, Vector2((viewport.x-hotbar_size.x*ui_scale)*0.5,bottom-hotbar_size.y*ui_scale), hotbar_size)
 	var skills := _cooldowns.get_combined_minimum_size()
 	_place(_cooldowns,Vector2(viewport.x-margin-skills.x*ui_scale,bottom-skills.y*ui_scale),skills)
+	# Narrow portrait windows keep the arc intact and lift it clear of the item row.
+	var hotbar_clearance := _hotbar.get_global_rect().grow(8.0)
+	var skill_lift := 0.0
+	if _cooldowns.get_global_rect().intersects(hotbar_clearance):
+		skill_lift = maxf(skill_lift,_cooldowns.get_global_rect().end.y-hotbar_clearance.position.y)
+	for badge in _cooldowns.get_children():
+		if badge is Control and badge.is_visible_in_tree():
+			var badge_rect: Rect2 = badge.get_global_rect()
+			if badge_rect.intersects(hotbar_clearance):
+				skill_lift = maxf(skill_lift,badge_rect.end.y-hotbar_clearance.position.y)
+	_cooldowns.position.y -= skill_lift
 	var top := margin+144*ui_scale
 	var middle_left := margin*2+352*ui_scale
 	var middle_width := viewport.x-margin*4-(352+256)*ui_scale

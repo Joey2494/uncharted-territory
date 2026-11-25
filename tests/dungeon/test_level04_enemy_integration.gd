@@ -38,6 +38,45 @@ func verify_spawns() -> void:
 		query.collision_mask = 1
 		check(enemy.get_world_3d().direct_space_state.intersect_shape(query,1).is_empty(),enemy.enemy_id+" starts outside actual walls and equipment")
 		check(enemy.get_script().resource_path.begins_with("res://addons/ziyuan_level04/") or enemy.get_script().resource_path.ends_with("observatory_witch.gd"),"uses Ziyuan level4 actor")
+
+func verify_calibration_first() -> void:
+	level = LEVEL.instantiate()
+	root.add_child(level)
+	await frames()
+	level.begin_run()
+	level.set_physics_process(false)
+	combat = level.combat
+	player = level.player
+	player._invulnerability_remaining = 1000.0
+	enter("B",Vector2(1,3))
+	await clear("B")
+	check(not combat._window_lights.visible and not combat._markers.F.visible,"both F warning systems are dark before E")
+	level.use_station(&"p_safe")
+	for i in 3: level.puzzles.operate(&"digit",i,[4,2,5][i])
+	level.puzzles.operate(&"submit")
+	check(combat._window_lights.visible and not combat._markers.F.visible, "E lights real reinforcement location before entering F; normal warning remains independent")
+	check(level.passage_lock_reason("FE") == "" and level.passage_lock_reason("HE").contains("F") and level.passage_lock_reason("HF").contains("F"), "E only opens bridge, both trial entrances still require F")
+	player.global_position = level.layout.room_center("H")
+	level._physics_process(6.1)
+	check(not combat.demo_done and combat.active_room == "", "even a forced approach cannot start H with F outstanding")
+	player.global_position = level.layout.room_center("F")+Vector3(9,0.06,-1)
+	level._physics_process(0.016)
+	check(combat.active_room == "" and combat._window_lights.visible,"east glass permits looking and withdrawing before combat")
+	player.global_position = level.layout.room_center("F")+Vector3(4,0.06,-1)
+	level._physics_process(0.016)
+	check(combat.active_room == "F" and not combat._window_lights.visible,"crossing the east threshold starts the shared F roster")
+	var locks: Array[Dictionary] = level.map_locks("FH")
+	check(locks.size() == 2,"the trial bridge has a progress gate and a separate F encounter seal")
+	for lock in locks:
+		if lock.room == "F":
+			check(lock.point == level.PLAN.doorway("F","H") and lock.reason.contains("封场"),"encounter tooltip points to the real F threshold")
+		else:
+			check(lock.room == "" and lock.reason.contains("F") and not lock.reason.contains("封场"),"trial bridge tooltip reports its outstanding wing")
+	for enemy in combat._enemies.duplicate(): enemy.take_damage(999)
+	combat.update_room("F",0.016)
+	check(combat._markers.F.visible, "ordinary reinforcement warning still appears on calibration-first route")
+	level.queue_free()
+	await frames()
 func run() -> void:
 	level = LEVEL.instantiate()
 	root.add_child(level)
@@ -46,6 +85,10 @@ func run() -> void:
 	player = level.player
 	level.set_physics_process(false)
 	player._invulnerability_remaining = 1000.0
+	check(level.has_method("passage_lock_reason"), "map can read the reasons used by physical gates")
+	if level.has_method("passage_lock_reason"):
+		var missing: String = level.passage_lock_reason("HE")
+		check(missing.contains("E") and missing.contains("F"),"either direction reports both missing wings")
 	var boxes := get_nodes_in_group("breakable_cover")
 	check(boxes.size() == 3,"original practice and B cover crates are retained")
 	var box: StaticBody3D = boxes[0]
@@ -64,6 +107,8 @@ func run() -> void:
 	check(box.take_damage(999) and box.collision_layer == 0 and not box.visible,"final crate hit removes visual and physical cover together")
 	check(combat.prepared_dome_boss.enemy_id == "witch" and not combat.prepared_dome_boss.visible and not combat.prepared_dome_boss.is_encounter_active(),"actual witch sleeps before entry")
 	enter("B",Vector2(-3.8,3.3))
+	if level.has_method("passage_lock_reason"):
+		check(level.passage_lock_reason("AB").contains("封场"),"combat lock takes priority on an otherwise open route")
 	check(ids() == ["dawn_shade","dawn_shade"],"B contains two dawn shades")
 	verify_spawns()
 	var shade = combat._enemies[0]
@@ -106,11 +151,32 @@ func run() -> void:
 	player.get_node("CharacterAbility")._on_melee_hit(puppet,1)
 	check(player.shield == 1,"Iron kill passive recognizes new formal enemy room")
 	await clear("D")
-	check(combat.set_cage(1),"cleared optional D still controls physical F cage")
+	var landing: Vector3 = level.layout.room_center("F") + Vector3(4,0.06,2)
+	player.global_position = landing
+	check(combat.set_cage(1) and combat.cage_side == 0, "occupied landing queues the cage")
+	check(not level.layout.passage_open("D","F") and not level.optional_done("D"),"queued cage does not unlock D–F")
+	player.global_position = level.layout.room_center("D")+Vector3(3,0.06,0)
+	combat.update_room("D",0.016)
+	await frames(75)
+	check(level.layout.passage_open("D","F") and level.optional_done("D"),"first physical placement unlocks D–F")
+	var bottles := get_nodes_in_group("observatory_maintenance_supply")
+	check(bottles.size() == 1, "first placement puts one physical bottle on the maintenance lane")
+	if bottles.size() == 1:
+		var potion: Node3D = bottles[0]
+		player.global_position = potion.global_position + Vector3.UP * 0.06
+		level.inventory.potion_count = level.inventory.Catalog.MAX_STACK
+		check(not potion.try_collect(player) and potion.visible,"full pack leaves corridor potion in place")
+		level.inventory.potion_count = 0
+		check(potion.try_collect(player) and not potion.try_collect(player) and level.inventory.potion_count == 1,"one corridor potion enters existing inventory")
+		combat.set_cage(-1)
+		await frames()
+		check(get_nodes_in_group("observatory_maintenance_supply").is_empty() and level.layout.passage_open("D","F"), "switching cage never replaces potion or relocks corridor")
 	enter("F",Vector2(-3,3.9))
 	check(ids() == ["iron_thistle","iron_thistle"],"F contains two rooted thistles")
 	verify_spawns()
 	await clear("F")
+	check(not level.puzzles.calibrated and not level._gate_state.get("EH",true) and not level._gate_state.get("FH",true), "F alone cannot release either H entrance")
+	check(level.puzzles.get("comparison_powered") == true, "F-first powers the exposure table")
 	combat.demo_done = true
 	enter("H",Vector2(-3,0))
 	check(ids() == ["raven_roost"],"H has one shared-life flock")
@@ -133,6 +199,17 @@ func run() -> void:
 	check(player.hp+player.shield == vitals-1 and flock.hp == flock_hp-2,"same shutter band affects player and new enemy at actual positions")
 	player._invulnerability_remaining = 1000.0
 	await clear("H")
+	level.begin_run()
+	level.set_physics_process(true)
+	level.use_station(&"p_lightbox")
+	level.puzzles.operate(&"plate",0,-1)
+	level.puzzles.operate(&"plate",1,1)
+	level.puzzles.operate(&"plate",2,-1)
+	check(paused and level.puzzles.film_developed and not level.puzzles.film_claimed, "completed film stays in paused lightbox for inspection")
+	level.puzzles.operate(&"close")
+	await frames(80)
+	check(level.layout.passage_open("L","I") and not level.puzzles.film_claimed, "unpausing after development opens physical L–I gate with film left behind")
+	level.set_physics_process(false)
 	enter("I",Vector2(3,4))
 	check(ids() == ["witch","iron_thistle"],"I uses witch plus actual thistle guard")
 	verify_spawns()
@@ -163,6 +240,7 @@ func run() -> void:
 	check(not combat._blind.visible and combat._minions.is_empty(),"stop invalidates deferred spawns and clears blindness")
 	level.queue_free()
 	await frames()
+	await verify_calibration_first()
 	root.get_node("MusicManager").stop_music()
 	print("LEVEL04_ENEMY_INTEGRATION_RESULT checks=%d failed=%d" % [checks,failures])
 	quit(1 if failures else 0)

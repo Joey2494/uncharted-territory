@@ -124,6 +124,9 @@ func refresh() -> void:
 			title.text = "曝光轮   /   " + state.PHASES[state.exposure] + "片"
 			note.text = "左侧为计数样片。旋轮依次投亮三份记录，对照墙上的日相。"
 			line.text = "亮孔留下星点。中央细十字是对位线。"
+			if state.comparison_powered:
+				note.text = "读片台已供电。转动曝光轮，灯下会并排留下看过的片。"
+				line.text = "当前片的边框发亮。只数星点，中央十字是对位线。"
 			var row := _row()
 			_button(row, "◀  逆时转", &"turn", 0, -1)
 			_button(row, "顺时转  ▶", &"turn")
@@ -149,7 +152,7 @@ func refresh() -> void:
 			if state.plate_zoom >= 0:
 				line.text = ["Ⅰ  欠曝片  ·  三张脸在暗处留下清晰轮廓。", "Ⅱ  长曝片  ·  人脸过曝，铜镜里浮出相机。", "Ⅲ  侧光片  ·  握着快门线的手露了出来。"][state.plate_zoom]
 			elif state.film_developed:
-				line.text = "铜镜里，第四名值班员正替同伴按下快门。"
+				line.text = "铜镜里，第四名值班员正替同伴按下快门。通往穹顶的侧门已开。"
 			else:
 				line.text = "拖动滑轨，或选中滑轨后按左右键，把快门线接到相机上。"
 			var zoom_row := _row()
@@ -221,6 +224,9 @@ func _draw_art() -> void:
 	art.draw_rect(Rect2(Vector2.ZERO, size), FRAME, false, 1)
 	match instrument.display:
 		&"p_dial":
+			if instrument.comparison_powered:
+				_draw_comparison()
+				return
 			var sample := Vector2(size.x*0.23, 95)
 			var sky := Vector2(size.x*0.70, 94)
 			art.draw_line(Vector2(size.x*0.43, 16),Vector2(size.x*0.43,size.y-16),FRAME,1)
@@ -229,14 +235,7 @@ func _draw_art() -> void:
 				art.draw_circle(pos, 10, GOLD if i != 1 else Color("#202d32"), true, -1, true)
 				art.draw_arc(pos, 11, 0, TAU, 32, FRAME, 1, true)
 			_text("样片    /    记录 2", Vector2(sample.x-59, 155), 17, PAPER)
-			art.draw_arc(sky, 66, 0, TAU, 90, Color("#45595b"),1,true)
-			art.draw_line(sky-Vector2(17,0),sky+Vector2(17,0),FRAME,1)
-			art.draw_line(sky-Vector2(0,17),sky+Vector2(0,17),FRAME,1)
-			for point: Vector2 in instrument.STARS[instrument.exposure]:
-				var pos := sky + point*72
-				art.draw_circle(pos, 7, Color("#5d503c"),true,-1,true)
-				art.draw_circle(pos, 4, GOLD,true,-1,true)
-			_text(instrument.PHASES[instrument.exposure]+"相记录", Vector2(sky.x-32, 184), 16, GOLD)
+			_draw_exposure_record(sky,instrument.exposure,FRAME)
 		&"p_safe":
 			for i in 3:
 				var center := Vector2(size.x*(i+1)/4, size.y/2)
@@ -246,6 +245,27 @@ func _draw_art() -> void:
 				_text(str(instrument.digits[i]),center+Vector2(-17,39),60,PAPER)
 		_:
 			_draw_photo_view()
+
+func _draw_comparison() -> void:
+	var seen: Array[int] = instrument.comparison_phases()
+	for i in 3:
+		var center := Vector2(art.size.x*(i+0.5)/3,94)
+		if i < seen.size():
+			var phase := seen[i]
+			_draw_exposure_record(center,phase,TEAL if phase == instrument.exposure else FRAME)
+		else:
+			art.draw_arc(center,66,0,TAU,64,Color("#26373c"),1,true)
+			_text("空片位",center+Vector2(-24,6),16,FRAME)
+
+func _draw_exposure_record(center: Vector2, phase: int, edge: Color) -> void:
+	art.draw_arc(center,66,0,TAU,90,edge,2,true)
+	art.draw_line(center-Vector2(17,0),center+Vector2(17,0),FRAME,1)
+	art.draw_line(center-Vector2(0,17),center+Vector2(0,17),FRAME,1)
+	for star: Vector2 in instrument.STARS[phase]:
+		var pos := center + star*72
+		art.draw_circle(pos,7,Color("#5d503c"),true,-1,true)
+		art.draw_circle(pos,4,GOLD,true,-1,true)
+	_text(instrument.PHASES[phase]+"相记录",center+Vector2(-32,89),16,GOLD)
 
 func _text(content: String, pos: Vector2, px: int, tint: Color) -> void:
 	art.draw_string(FONT, pos, content, HORIZONTAL_ALIGNMENT_LEFT, -1, px, tint)
