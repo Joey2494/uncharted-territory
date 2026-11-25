@@ -35,11 +35,12 @@ var rune_count: int = 0
 var guard_count: int = 0
 var uses_shared_wallet := false
 var _local_gold := 0
+var _starter_ammo: Dictionary = {}
 var gold: int:
 	get:
-		return Profile.coins if uses_shared_wallet else _local_gold
+		return Profile.coins+_local_gold if uses_shared_wallet else _local_gold
 	set(value):
-		if uses_shared_wallet: Profile.set_coins(value)
+		if uses_shared_wallet: _local_gold = value-Profile.coins
 		else: _local_gold = value
 var pistol_ammo: int = 0
 var coil_ammo: int = 0
@@ -67,6 +68,12 @@ func bind_shared_wallet() -> void:
 	if uses_shared_wallet: return
 	Profile.ensure_loaded()
 	uses_shared_wallet = true
+	_local_gold = 0
+	for id in Profile.BAG_IDS:
+		var saved: int = Profile.inventory.get(id,0)
+		var initial := get_count(id) if id in [Catalog.PISTOL_AMMO,Catalog.COIL_AMMO] else 0
+		_starter_ammo[id] = mini(initial,Catalog.MAX_STACK-saved)
+		_set_count(id,saved+int(_starter_ammo[id]))
 	Profile.events.changed.connect(_wallet_changed)
 	_publish_state()
 
@@ -77,9 +84,38 @@ func _wallet_changed(_balance: int) -> void:
 func _change_gold(delta: int) -> bool:
 	if delta == 0: return true
 	if gold+delta < 0 or gold+delta > (Profile.MAX_COINS if uses_shared_wallet else Catalog.MAX_GOLD): return false
-	if uses_shared_wallet: return Profile.set_coins(gold+delta)
 	_local_gold += delta
 	return true
+
+func _set_count(id: int, count: int) -> void:
+	match id:
+		HEALTH_POTION: potion_count = count
+		ATTACK_RUNE: rune_count = count
+		GUARD_RUNE: guard_count = count
+		Catalog.ENERGY_POTION: energy_potion_count = count
+		Catalog.PISTOL_AMMO: pistol_ammo = count
+		Catalog.COIL_AMMO: coil_ammo = count
+
+func pending_gold() -> int:
+	return _local_gold
+
+func settle_backpack(run_id: String) -> bool:
+	if not uses_shared_wallet: return true
+	var bag := {}
+	for id in Profile.BAG_IDS:
+		bag[id] = maxi(0,get_count(id)-int(_starter_ammo.get(id,0)))
+	_publishing = true
+	var ok := Profile.commit_run(run_id,_local_gold,bag)
+	_publishing = false
+	if ok: discard_run()
+	return ok
+
+func discard_run() -> void:
+	_local_gold = 0
+	_starter_ammo.clear()
+	if uses_shared_wallet:
+		for id in Profile.BAG_IDS: _set_count(id,int(Profile.inventory.get(id,0)))
+	_publish_state()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -491,6 +527,7 @@ func try_load_magazine(item_id: int, missing: int) -> int:
 	if not _can_use() or missing <= 0 or item_id not in [Catalog.PISTOL_AMMO,Catalog.COIL_AMMO]: return 0
 	var loaded := mini(missing,get_count(item_id))
 	if loaded <= 0: return 0
+	_starter_ammo[item_id] = maxi(0,int(_starter_ammo.get(item_id,0))-loaded)
 	if item_id == Catalog.PISTOL_AMMO: pistol_ammo -= loaded
 	else: coil_ammo -= loaded
 	_publish_state()

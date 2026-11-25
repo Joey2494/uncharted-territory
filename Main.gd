@@ -216,9 +216,9 @@ func _on_exit_reached() -> void:
 	# Set the terminal state before any UI signals; death/exit cannot replace it.
 	_run_state = RunState.VICTORY
 	MusicManager.play_context(&"victory")
-	# Coins were persisted when earned/spent; victory must not credit them again.
-	var pending: int = _items.gold
-	_settled = true
+	# Only a successful run can atomically store its coins and backpack.
+	var pending: int = _items.pending_gold()
+	_settled = practice_run or _items.settle_backpack(_settlement_id)
 	if practice_run:
 		_items.gold = 0
 		_items._publish_state()
@@ -232,8 +232,8 @@ func _on_exit_reached() -> void:
 		"boss_name": _boss_name,
 		"boss_defeated": _boss_defeated,
 		"level_id": level_id,
-		"settled_gold": 0,
-		"wallet_balance": pending if not practice_run else PROFILE.coins,
+		"settled_gold": pending if _settled and not practice_run else 0,
+		"wallet_balance": PROFILE.coins,
 		"settlement_ok": _settled,
 		"practice_run": practice_run,
 	}
@@ -275,9 +275,8 @@ func _on_player_died() -> void:
 	# Stop the run clock and reject victory immediately; keep the world processing
 	# while the already input-locked player completes Death_A.
 	_run_state = RunState.DYING
-	# Only standalone practice has disposable coins.
-	if practice_run: _items.gold = 0
-	_items._publish_state()
+	# Failed-run assets never enter the permanent wallet/backpack.
+	_items.discard_run()
 	_commerce.finish_run()
 	_boss_bar.hide()
 	_death_room_index = _dungeon.get_visited_count() - 1
@@ -424,10 +423,10 @@ func request_scene_change(destination: String, handoff: Dictionary = {}) -> bool
 		return false
 	# Leaving a failed victory settlement used to discard its only pending
 	# balance. Retry first and keep the result screen open if storage still fails.
-	if _run_state == RunState.VICTORY and not _settled and _items.gold > 0:
+	if _run_state == RunState.VICTORY and not _settled:
 		retry_settlement()
 		if not _settled:
-			_hud.get_result_screen().show_progress_message("金币尚未保存，请重试保存后再离开。")
+			_hud.get_result_screen().show_progress_message("金币和道具尚未保存，请重试保存后再离开。")
 			return false
 	_transition_queued = true
 	var navigation: Node = get_node("MenuNavigation")
@@ -475,8 +474,9 @@ func _change_scene(destination: String) -> void:
 ## 存档失败时可在胜利页重试结算；同一局不会重复入账。
 func retry_settlement() -> void:
 	if practice_run or _run_state != RunState.VICTORY or _settled: return
-	_settled = PROFILE.save()
+	var pending: int = _items.pending_gold()
+	_settled = _items.settle_backpack(_settlement_id)
 	_run_result["settlement_ok"] = _settled
 	_run_result["wallet_balance"] = PROFILE.coins
-	_run_result["settled_gold"] = 0
+	_run_result["settled_gold"] = pending if _settled else 0
 	_hud.get_result_screen().set_run_result(_run_result)

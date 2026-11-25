@@ -132,7 +132,7 @@ func third_route() -> void:
 	var map: Node = host._dungeon
 	host._player._invulnerability_remaining = 1000.0
 	var wallet_before: int = PROFILE.coins
-	check(host._items.add_gold(37) and PROFILE.coins == wallet_before+37 and host._items.gold == PROFILE.coins, "第三关拾取实时进入角色与商城共享的钱包")
+	check(host._items.add_gold(37) and PROFILE.coins == wallet_before and host._items.gold == wallet_before+37, "第三关拾取显示本轮金币但成功前不入永久钱包")
 	check(host._boss != null and host._boss.enemy_id == "sand_king" and not host._boss_bar.visible, "第三关接入字远沙缚王，入场前隐藏 Boss 血条")
 	check(root.get_node("MusicManager").current_context == &"level_3", "第三关进入自己的游戏音乐上下文")
 	check(map.get_node_or_null("HUD") == null, "正式宿主不叠加独立白盒 HUD")
@@ -178,24 +178,27 @@ func third_route() -> void:
 	var profile_path: String = PROFILE.override_path
 	PROFILE.override_path = "user://third-missing-%d/profile.cfg" % Time.get_ticks_usec()
 	PROFILE._loaded_path = PROFILE.override_path
-	var confirmed_balance: int = PROFILE.coins
-	check(not host._items.add_gold(7,"failed-credit") and PROFILE.coins == confirmed_balance and not host._items.has_claimed("failed-credit"),"拾取存档失败不改余额、不消费奖励凭据")
-	PROFILE.override_path = profile_path
-	PROFILE._loaded_path = profile_path
+	var confirmed_balance: int = host._items.gold
+	var carried := {}
+	for id in PROFILE.BAG_IDS:
+		carried[id] = maxi(0,host._items.get_count(id)-int(host._items._starter_ammo.get(id,0)))
 	await go(map.get_node("Rooms/J").global_position)
 	check(host.get_run_state() == host.RunState.VICTORY and map.is_victorious(), "I 泄压、G 清场、门打开并走入 J 才通关")
 	check(host.get_node("MenuNavigation").progress.is_completed(&"level3"), "第三关完成写入进度")
 	var result: Control = host._hud.get_result_screen()
 	check(result != null and result.next_level_button.visible and host.get_next_level_block_reason().is_empty(), "第三关实际通关后结算页开放第四关")
 	check(result.summary_label.text.contains("沙缚王") and result.summary_label.text.contains("守卫") and result.get_node("%PuzzleLabel").text.contains("潮汐"), "结算如实显示沙缚王、守卫和潮汐机关")
-	check(host._settled and PROFILE.coins == confirmed_balance and host._items.gold == confirmed_balance, "第三关通关不重新存入或清空已实时保存的钱包")
-	check(result.get_node("%SettlementLabel").text.contains("共享钱包") and not result._retry.visible, "第三关结算显示实际共享余额")
+	check(not host._settled and PROFILE.coins == wallet_before and host._items.gold == confirmed_balance, "结算保存失败保留本轮金币道具且不污染永久钱包")
+	check(result.get_node("%SettlementLabel").text.contains("保存失败") and result._retry.visible, "第三关展示保存失败和重试按钮")
 	check(result.get_node("%RewardLabel").text == "溢流花园奖励：未领取", "共享钱包不覆盖第三关奖励名称和实际领取状态")
+	check(not host.request_scene_change("res://Main.tscn") and not host.restart_run() and not host._transition_queued,"保存失败禁止离开并保留完整本轮背包")
 	await result_layout(result)
+	PROFILE.override_path = profile_path
+	PROFILE._loaded_path = profile_path
 	result._retry.pressed.emit()
 	await frames()
-	check(host._settled and PROFILE.coins == confirmed_balance and host._items.gold == confirmed_balance, "旧重试入口不重复入账、不清余额")
-	check(result.get_node("%SettlementLabel").text == "共享钱包：%d 金币 · 已实时保存" % confirmed_balance and not result._retry.visible, "结算文案与钱包实际余额一致")
+	check(host._settled and PROFILE.coins == confirmed_balance and PROFILE.inventory == carried, "实际重试按钮一次保存本轮金币和所有道具")
+	check(result.get_node("%SettlementLabel").text == "通关已存入永久背包 · 共享金币 %d" % confirmed_balance and not result._retry.visible, "成功存入永久背包的文案与实际余额一致")
 	check(result.summary_label.text == map.get_completion_snapshot().completion_summary and result.get_node("%PuzzleLabel").text == "潮汐机关：已解开" and result.get_node("%RewardLabel").text == "溢流花园奖励：未领取", "重试刷新保留第三关完成摘要与机关奖励字段")
 	result._retry.pressed.emit()
 	host._on_exit_reached()

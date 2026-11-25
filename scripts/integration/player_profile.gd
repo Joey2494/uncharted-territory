@@ -7,18 +7,22 @@ static var events := WalletEvents.new()
 static var override_path := ""
 static var _loaded_path := ""
 static var coins: int = 0
+static var inventory: Dictionary = {}
 static var unlocked: Array[String] = ["knight"]
 static var _selected_character: String = "knight"
 static var settled_runs: Array = []
 static var message := ""
 const PRICES := {"lan": 100, "iron": 150, "astra": 180}
 const MAX_COINS := 100000000
+const Catalog = preload("res://data/item_catalog.gd")
+const BAG_IDS := [Catalog.HEALTH_POTION,Catalog.ATTACK_RUNE,Catalog.GUARD_RUNE,Catalog.ENERGY_POTION,Catalog.PISTOL_AMMO,Catalog.COIL_AMMO]
 
 static func ensure_loaded() -> void:
 	var path := override_path if not override_path.is_empty() else "user://player_profile.cfg"
 	if _loaded_path == path: return
 	_loaded_path = path
 	coins = 0
+	inventory = {}
 	unlocked = ["knight"]
 	_selected_character = "knight"
 	settled_runs = []
@@ -29,6 +33,11 @@ static func ensure_loaded() -> void:
 		if config.load(path + ".bak") != OK: return
 	var saved: Variant = config.get_value("profile", "coins", 0)
 	if saved is int: coins = clampi(saved, 0, 100000000)
+	var saved_bag: Variant = config.get_value("profile","inventory",{})
+	if saved_bag is Dictionary:
+		for id in BAG_IDS:
+			var count: Variant = saved_bag.get(id,0)
+			if count is int: inventory[id] = clampi(count,0,Catalog.MAX_STACK)
 	var settled: Variant = config.get_value("profile", "settled_runs", [])
 	if settled is Array: settled_runs = settled
 	var owned: Variant = config.get_value("profile", "characters", [])
@@ -67,6 +76,7 @@ static func save() -> bool:
 	var config := ConfigFile.new()
 	if config.load(_loaded_path) != OK: config.load(_loaded_path + ".bak")
 	config.set_value("profile", "coins", coins)
+	config.set_value("profile", "inventory", inventory)
 	config.set_value("profile", "settled_runs", settled_runs)
 	config.set_value("profile", "characters", unlocked)
 	config.set_value("profile", "selected_character", get_selected_character())
@@ -121,13 +131,26 @@ static func unlock_character(id: String) -> bool:
 ## 通关结算入账：同一局（run_id）只结算一次；保存失败回滚。
 static func settle_run(run_id: String, pending: int) -> bool:
 	ensure_loaded()
-	if run_id.is_empty() or pending < 0: return false
+	if pending < 0: return false
+	return commit_run(run_id,pending,inventory.duplicate())
+
+## Commit wallet delta and the complete surviving backpack in one atomic save.
+static func commit_run(run_id: String, delta: int, bag: Dictionary) -> bool:
+	ensure_loaded()
+	if run_id.is_empty(): return false
 	if run_id in settled_runs: return true
+	if coins+delta < 0 or coins+delta > MAX_COINS: return false
+	for id in bag:
+		if id not in BAG_IDS or not bag[id] is int or bag[id] < 0 or bag[id] > Catalog.MAX_STACK: return false
 	var previous := coins
-	coins = clampi(coins + pending, 0, 100000000)
+	var previous_bag := inventory.duplicate()
+	coins += delta
+	inventory = bag.duplicate()
 	settled_runs.append(run_id)
 	if not save():
 		coins = previous
+		inventory = previous_bag
 		settled_runs.erase(run_id)
 		return false
+	events.changed.emit(coins)
 	return true

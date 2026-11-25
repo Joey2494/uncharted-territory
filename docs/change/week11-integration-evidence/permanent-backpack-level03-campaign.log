@@ -1,0 +1,21 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+EXPECTED_LOAD_FAILURE_BEGIN third-next
+ERROR: Failed to instantiate scene state of "res://scenes/dungeon/Level03Run.tscn", node count is 0. Make sure the PackedScene resource is valid.
+   at: instantiate (scene/resources/packed_scene.cpp:173)
+   GDScript backtrace (most recent call first):
+       [0] change (res://scripts/integration/resource_transition.gd:55)
+       [1] present (res://scenes/ui/loading_screen.gd:109)
+ERROR: Parameter "new_scene" is null.
+   at: change_scene_to_packed (scene/main/scene_tree.cpp:1717)
+   GDScript backtrace (most recent call first):
+       [0] change (res://scripts/integration/resource_transition.gd:55)
+       [1] present (res://scenes/ui/loading_screen.gd:109)
+ERROR: 无法载入关卡，请重试。 Can't create
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _change_scene (res://Main.gd:471)
+       [1] change (res://scripts/integration/resource_transition.gd:65)
+       [2] present (res://scenes/ui/loading_screen.gd:109)
+EXPECTED_LOAD_FAILURE_END third-next
+LEVEL03_CAMPAIGN: 143 checks, 0 failures

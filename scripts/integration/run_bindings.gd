@@ -46,7 +46,7 @@ func _ready() -> void:
 func _refresh_inventory(_snapshot: Dictionary) -> void:
 	hud.update_gold(items.gold)
 	hud.gold_label.text = str(items.gold)
-	hud.gold_label.tooltip_text = "共享金币 %d · 角色解锁与商城使用同一钱包，获得和消费实时保存。" % items.gold
+	hud.gold_label.tooltip_text = "永久金币 %d · 本轮变动 %+d\n成功通关后金币和剩余道具存入永久背包；失败、退出或重开丢弃本轮变动。" % [Profile.coins,items.pending_gold()]
 	if host.practice_run:
 		hud.gold_label.text = "试玩 %d" % items.gold
 		hud.gold_label.tooltip_text = "试玩金币 %d · 可在本局商城使用，试玩结束后清零。" % items.gold
