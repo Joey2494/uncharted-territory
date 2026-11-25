@@ -22,6 +22,16 @@ func _process(delta: float) -> void:
 	_distance = minimum_distance
 	_apply_view()
 	var actors := _get_actors()
+	# Keep the authored fixed view on landscape screens. In portrait combat,
+	# reserve enough horizontal space for active attackers as well as the player.
+	var viewport := get_viewport().get_visible_rect().size
+	if viewport.x < viewport.y:
+		var attackers: Array[Node3D] = [_target]
+		for actor in actors:
+			if actor != _target and actor.has_method("is_encounter_active") and actor.is_encounter_active(): attackers.append(actor)
+		if attackers.size() > 1:
+			_distance = maxf(minimum_distance,_required_distance(attackers,_focus))
+			_apply_view()
 	_update_labels(actors)
 	_update_occluders(actors, delta)
 

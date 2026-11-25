@@ -43,7 +43,12 @@ static func read(world: Node3D) -> Dictionary:
 		elif id == &"supply": available = not world.inventory.has_claimed("observatory_aid")
 		elif id == &"shutter": available = world.combat.shutter_available()
 		data.devices.append({"id":String(id),"point":point(station),"name":station.caption,"available":available})
-	for enemy in world.combat._enemies + world.combat._minions:
+	var mapped_enemies: Array = world.combat._enemies + world.combat._minions
+	# An identical decoy must have the same map marker as its real shade.
+	# Do not use can_process()/is_encounter_active(): opening the map pauses play.
+	for actor in world.get_tree().get_nodes_in_group("l4_enemies"):
+		if world.is_ancestor_of(actor) and actor.has_method("is_decoy") and actor.is_decoy() and not mapped_enemies.has(actor): mapped_enemies.append(actor)
+	for enemy in mapped_enemies:
 		if is_instance_valid(enemy) and not enemy.is_dead():
 			data.enemies.append({"point":point(enemy),"name":"存活敌人"})
 	_obstacles(world.combat,data.obstacles)
