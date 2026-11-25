@@ -1,6 +1,6 @@
 # 下一周团队开发基线
 
-本版以本地整合提交 `5642ce7` 为已验证基础，发布到 `Joey2494/uncharted-territory` 的 `main`，PR 审查人指定为 `adogfm`。后续组员均从最新 `main` 创建开发分支；旧的成员分支不会自动包含本次整合。
+本版以本地整合提交 `5642ce7` 为已验证基础，通过 [PR #22](https://github.com/Joey2494/uncharted-territory/pull/22) 申请合入 `Joey2494/uncharted-territory` 的 `main`，审查人指定为 `adogfm`。仓库要求至少 1 人批准，当前发布状态为待审查合并；尚未合入的内容不能视为现有 `main`。合并后组员均从最新 `main` 创建开发分支；旧的成员分支不会自动包含本次整合。
 
 ## 模块来源与约定
 
