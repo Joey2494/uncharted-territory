@@ -89,7 +89,7 @@ func run() -> void:
 		if advance_finished: break
 	walk_toward(player,Vector2(player.position.x,player.position.z))
 	var ok: bool = warning and reinforced and advance_finished and advanced_distance > 1.5 and not player.is_dead()
-	ok = ok and h_reference > 0 and i_reference > 0 and h_drift < 0.10 and i_drift < 0.10 and max_speed < 12.1
+	ok = ok and is_equal_approx(h_reference,18.5) and is_equal_approx(i_reference,18.5) and h_drift < 0.001 and i_drift < 0.001 and max_speed < 0.001
 	print("level04 camera run: warning=%s reinforced=%s half_advance=%s moved=%.2fm H_drift=%.3f I_drift=%.3f max_speed=%.2f" % [warning,reinforced,advance_finished,advanced_distance,h_drift,i_drift,max_speed])
 	if not ok: print("CAMERA_ROUTE_DIAGNOSTIC position=",player.position," room=",combat.active_room," H_clear=",combat.is_clear("H")," I_age=",i_age)
 	level.queue_free()

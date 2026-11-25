@@ -15,7 +15,7 @@ func set_compact_mode(compact: bool) -> void:
 	_layout_tiles()
 
 func _layout_tiles() -> void:
-	var scale_factor := 0.74 if _compact else 0.88
+	var scale_factor := 0.98 if _compact else 1.17
 	var poses := {"MeleeCooldown": Vector3(140,140,104)}
 	var center := Vector2(192,192)
 	var orbit := {"DodgeCooldown":180.0,"CharacterCooldown":210.0,"SwitchCooldown":240.0,"ReplenishCooldown":270.0}

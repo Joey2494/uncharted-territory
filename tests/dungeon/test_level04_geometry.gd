@@ -157,7 +157,7 @@ func camera_run() -> void:
 		await process_frame
 		step_max = maxf(step_max,absf(previous-camera._distance))
 		previous = camera._distance
-	check(step_max <= camera.ZOOM_UNITS_PER_SECOND*root.get_process_delta_time()+0.05, "入场视距每帧遵守速度上限")
+	check(step_max < 0.001 and is_equal_approx(camera._distance,camera.minimum_distance), "入场始终保持固定玩家视距")
 	var stable := camera._distance
 	var actor := Node3D.new()
 	arena.add_child(actor)
@@ -168,4 +168,4 @@ func camera_run() -> void:
 		if n == 20: actor.queue_free()
 		await process_frame
 	check(absf(camera._distance-stable) < 0.02,"穹顶内随增援与移位保持视距")
-	check(camera.is_position_in_frustum(center+Vector3(-8,3,-6)) and camera.is_position_in_frustum(center+Vector3(8,0,6)),"同屏可见两侧行动区")
+	check(camera.is_position_in_frustum(walker.position+Vector3.UP),"固定追随始终保持玩家可见")

@@ -26,8 +26,8 @@ func run() -> void:
 			var mat := mesh.material_override as BaseMaterial3D
 			if mat != null and mat.albedo_color.a < 0.25:
 				faded_surfaces += 1
-	var passed := visible_surfaces == 5 and faded_surfaces == 5
-	print("north rim / faded island pieces = %d of %d (expected five)" % [faded_surfaces,visible_surfaces])
+	var passed := visible_surfaces > 5 and faded_surfaces == visible_surfaces
+	print("north rim / faded island pieces = %d of %d (original five plus restored instrument)" % [faded_surfaces,visible_surfaces])
 	if not passed: printerr("FAIL dome instrument hides knight at northern rim")
 	level.player.position = center + Vector3(0,0.001,4)
 	for i in 90: await physics_frame
@@ -37,7 +37,7 @@ func run() -> void:
 			var mat := mesh.material_override as BaseMaterial3D
 			if mat != null and mat.albedo_color.a > 0.99: restored += 1
 	print("south rim / restored island pieces = %d of %d" % [restored,visible_surfaces])
-	passed = passed and restored == 5
+	passed = passed and restored == visible_surfaces
 	root.get_node("MusicManager").stop_music()
 	level.queue_free()
 	for i in 3: await process_frame

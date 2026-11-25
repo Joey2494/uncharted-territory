@@ -92,6 +92,9 @@ func open_map() -> bool:
 	_owns_pause = true
 	host._commerce.pause_menu.hide()
 	tracker.refresh()
+	view.zoom = 1.0
+	view.pan = Vector2.ZERO
+	view._dragging = false
 	root.show()
 	_refresh()
 	close_button.grab_focus()
@@ -127,7 +130,10 @@ func _refresh() -> void:
 	view.text_scale = factor
 	view.snapshot = DATA.read(tracker.world,tracker._snapshot,host.level_id)
 	if host.level_id == 4:
-		note.text = "菱形房号为可选探索。指向房间可查看名称，指向 × 可查看开门条件。"
+		view.mouse_filter = Control.MOUSE_FILTER_STOP
+		view.clip_contents = true
+		legend.text = "● 你的位置　◇ 主线目标　□ 机关　红点：敌人　× 封锁"
+		note.text = "房间显示完整中文名称；青色为支线，✓ 为已完成。悬停查看机关和锁因；滚轮缩放、拖动平移、右键复位。M / Esc 返回。"
 	location.text = "你的位置："+view.snapshot.location
 	var target: Dictionary = view.snapshot.target
 	objective.text = "主线目标已全部完成" if target.is_empty() else "主线目标：%s\n%s  %s" % [target.name,target.action,target.quantity]
