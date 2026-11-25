@@ -12,6 +12,8 @@ var _confirm_sent := false
 var _layout_pending := false
 
 func _ready() -> void:
+	PROFILE.events.changed.connect(func(_balance: int) -> void:
+		if is_visible_in_tree(): _refresh())
 	var edge_shader := Shader.new()
 	edge_shader.code = "shader_type canvas_item; void fragment() { vec4 scene = texture(TEXTURE, UV); float edge = smoothstep(0.0, 0.12, UV.x) * smoothstep(0.0, 0.10, 1.0-UV.x) * smoothstep(0.0, 0.10, UV.y) * smoothstep(0.0, 0.14, 1.0-UV.y); COLOR = vec4(scene.rgb, scene.a * edge); }"
 	var edge_material := ShaderMaterial.new()

@@ -1,0 +1,61 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS isolated legacy wallet created
+PASS purchase and selection persist
+PASS settlement credits remaining run coins
+PASS settlement is idempotent
+PASS atomic replacement preserves existing settings and writes real balance
+PASS completed save leaves recovery backup without a temporary file
+PASS confirmed profile can be saved again
+ERROR: ConfigFile parse error at res://.godot/energy-wallet-roundtrip.cfg:0: Unexpected EOF while parsing simple tag.
+   at: _parse (core/io/config_file.cpp:293)
+   GDScript backtrace (most recent call first):
+       [0] ensure_loaded (res://scripts/integration/player_profile.gd:27)
+       [1] test_wallet (res://tests/scenes/energy_wallet_regression.gd:51)
+       [2] run (res://tests/scenes/energy_wallet_regression.gd:24)
+PASS truncated primary recovers the valid wallet and settlement ledger
+ERROR: ConfigFile parse error at res://.godot/energy-wallet-roundtrip.cfg:0: Unexpected EOF while parsing simple tag.
+   at: _parse (core/io/config_file.cpp:293)
+   GDScript backtrace (most recent call first):
+       [0] save (res://scripts/integration/player_profile.gd:68)
+       [1] test_wallet (res://tests/scenes/energy_wallet_regression.gd:53)
+       [2] run (res://tests/scenes/energy_wallet_regression.gd:24)
+ERROR: ConfigFile parse error at res://.godot/energy-wallet-roundtrip.cfg:0: Unexpected EOF while parsing simple tag.
+   at: _parse (core/io/config_file.cpp:293)
+   GDScript backtrace (most recent call first):
+       [0] save (res://scripts/integration/player_profile.gd:79)
+       [1] test_wallet (res://tests/scenes/energy_wallet_regression.gd:53)
+       [2] run (res://tests/scenes/energy_wallet_regression.gd:24)
+PASS recovered profile repairs primary
+PASS repair also preserves unrelated backup settings
+PASS failed balance write rolls memory back
+PASS retry of same failed amount cannot falsely report success
+PASS failed settlement rolls back both balance and receipt
+PASS confirmed wallet ready for separate-process readback
+PASS knight spends five energy
+PASS knight has no continuous recovery after ten seconds
+PASS knight explicit recovery clamps at maximum
+PASS knight full energy cannot repeatedly consume recovery
+PASS lan spends five energy
+PASS lan has no continuous recovery after ten seconds
+PASS lan explicit recovery clamps at maximum
+PASS lan full energy cannot repeatedly consume recovery
+PASS iron spends five energy
+PASS iron has no continuous recovery after ten seconds
+PASS iron explicit recovery clamps at maximum
+PASS iron full energy cannot repeatedly consume recovery
+PASS astra spends five energy
+PASS astra has no continuous recovery after ten seconds
+PASS astra explicit recovery clamps at maximum
+PASS astra full energy cannot repeatedly consume recovery
+PASS bone_axe takes damage
+PASS bone_axe health does not regenerate during ten seconds
+PASS bone_spike takes damage
+PASS bone_spike health does not regenerate during ten seconds
+PASS tomb_sword takes damage
+PASS tomb_sword health does not regenerate during ten seconds
+PASS chain_jailer takes damage
+PASS chain_jailer health does not regenerate during ten seconds
+PASS sand_king takes damage
+PASS sand_king health does not regenerate during ten seconds
+ENERGY_WALLET_RESULT 40 checks, 0 failures

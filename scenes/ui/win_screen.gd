@@ -42,7 +42,7 @@ func _ready() -> void:
 	%ProgressLabel.minimum_size_changed.connect(_queue_layout)
 	# 结算存档失败时出现的重试按钮；默认隐藏，由布局引擎放入按钮行。
 	_retry = Button.new()
-	_retry.text = "重试保存通关金币"
+	_retry.text = "重试保存金币和道具"
 	_retry.visible = false
 	_retry.pressed.connect(func() -> void: settlement_retry_requested.emit())
 	$Center/Card/Padding/Content.add_child(_retry)
@@ -89,7 +89,7 @@ func _refresh_result() -> void:
 	%HealthLabel.text = "剩余生命：%d/%d" % [_run_result.get("player_hp", 0), _run_result.get("player_max_hp", 0)]
 	%PuzzleLabel.text = "%s：%s" % [_run_result.get("puzzle_name", "档案机关" if _run_result.get("level_id", 1) == 2 else "符文机关"), "已解开" if _run_result.get("puzzle_solved", false) else "未解开"]
 	%RewardLabel.text = "%s：%s" % [_run_result.get("reward_name", "密室奖励"), "已领取" if _run_result.get("reward_claimed", false) else "未领取"]
-	%SettlementLabel.text = ("通关结算：+%d 金币 · 已存入永久钱包" % _run_result.get("settled_gold", 0)) if settlement_ok else "金币保存失败，请检查存储权限"
+	%SettlementLabel.text = ("通关已存入永久背包 · 共享金币 %d" % _run_result.get("wallet_balance", 0)) if settlement_ok else "金币和道具保存失败，请重试后再离开"
 	if _run_result.get("practice_run", false):
 		%SettlementLabel.text = "独立试玩已结束 · 本局金币和进度不计入战役"
 	_queue_layout()

@@ -1,0 +1,26 @@
+{
+  "date": "2026-11-25",
+  "local_checkpoint": "7c885e94cd81f5deda4f27ce667bb8702dc29345",
+  "presentation_matches_remote_main": true,
+  "remote_main": "bee49d315e789f8c245e78bfaae2f84457e9ef8b",
+  "economy_paths": [
+    "Main.gd",
+    "scenes/items/item_inventory.gd",
+    "scripts/integration/player_profile.gd",
+    "scenes/ui/commerce_controller.gd",
+    "scenes/ui/loading_screen.gd",
+    "scenes/ui/win_screen.gd",
+    "scripts/integration/run_bindings.gd",
+    "scenes/ui/character_select.gd"
+  ],
+  "presentation_paths": [
+    "scenes/dungeon/level04",
+    "scenes/ui/skill_cluster.gd",
+    "scenes/ui/responsive_layout.gd",
+    "scenes/ui/quest_map.gd",
+    "scenes/ui/quest_map_data.gd",
+    "scenes/ui/quest_map_view.gd"
+  ],
+  "scope": "Local integration only; no push",
+  "economy_matches_local_checkpoint": true
+}

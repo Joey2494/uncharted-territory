@@ -13,8 +13,6 @@ var sfx: Node
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	host._start_screen.character_purchased.connect(func() -> void:
-		# 本局金币独立于永久钱包；解锁角色从永久钱包扣款，不重置本局余额。
-		items.gold = 0
 		items._publish_state())
 	hud.skip_tutorial_requested.connect(func() -> void:
 		if tutorial != null: tutorial.skip())
@@ -46,11 +44,11 @@ func _ready() -> void:
 		host._commerce.open_shop())
 
 func _refresh_inventory(_snapshot: Dictionary) -> void:
-	# 本局金币只在通关结算时入账，拾取与消费不再写入永久钱包。
 	hud.update_gold(items.gold)
-	hud.gold_label.text = "本局 %d" % items.gold
-	hud.gold_label.tooltip_text = "待结算 %d · 永久钱包 %d\n本局可购买道具；剩余金币仅通关后入账，死亡或退出不保留。" % [items.gold, Profile.coins]
+	hud.gold_label.text = str(items.gold)
+	hud.gold_label.tooltip_text = "永久金币 %d · 本轮变动 %+d\n成功通关后金币和剩余道具存入永久背包；失败、退出或重开丢弃本轮变动。" % [Profile.coins,items.pending_gold()]
 	if host.practice_run:
+		hud.gold_label.text = "试玩 %d" % items.gold
 		hud.gold_label.tooltip_text = "试玩金币 %d · 可在本局商城使用，试玩结束后清零。" % items.gold
 	hud.update_guard_rune(&"active" if items.guard_active else (&"ready" if items.guard_count > 0 else &"none"), 1 if items.guard_active else items.guard_count)
 	var slots: Array = []

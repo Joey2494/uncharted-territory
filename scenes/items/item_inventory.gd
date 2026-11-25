@@ -13,6 +13,7 @@ signal weapon_changed(item_id: int, ammunition: int)
 signal purchase_completed(item_id: int, quantity: int, cost: int)
 
 const Catalog = preload("res://data/item_catalog.gd")
+const Profile = preload("res://scripts/integration/player_profile.gd")
 const HEALTH_POTION: int = Catalog.HEALTH_POTION
 const ATTACK_RUNE: int = Catalog.ATTACK_RUNE
 const GUARD_RUNE: int = Catalog.GUARD_RUNE
@@ -32,7 +33,15 @@ var energy_potion_count: int = 0
 var potion_count: int = 0
 var rune_count: int = 0
 var guard_count: int = 0
-var gold: int = 0
+var uses_shared_wallet := false
+var _local_gold := 0
+var _starter_ammo: Dictionary = {}
+var gold: int:
+	get:
+		return Profile.coins+_local_gold if uses_shared_wallet else _local_gold
+	set(value):
+		if uses_shared_wallet: _local_gold = value-Profile.coins
+		else: _local_gold = value
 var pistol_ammo: int = 0
 var coil_ammo: int = 0
 var ammo: int = 0
@@ -54,6 +63,59 @@ func _ready() -> void:
 	if _player.character_id == "lan":
 		pistol_ammo = 16
 		coil_ammo = 12
+
+func bind_shared_wallet() -> void:
+	if uses_shared_wallet: return
+	Profile.ensure_loaded()
+	uses_shared_wallet = true
+	_local_gold = 0
+	for id in Profile.BAG_IDS:
+		var saved: int = Profile.inventory.get(id,0)
+		var initial := get_count(id) if id in [Catalog.PISTOL_AMMO,Catalog.COIL_AMMO] else 0
+		_starter_ammo[id] = mini(initial,Catalog.MAX_STACK-saved)
+		_set_count(id,saved+int(_starter_ammo[id]))
+	Profile.events.changed.connect(_wallet_changed)
+	_publish_state()
+
+func _wallet_changed(_balance: int) -> void:
+	# Publish after the transaction has granted its items as well as charged gold.
+	if not _publishing: _publish_state.call_deferred()
+
+func _change_gold(delta: int) -> bool:
+	if delta == 0: return true
+	if gold+delta < 0 or gold+delta > (Profile.MAX_COINS if uses_shared_wallet else Catalog.MAX_GOLD): return false
+	_local_gold += delta
+	return true
+
+func _set_count(id: int, count: int) -> void:
+	match id:
+		HEALTH_POTION: potion_count = count
+		ATTACK_RUNE: rune_count = count
+		GUARD_RUNE: guard_count = count
+		Catalog.ENERGY_POTION: energy_potion_count = count
+		Catalog.PISTOL_AMMO: pistol_ammo = count
+		Catalog.COIL_AMMO: coil_ammo = count
+
+func pending_gold() -> int:
+	return _local_gold
+
+func settle_backpack(run_id: String) -> bool:
+	if not uses_shared_wallet: return true
+	var bag := {}
+	for id in Profile.BAG_IDS:
+		bag[id] = maxi(0,get_count(id)-int(_starter_ammo.get(id,0)))
+	_publishing = true
+	var ok := Profile.commit_run(run_id,_local_gold,bag)
+	_publishing = false
+	if ok: discard_run()
+	return ok
+
+func discard_run() -> void:
+	_local_gold = 0
+	_starter_ammo.clear()
+	if uses_shared_wallet:
+		for id in Profile.BAG_IDS: _set_count(id,int(Profile.inventory.get(id,0)))
+	_publish_state()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -285,7 +347,7 @@ func has_claimed(source_id: String) -> bool:
 
 
 func _can_receive(items: Dictionary, coins: int) -> bool:
-	if coins < 0 or gold > Catalog.MAX_GOLD - coins:
+	if coins < 0 or gold > (Profile.MAX_COINS if uses_shared_wallet else Catalog.MAX_GOLD) - coins:
 		return false
 	var added_ammo := int(items.get(Catalog.AMMO, 0))
 	for item_id in items:
@@ -305,8 +367,7 @@ func _can_receive(items: Dictionary, coins: int) -> bool:
 	return ammo <= Catalog.MAX_STACK - added_ammo
 
 
-func _receive(items: Dictionary, coins: int) -> void:
-	gold += coins
+func _receive_items(items: Dictionary) -> void:
 	pistol_ammo += int(items.get(Catalog.PISTOL_AMMO,0))
 	coil_ammo += int(items.get(Catalog.COIL_AMMO,0))
 	if _player.has_node("WeaponLoadout"):
@@ -325,11 +386,17 @@ func _receive(items: Dictionary, coins: int) -> void:
 
 
 func grant_reward(source_id: String, items: Dictionary, coins: int = 0) -> bool:
-	if not _can_use() or has_claimed(source_id) or (items.is_empty() and coins == 0) or not _can_receive(items, coins):
+	if _publishing or not _can_use() or has_claimed(source_id) or (items.is_empty() and coins == 0) or not _can_receive(items, coins):
+		return false
+	_publishing = true
+	var received := _change_gold(coins)
+	_publishing = false
+	if not received:
+		feedback.emit(Profile.message if uses_shared_wallet else "金币无法入账")
 		return false
 	if not source_id.is_empty():
 		_claimed_rewards[source_id] = true
-	_receive(items, coins)
+	_receive_items(items)
 	_publish_state()
 	return true
 
@@ -366,8 +433,13 @@ func try_purchase(item_id: int, quantity: int = 1, menu: Node = null) -> bool:
 	var product := Catalog.get_item(item_id)
 	var cost := int(product.price) * quantity
 	# Commit both changes before any signal or user callback can observe them.
-	gold -= cost
-	_receive({item_id: int(product.quantity) * quantity}, 0)
+	_publishing = true
+	var paid := _change_gold(-cost)
+	_publishing = false
+	if not paid:
+		feedback.emit(Profile.message if uses_shared_wallet else "金币不足")
+		return false
+	_receive_items({item_id: int(product.quantity) * quantity})
 	_publish_state()
 	_publishing = true
 	purchase_completed.emit(item_id, int(product.quantity) * quantity, cost)
@@ -455,6 +527,7 @@ func try_load_magazine(item_id: int, missing: int) -> int:
 	if not _can_use() or missing <= 0 or item_id not in [Catalog.PISTOL_AMMO,Catalog.COIL_AMMO]: return 0
 	var loaded := mini(missing,get_count(item_id))
 	if loaded <= 0: return 0
+	_starter_ammo[item_id] = maxi(0,int(_starter_ammo.get(item_id,0))-loaded)
 	if item_id == Catalog.PISTOL_AMMO: pistol_ammo -= loaded
 	else: coil_ammo -= loaded
 	_publish_state()
