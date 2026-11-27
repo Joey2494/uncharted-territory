@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/rendering/static_art_provider.gd" id="static_art"]
 [ext_resource type="Script" path="res://scenes/dungeon/level03/level03_preview.gd" id="1"]
@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" path="res://scenes/items/HealthPotion.tscn" id="arrival_potion"]
 [ext_resource type="PackedScene" path="res://scenes/items/EnergyPotion.tscn" id="workshop_potion"]
 [ext_resource type="PackedScene" path="res://scenes/items/GuardRune.tscn" id="gate_rune"]
+[ext_resource type="PackedScene" path="res://scenes/items/RevivalCard.tscn" id="revival_card"]
 
 [sub_resource type="Environment" id="Environment_preview"]
 background_mode = 1
@@ -44,7 +45,7 @@ script = ExtResource("5")
 position = Vector3(12.5, 0, -18)
 visible = false
 
-[node name="ServicePotion" parent="Supplies" instance=ExtResource("arrival_potion")]
+[node name="ServiceRevivalCard" parent="Supplies" instance=ExtResource("revival_card")]
 position = Vector3(-47.5, 0, -24)
 visible = false
 

@@ -3,7 +3,7 @@ extends Node3D
 const CHARACTERS := preload("res://scenes/player/character_catalog.gd")
 const STATION := preload("res://scenes/dungeon/level03/tide_station.gd")
 const CATALOG := preload("res://data/item_catalog.gd")
-const MAINTENANCE_POTION := preload("res://scenes/items/HealthPotion.tscn")
+const Rewards := preload("res://data/reward_balance.gd")
 const PLAN := preload("res://scenes/dungeon/level04/observatory_plan.gd")
 const MAIN := ["A","B","C","E","F","H","I","J"]
 const EDGES := PLAN.LINKS
@@ -49,7 +49,7 @@ func _ready() -> void:
 	combat.battle_cleared.connect(_battle_cleared)
 	combat.cage_landed.connect(_cage_landed)
 	puzzles.progress_changed.connect(_puzzle_changed)
-	player.died.connect(_die)
+	player.run_failed.connect(_die)
 	_refresh_gates()
 
 func _battle_started(id: String) -> void:
@@ -61,8 +61,8 @@ func _battle_cleared(id: String) -> void:
 	if id == "F" and not puzzles.calibrated:
 		puzzles.restore_comparison_lamp()
 	_refresh_gates()
-	inventory.grant_reward("observatory_encounter_"+id,{},12 if id != "I" else 25)
-	var message := "%s清场 · 获得补给金币" % NAMES[id]
+	Rewards.spawn_task(self, "observatory_encounter_" + id, "l4_" + id, layout.room_center(id) + Vector3(0, 0.05, 3))
+	var message := "%s清场 · 通路已开放" % NAMES[id]
 	if id == "F":
 		message += "。横桥通往 E，读片台已恢复供电。" if not puzzles.calibrated else "。北侧试车门已开。"
 	note(message)
@@ -75,18 +75,13 @@ func _puzzle_changed() -> void:
 
 func _cage_landed(first_placement: bool) -> void:
 	if first_placement:
-		var bend: Vector2 = PLAN.maintenance_pickup()
-		var potion := MAINTENANCE_POTION.instantiate() as Node3D
-		potion.position = Vector3(bend.x,0,bend.y)
-		potion.add_to_group("observatory_maintenance_supply")
-		add_child(potion)
 		_refresh_gates()
 	note("吊笼已降在%s廊。" % ("左" if combat.cage_side < 0 else "右"))
 	_claim_rigging()
 
 func _claim_rigging() -> void:
 	if combat.is_clear("F") and not inventory.has_claimed("observatory_rigging"):
-		claim("observatory_rigging",{CATALOG.GUARD_RUNE:1},"检修完成 · 获得守护符文")
+		claim("observatory_rigging",{},"检修完成 · 获得金币 ×12",12)
 
 ## 地图和实体门共用开放条件。战斗封场独立于永久解锁，优先显示当前的封场原因。
 func passage_lock_reason(edge: String) -> String:
@@ -197,8 +192,8 @@ func use_station(id: StringName) -> bool:
 		&"shutter": return combat.operate_shutter()
 	return false
 
-func claim(key: String, items: Dictionary, success: String) -> bool:
-	if inventory.grant_reward(key,items):
+func claim(key: String, items: Dictionary, success: String, coins := 0) -> bool:
+	if inventory.grant_reward(key,items,coins):
 		note(success)
 		return true
 	note("背包已满，物资仍留在原处。")
@@ -224,7 +219,7 @@ func optional_count() -> int:
 func side_hint() -> String:
 	match current_room:
 		"D": return "支线 · 检修左右链轮，选择 F 的掩体位置"
-		"G": return "支线 · 当场取药，或寄到穹顶领取双份物资"
+		"G": return "支线 · 左侧取等值补给包，或右侧寄到穹顶领复活卡"
 		"K": return "支线 · 用两面单向镜照亮星图"
 		"L": return "支线 · 用三张试片找出按下快门的人"
 	return ""
@@ -246,7 +241,11 @@ func objective() -> String:
 
 func _record_location() -> void:
 	current_room = layout.room_at(player.position)
-	if current_room != "": visited[current_room] = true
+	if current_room != "":
+		if not visited.has(current_room) and current_room in ["A", "C", "E", "G", "K", "L"]:
+			var offset: Vector3 = {"G":Vector3(0, 0.05, -5.4), "K":Vector3(0, 0.05, 5), "L":Vector3(0, 0.05, -4)}.get(current_room, Vector3(2, 0.05, 2.5))
+			Rewards.scatter(self, "observatory_random:" + current_room, 4, layout.room_center(current_room) + offset)
+		visited[current_room] = true
 
 func _physics_process(delta: float) -> void:
 	if finished or player.is_dead(): return

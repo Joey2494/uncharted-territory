@@ -36,8 +36,8 @@ const PHASE2_ROTATION := [Move.VINE, Move.TRIPLE, Move.PULSE, Move.VINE, Move.PU
 @export var arena_size := Vector2(26, 22)
 var enemy_id := "witch"
 var definition: Dictionary
-var max_hp := 60
-var hp := 60
+var max_hp := 52
+var hp := 52
 var boss_name := "袍冠女巫"
 var phase := 1
 var state: State = State.IDLE
@@ -66,6 +66,7 @@ var _recovery_time := 1.0
 var _pools: Array[WeakRef] = []
 var _minions: Array[WeakRef] = []
 var _flash: Node
+var _health: Node3D
 func _ready() -> void:
 	definition = Catalog.definition(enemy_id)
 	assert(not definition.is_empty(), "Unknown level04 enemy_id")
@@ -73,7 +74,7 @@ func _ready() -> void:
 	hp = max_hp
 	boss_name = definition.name
 	collision_layer = 4
-	collision_mask = 3 # World + player.
+	collision_mask = 7 # World + player + guards: never walk through a summoned body.
 	add_to_group("camera_targets")
 	add_to_group("l4_enemies")
 	set_meta("camera_radius", 2.2)
@@ -81,7 +82,7 @@ func _ready() -> void:
 	var shape := CollisionShape3D.new()
 	shape.name = "CollisionShape3D"
 	var capsule := CapsuleShape3D.new()
-	capsule.radius = 0.78
+	capsule.radius = 0.98 # Include the wide cloak hem, not only the narrow torso.
 	capsule.height = 3.6
 	shape.shape = capsule
 	shape.position.y = capsule.height * 0.5
@@ -98,6 +99,12 @@ func _ready() -> void:
 	_flash = preload("res://scenes/ui/hit_flash_3d.gd").new()
 	_flash.visual_root = NodePath("../Visuals")
 	add_child(_flash)
+	_health = preload("res://scenes/ui/enemy_health_label_3d.tscn").instantiate()
+	_health.name = "HealthLabel"
+	_health.position.y = 4.35
+	_health.elite = true
+	add_child(_health)
+	_health.bind_health_source(self, hp, max_hp)
 	if _target == null: _target = get_node_or_null(target_path) as Node3D
 	if reward_source_id.is_empty(): reward_source_id = "l4:" + str(get_instance_id())
 	set_encounter_active(start_active)
@@ -123,6 +130,47 @@ func register_minion(minion: Node) -> bool:
 	if not is_instance_valid(minion): return false
 	_minions.append(weakref(minion))
 	return true
+
+func find_minion_spawn(preferred: Vector3, reserved: Array[Vector3] = []) -> Dictionary:
+	## Recheck at actual creation time: the player can move during windup/deferred spawn.
+	## Empty result means there is no clear, supported slot; never force an overlapping spawn.
+	var capsule := CapsuleShape3D.new()
+	capsule.radius = 0.62
+	capsule.height = 1.3
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.shape = capsule
+	query.collision_mask = 7
+	var space := get_world_3d().direct_space_state
+	for ring in 4:
+		var count := 1 if ring == 0 else 12
+		for i in count:
+			var angle := TAU * float(i) / count
+			var candidate := _clamp_to_arena(preferred + Vector3(sin(angle), 0, cos(angle)) * ring * 0.9)
+			candidate.y = arena_center.y + 0.05
+			if not _can_see(candidate): continue
+			# Find the floor; reject unsupported ledges and the tops of map equipment.
+			var floor_hit := space.intersect_ray(PhysicsRayQueryParameters3D.create(candidate + Vector3.UP * 1.4, candidate - Vector3.UP * 1.0, 1))
+			if floor_hit.is_empty() or floor_hit.normal.y < 0.65 or absf(floor_hit.position.y - arena_center.y) > 0.35: continue
+			candidate.y = floor_hit.position.y + 0.05
+			var occupied := false
+			for point in reserved:
+				if Vector2(candidate.x - point.x, candidate.z - point.z).length() < 1.35:
+					occupied = true
+					break
+			if occupied: continue
+			# New bodies may not have reached the physics server yet in the same frame.
+			for ref in _minions:
+				var actor = ref.get_ref()
+				if is_instance_valid(actor) and not actor.is_dead() and Vector2(candidate.x - actor.global_position.x, candidate.z - actor.global_position.z).length() < 1.35:
+					occupied = true
+					break
+			if occupied: continue
+			if is_instance_valid(_target) and Vector2(candidate.x - _target.global_position.x, candidate.z - _target.global_position.z).length() < 1.25: continue
+			if Vector2(candidate.x - global_position.x, candidate.z - global_position.z).length() < 1.7: continue
+			query.transform.origin = candidate + Vector3.UP * 0.7
+			if not space.intersect_shape(query, 1).is_empty(): continue
+			return {"position": candidate}
+	return {}
 func _clear_warning() -> void:
 	if not is_instance_valid(_warning): return
 	for child in _warning.get_children(): child.queue_free()
@@ -219,8 +267,7 @@ func _living_minions() -> int:
 		return is_instance_valid(m) and not m.is_dead())
 	return _minions.size()
 func _start_cast() -> void:
-	# 用户指定：直接施放。飞行孢弹、活动藤蔓和已生效毒液是攻击实体，
-	# 不创建地面标记、范围轮廓、预警文字或蓄力状态。
+	# 抬杖蓄力后施法；不创建地面标记或范围轮廓。
 	_clear_warning()
 	var offset := _target.global_position - global_position
 	offset.y = 0
@@ -228,20 +275,25 @@ func _start_cast() -> void:
 	_visual.rotation.y = atan2(-_direction.x, -_direction.z)
 	match _mode:
 		Move.TRIPLE:
-			_recovery_time = 1.0
+			_recovery_time = definition.recovery
 		Move.PULSE:
-			_recovery_time = 0.8
+			_recovery_time = definition.recovery
 		Move.GUARD:
-			_recovery_time = 1.0
+			_recovery_time = definition.recovery
 			var side := _direction.rotated(Vector3.UP, PI * 0.5)
 			_mark_positions.clear()
 			for s in [-1.0, 1.0]:
 				var at := _clamp_to_arena(global_position + side * s * 2.2 + _direction * 1.0)
 				_mark_positions.append(at)
 		Move.VINE:
-			_recovery_time = 1.2
+			_recovery_time = definition.recovery + 0.2
 			_vine_position = _clamp_to_arena(_target.global_position).x
-	_begin_strike()
+	state = State.WINDUP
+	_duration = maxf(0.65, definition.windup * (0.9 if phase == 2 else 1.0))
+	if _mode == Move.VINE: _duration += 0.2
+	_remaining = _duration
+	attack_telegraphed.emit(enemy_id, _mode, _duration)
+	state_changed.emit("抬杖蓄力")
 func _begin_strike() -> void:
 	state = State.STRIKE
 	_clear_warning()
@@ -281,10 +333,14 @@ func _tick_strike(delta: float) -> void:
 		FX.burst(get_parent(), global_position + Vector3.UP * 1.4, Color("c8f08a"), 1.0)
 	elif _mode == Move.GUARD and _strike_index == 0:
 		_strike_index = 1
-		_summon_batches += 1
+		var occupied: Array[Vector3] = []
 		for at in _mark_positions:
-			summon_requested.emit("spore_guard", at)
-			FX.burst(get_parent(), at + Vector3.UP * 0.2, Color("9ac77a"), 1.0)
+			var slot := find_minion_spawn(at, occupied)
+			if slot.is_empty(): continue
+			occupied.append(slot.position)
+			summon_requested.emit("spore_guard", slot.position)
+		if not occupied.is_empty(): _summon_batches += 1
+		else: state_changed.emit("附近空间不足 · 本次不召唤")
 	if _remaining <= 0:
 		_finish_move()
 func _finish_move() -> void:
@@ -311,10 +367,14 @@ func _begin_transition() -> void:
 	_clear_hazards()
 	state_changed.emit("阶段转换 · 袍冠女巫展露第二阶段")
 func _spawn_pool(at: Vector3) -> void:
+	# Airborne spores can hit the player's upper body. The residue belongs on
+	# the floor, never at the collision height where it would cover characters.
+	var floor_hit := get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(at + Vector3.UP * 0.1, at - Vector3.UP * 6.0, 1))
+	if floor_hit.is_empty() or floor_hit.normal.y < 0.65 or absf(floor_hit.position.y - arena_center.y) > 0.35: return
 	_prune_pools()
 	var pool := Pool.new()
 	get_parent().add_child(pool)
-	pool.global_position = at + Vector3.UP * 0.03
+	pool.global_position = floor_hit.position + Vector3.UP * 0.03
 	pool.launch(self, _target)
 	_pools.append(weakref(pool))
 	if _pools.size() > Catalog.POOL_CAP:

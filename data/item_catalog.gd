@@ -9,12 +9,14 @@ const AMMO := 4
 const ENERGY_POTION := 5
 const PISTOL_AMMO := 6
 const COIL_AMMO := 7
+const REVIVAL_CARD := 8
 const MELEE := -1
 const MAX_STACK := 999
 const MAX_GOLD := 999999
 const INITIAL_AMMO := 12
 
 const ITEMS := {
+	REVIVAL_CARD: {"id":REVIVAL_CARD,"key":"revival_card","name":"复活卡 · 余烬归生","price":500,"quantity":1,"effect":"revive","description":"倒下后选择使用，消耗一张原地满血复活，并获得 3 秒无敌。通关可携带，最终失败时与金币、其他道具一同清空。"},
 	PISTOL_AMMO: {"id":PISTOL_AMMO,"key":"pistol_ammo","name":"黄铜手枪弹","price":12,"quantity":16,"effect":"ammo","description":"16发黄铜弹；仅供制式手枪使用，K 从备用弹药装填。"},
 	COIL_AMMO: {"id":COIL_AMMO,"key":"coil_ammo","name":"线圈磁芯弹","price":18,"quantity":12,"effect":"ammo","description":"12发磁芯弹；仅供线圈卡宾枪使用，K 从备用弹药装填，不消耗蓝条。"},
 

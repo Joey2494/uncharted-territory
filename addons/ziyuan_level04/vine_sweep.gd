@@ -3,15 +3,16 @@ extends Node3D
 ## 波前经过玩家所在位置时，若玩家仍在条带内则造成伤害；一次横扫只登记一次，
 ## 翻滚无敌可穿过条带。条带位置在预警开始时锁定，不追踪玩家。
 const FX = preload("effects.gd")
+const Collision = preload("res://scenes/skills/enemy_attack_collision.gd")
 var _source: WeakRef
 var _target: WeakRef
 var _travel := 1.6
 var _age := 0.0
-var _hit: Dictionary = {}
 var _start_z := -11.0
 var _end_z := 11.0
 var _band_x := 0.0
 var _wave: MeshInstance3D
+var _done := false
 func launch(source: Node3D, target: Node3D, band_x: float) -> void:
 	add_to_group("l4_hazards")
 	_source = weakref(source)
@@ -43,6 +44,7 @@ func launch(source: Node3D, target: Node3D, band_x: float) -> void:
 		thorn.position = Vector3(0.18, -0.85 + i * 0.28, 0)
 		thorn.rotation.z = -PI * 0.5
 func _physics_process(delta: float) -> void:
+	if _done: return
 	var source = _source.get_ref() if _source else null
 	var target = _target.get_ref() if _target else null
 	if not is_instance_valid(source) or not source.is_encounter_active() or not is_instance_valid(target) or target.is_dead():
@@ -50,14 +52,22 @@ func _physics_process(delta: float) -> void:
 		return
 	_age += delta
 	var t := clampf(_age / _travel, 0.0, 1.0)
-	var prev_z: float = _wave.position.z
 	var wave_z := lerpf(_start_z, _end_z, t)
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(2.0, 0.4, 0.3)
+	var excluded: Array[RID] = []
+	if source is CollisionObject3D: excluded.append(source.get_rid())
+	var contact := Collision.sweep(self, _wave.global_position, Vector3(_band_x, _wave.global_position.y, wave_z), shape, excluded)
+	if not contact.is_empty():
+		_done = true
+		if contact.collider == target:
+			if target.has_method("take_direct_damage"): target.take_direct_damage(source.definition.damage, contact.position)
+			else: target.take_damage(source.definition.damage)
+		elif contact.collider is Node and contact.collider.is_in_group("breakable_cover"): contact.collider.take_damage(source.definition.damage)
+		FX.burst(get_parent(), contact.position, Color("d9a3ff"), 0.6)
+		hide()
+		queue_free()
+		return
 	_wave.position.z = wave_z
-	var pz: float = target.global_position.z
-	if not _hit.has(target.get_instance_id()) and absf(target.global_position.x - _band_x) <= 1.0 and prev_z <= pz and wave_z >= pz:
-		_hit[target.get_instance_id()] = true
-		if target.has_method("take_direct_damage"): target.take_direct_damage(source.definition.damage, Vector3(_band_x, 1, pz))
-		else: target.take_damage(source.definition.damage)
-		FX.burst(get_parent(), Vector3(_band_x, 0.3, pz), Color("d9a3ff"), 1.0)
 	if t >= 1.0:
 		queue_free()

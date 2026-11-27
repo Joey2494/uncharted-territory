@@ -162,7 +162,9 @@ func pose(state: int, progress: float, moving: float, delta: float, strike := 0)
 			_body.scale = Vector3.ONE
 		if state == 3:
 			_body.rotation.x = -sin(progress * PI) * 0.5
-			_body.position.z = sin(progress * PI) * 0.45
+			# The physics body already lunges; don't translate the mesh into the player.
+		elif state == 4:
+			_body.rotation.x = -(1.0 - progress) * 0.2
 		for leg in _legs:
 			leg.rotation.x += sin(_time * 7) * moving * 0.3
 		if moving > 0: head.rotation.y += sin(_time * 5) * 0.12

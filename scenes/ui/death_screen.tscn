@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/death_screen.gd" id="1_script"]
 [ext_resource type="Theme" path="res://scenes/ui/menu_theme.tres" id="2_theme"]
 [ext_resource type="Material" path="res://scenes/ui/stone_material.tres" id="3_stone"]
 [ext_resource type="PackedScene" path="res://scenes/ui/dungeon_frame.tscn" id="4_frame"]
+[ext_resource type="Texture2D" path="res://assets/ui/revival_card.svg" id="revival_art"]
 
 [node name="DeathScreen" type="Control"]
 process_mode = 3
@@ -79,6 +80,16 @@ theme_override_colors/font_color = Color(0.64, 0.60, 0.51, 1)
 text = "本次探索深度"
 horizontal_alignment = 1
 
+[node name="RevivalArt" type="TextureRect" parent="Center/Card/Padding/Content"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(112, 154)
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("revival_art")
+expand_mode = 1
+stretch_mode = 5
+
 [node name="DepthLabel" type="Label" parent="Center/Card/Padding/Content"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -108,3 +119,24 @@ custom_minimum_size = Vector2(0, 54)
 layout_mode = 2
 mouse_default_cursor_shape = 2
 text = "重新开始"
+
+[node name="ReviveButton" type="Button" parent="Center/Card/Padding/Content"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+text = "使用复活卡 · 原地复活"
+
+[node name="ForfeitButton" type="Button" parent="Center/Card/Padding/Content"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "放弃复活 · 清空物资并结算失败"
+
+[node name="MainMenuButton" type="Button" parent="Center/Card/Padding/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "返回主菜单"

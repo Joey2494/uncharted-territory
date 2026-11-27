@@ -30,6 +30,9 @@ func pose(state: int, progress: float, moving: float, delta: float, strike := 0)
 		r.rotation.x+=-0.65+sin(progress*PI)*1.55
 		l.rotation.x+=-0.4+sin(progress*PI)*1.0
 		if kind=="tomb_sword": r.position.z-=sin(progress*PI)*0.8
+	elif state==4:
+		r.rotation.x+=(1.0-progress)*0.55
+		l.rotation.x+=(1.0-progress)*0.25
 	if kind=="chain_jailer":
 		for side in [-1,1]:
 			var chain:=get_node_or_null("ChainR" if side>0 else "ChainL") as Node3D

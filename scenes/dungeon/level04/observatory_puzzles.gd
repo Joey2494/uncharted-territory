@@ -4,6 +4,7 @@ signal progress_changed
 const PANEL := preload("res://scenes/dungeon/level04/observatory_bench.gd")
 const PHOTO := preload("res://scenes/dungeon/level04/night_shift_plates.png")
 const REWARD := "level04_starlight_register"
+const Rewards := preload("res://data/reward_balance.gd")
 const GOLD := Color("#ffc76a")
 const CYAN := Color("#84e9db")
 const BRASS := Color("#8d7150")
@@ -208,23 +209,18 @@ func interact(id: StringName) -> bool:
 			turns[i] = (turns[i]+1)%4
 			_refresh_optics()
 		&"p_chart":
-			if not level.inventory.grant_reward(REWARD, {level.inventory.ATTACK_RUNE: 1, level.inventory.GUARD_RUNE: 1}):
+			if not Rewards.grant(level.inventory, REWARD, "l4_mirror"):
 				level.note("背包空间不足。星图架会为你保留奖励。")
 				return false
 			mirror_claimed = true
-			level.note("取得强化符文与守护符文各一枚。星图边缘盖着夜班四人的印记。")
+			level.note("取得强化、守护符文各一，金币 ×25。星图边缘盖着夜班四人的印记。")
 		&"p_print":
 			film_claimed = true
 			print_sprite.hide()
 			window_photo.frame = 3
 			# 成片先更新结局；留下的值班补给可分别拾取，满包也能完成合影。
-			var medicine := preload("res://scenes/items/HealthPotion.tscn").instantiate() as Node3D
-			medicine.position = _center(&"L") + Vector3(2, 0, 3.7)
-			add_child(medicine)
-			var reserve := preload("res://scenes/items/EnergyPotion.tscn").instantiate() as Node3D
-			reserve.position = _center(&"L") + Vector3(4.2, 0, 3.7)
-			add_child(reserve)
-			level.note("完整合影已送往照相窗。显影盘旁的生命药剂和星蓝药剂可按 E 拾取。")
+			Rewards.spawn_task(self, "observatory_film", "l4_film", _center(&"L") + Vector3(0, 0.05, 3.7))
+			level.note("完整合影已送往照相窗。显影盘旁的星蓝药剂 ×1 与金币可按 E 拾取。")
 		_:
 			display = id
 			if id == &"p_dial": _record_exposure()
@@ -257,6 +253,7 @@ func operate(action: StringName, index := 0, delta := 1) -> void:
 				&"submit":
 					if digits == [4, 2, 5]:
 						calibrated = true
+						Rewards.spawn_task(level, "observatory_calibration", "l4_calibration", _center(&"E") + Vector3(0, 0.05, 3.5))
 						operate(&"close")
 						hood.create_tween().tween_property(hood, "rotation:y", -1.1, 0.42)
 						_refresh_optics()

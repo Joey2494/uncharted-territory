@@ -9,7 +9,7 @@ const DEATH: StringName = &"death/Death_A"
 var _started: bool = false
 var _completed: bool = false
 var _elapsed: float = 0.0
-var _previous_callback_mode: int
+var _previous_callback_mode: AnimationMixer.AnimationCallbackModeProcess
 
 
 func _ready() -> void:
@@ -48,3 +48,13 @@ func _physics_process(delta: float) -> void:
 func _exit_tree() -> void:
 	if _started and not _completed and is_instance_valid(_animator):
 		_animator.callback_mode_process = _previous_callback_mode
+
+
+func reset_after_revival() -> void:
+	if _started:
+		_animator.callback_mode_process = _previous_callback_mode
+	_animator.stop()
+	_started = false
+	_completed = false
+	_elapsed = 0.0
+	set_physics_process(false)

@@ -33,6 +33,7 @@ var energy_potion_count: int = 0
 var potion_count: int = 0
 var rune_count: int = 0
 var guard_count: int = 0
+var revival_card_count: int = 0
 var uses_shared_wallet := false
 var _local_gold := 0
 var _starter_ammo: Dictionary = {}
@@ -92,6 +93,7 @@ func _set_count(id: int, count: int) -> void:
 		HEALTH_POTION: potion_count = count
 		ATTACK_RUNE: rune_count = count
 		GUARD_RUNE: guard_count = count
+		Catalog.REVIVAL_CARD: revival_card_count = count
 		Catalog.ENERGY_POTION: energy_potion_count = count
 		Catalog.PISTOL_AMMO: pistol_ammo = count
 		Catalog.COIL_AMMO: coil_ammo = count
@@ -116,6 +118,34 @@ func discard_run() -> void:
 	if uses_shared_wallet:
 		for id in Profile.BAG_IDS: _set_count(id,int(Profile.inventory.get(id,0)))
 	_publish_state()
+
+
+func forfeit_run(run_id: String) -> bool:
+	if uses_shared_wallet and not Profile.forfeit_run(run_id): return false
+	_local_gold = 0
+	_starter_ammo.clear()
+	for id in Profile.BAG_IDS: _set_count(id, 0)
+	ammo = 0
+	owns_firearm = false
+	_publish_state()
+	return true
+
+
+func try_use_revival_card(host: Node) -> bool:
+	# Only the active death-choice host may use it while the world is frozen.
+	if _publishing or revival_card_count <= 0 or host != _player.revival_host \
+		or not is_instance_valid(host) or not host.has_method("allows_revival") or not host.allows_revival(): return false
+	_publishing = true
+	revival_card_count -= 1
+	var revived: bool = _player.revive_from_card(host)
+	if not revived: revival_card_count += 1
+	_publishing = false
+	if not revived: return false
+	_heal_remaining = 0.45
+	_publish_state()
+	item_used.emit(Catalog.REVIVAL_CARD)
+	feedback.emit("余烬归生 · 原地满血复活，3 秒无敌")
+	return true
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -317,6 +347,7 @@ func get_count(item_id: int) -> int:
 		HEALTH_POTION: return potion_count
 		ATTACK_RUNE: return rune_count
 		GUARD_RUNE: return guard_count
+		Catalog.REVIVAL_CARD: return revival_card_count
 		FIREARM: return 1 if owns_firearm else 0
 		Catalog.AMMO: return ammo
 	return 0
@@ -325,7 +356,7 @@ func get_count(item_id: int) -> int:
 func get_snapshot() -> Dictionary:
 	return {
 		"gold": gold, "items": {Catalog.PISTOL_AMMO:pistol_ammo,Catalog.COIL_AMMO:coil_ammo,Catalog.ENERGY_POTION: energy_potion_count, HEALTH_POTION: potion_count, ATTACK_RUNE: rune_count,
-		GUARD_RUNE: guard_count, FIREARM: get_count(FIREARM), Catalog.AMMO: ammo},
+		GUARD_RUNE: guard_count, Catalog.REVIVAL_CARD: revival_card_count, FIREARM: get_count(FIREARM), Catalog.AMMO: ammo},
 		"equipped_weapon": equipped_weapon, "ammo": ammo, "guard_active": guard_active,
 		"attack_multiplier": get_multiplier(), "buff_remaining": _buff_remaining,
 	}
@@ -377,6 +408,7 @@ func _receive_items(items: Dictionary) -> void:
 	potion_count += int(items.get(HEALTH_POTION, 0))
 	rune_count += int(items.get(ATTACK_RUNE, 0))
 	guard_count += int(items.get(GUARD_RUNE, 0))
+	revival_card_count += int(items.get(Catalog.REVIVAL_CARD, 0))
 	if _player.has_node("WeaponLoadout"): return
 	ammo += int(items.get(Catalog.AMMO, 0))
 	if items.has(FIREARM):
@@ -450,6 +482,9 @@ func try_purchase(item_id: int, quantity: int = 1, menu: Node = null) -> bool:
 
 func try_use_item(item_id: int, menu: Node = null) -> bool:
 	match item_id:
+		Catalog.REVIVAL_CARD:
+			feedback.emit("复活卡在倒下后使用，当前未消耗")
+			return false
 		Catalog.ENERGY_POTION: return try_use_energy_potion(menu)
 		HEALTH_POTION: return try_use_potion(menu)
 		ATTACK_RUNE: return try_use_rune(menu)

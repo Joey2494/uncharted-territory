@@ -10,10 +10,9 @@ enum State { READY, RESETTING, OPENING, OPEN, CLAIMED }
 const Catalog = preload("res://data/item_catalog.gd")
 const CORRECT_SEQUENCE: Array[int] = [1, 2, 0]
 const SYMBOLS: Array[String] = ["日", "月", "星"]
-@export var opening_gold: int = 40
+@export var opening_gold: int = 12
 @export var reward_items: Dictionary = {
-	Catalog.HEALTH_POTION: 2, Catalog.ATTACK_RUNE: 2, Catalog.GUARD_RUNE: 1,
-	Catalog.FIREARM: 1, Catalog.ENERGY_POTION: 1,
+	Catalog.ATTACK_RUNE: 1,
 }
 
 @onready var _runes: Array[StaticBody3D] = [$SunRune, $MoonRune, $StarRune]

@@ -34,6 +34,7 @@ func spawn_at_positions(player: Node3D, index: int, source_prefix: String, posit
 		actor.arena_size = size
 		add_child(actor)
 		actor.global_position = positions[i]
+		actor._attack_cd = 1.5 + i * 0.35
 		actors.append(actor)
 		actor.enemy_died.connect(func(enemy: Node3D) -> void:
 			if generation != _generation: return

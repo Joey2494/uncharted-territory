@@ -1,0 +1,87 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scenes/items/item_pickup.gd" id="pickup"]
+[ext_resource type="Texture2D" path="res://assets/ui/revival_card.svg" id="art"]
+[ext_resource type="Font" path="res://scenes/ui/dungeon_font.tres" id="font"]
+
+[sub_resource type="SphereShape3D" id="shape"]
+radius = 0.48
+
+[sub_resource type="StandardMaterial3D" id="gold"]
+albedo_color = Color(0.92, 0.64, 0.3, 1)
+metallic = 0.65
+roughness = 0.32
+emission_enabled = true
+emission = Color(0.18, 0.06, 0.02, 1)
+
+[sub_resource type="BoxMesh" id="card_body"]
+material = SubResource("gold")
+size = Vector3(0.8, 1.1, 0.14)
+
+[sub_resource type="StandardMaterial3D" id="card_ink"]
+albedo_texture = ExtResource("art")
+roughness = 0.55
+emission_enabled = true
+emission = Color(1, 1, 1, 1)
+emission_texture = ExtResource("art")
+emission_energy_multiplier = 0.25
+
+[sub_resource type="QuadMesh" id="card_face"]
+material = SubResource("card_ink")
+size = Vector2(0.76, 1.045)
+
+[sub_resource type="SphereMesh" id="edge_gem"]
+material = SubResource("gold")
+radius = 0.045
+height = 0.09
+
+[sub_resource type="TorusMesh" id="halo"]
+material = SubResource("gold")
+inner_radius = 0.43
+outer_radius = 0.49
+
+[node name="RevivalCard" type="Area3D" groups=["item_pickups"]]
+collision_layer = 8
+collision_mask = 0
+monitoring = false
+script = ExtResource("pickup")
+item_type = 8
+show_prompt_quantity = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.8, 0)
+shape = SubResource("shape")
+
+[node name="Visuals" type="Node3D" parent="."]
+position = Vector3(0, 0.95, 0)
+rotation = Vector3(-0.12, 0.45, 0.08)
+
+[node name="CardBody" type="MeshInstance3D" parent="Visuals"]
+mesh = SubResource("card_body")
+
+[node name="Front" type="MeshInstance3D" parent="Visuals"]
+position = Vector3(0, 0, 0.071)
+mesh = SubResource("card_face")
+
+[node name="Back" type="MeshInstance3D" parent="Visuals"]
+position = Vector3(0, 0, -0.071)
+rotation = Vector3(0, 3.1415927, 0)
+mesh = SubResource("card_face")
+
+[node name="CrownGem" type="MeshInstance3D" parent="Visuals"]
+position = Vector3(0, 0.56, 0)
+mesh = SubResource("edge_gem")
+
+[node name="Halo" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.07, 0)
+mesh = SubResource("halo")
+
+[node name="NameLabel" type="Label3D" parent="."]
+position = Vector3(0, 1.85, 0)
+billboard = 1
+font = ExtResource("font")
+font_size = 38
+pixel_size = 0.007
+modulate = Color(1, 0.83, 0.53, 1)
+outline_size = 6
+text = "复活卡 · 余烬归生"

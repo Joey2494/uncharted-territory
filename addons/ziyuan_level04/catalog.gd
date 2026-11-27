@@ -1,7 +1,6 @@
 extends RefCounted
 ## 第四关孢冠女巫数值表。稳定 ID：存档与场景引用必须使用 ID，不依赖显示名。
-## 数值来源：玩法详细设计提案 §12.2/§12.4，按本作真实玩家属性（5 生命 / 2 护盾、
-## J=1、K=2）等比折算；与第三关沙缚王（48 HP / 2 伤害）同量级并略强。
+## 按当前角色 4–6 生命、1–2 护盾与双武器 1/2 伤害校准；详见 docs/combat_balance.md。
 const ARENA := {"size": Vector2(26, 22), "inset": 1.0, "pillar": 2.0}
 ## 全场同时存在的毒池上限；生成第 4 个时最旧一个消散（§12.4）。
 const POOL_CAP := 3
@@ -11,13 +10,13 @@ const POOL_LIFE := 4.0
 const GUARD_BATCH_CAP := 3
 const ENEMIES := {
 	"witch": {
-		"name": "袍冠女巫", "role": "四式咒术 第四关首领", "hp": 60, "damage": 2,
-		"speed": 1.8, "reach": 12.0, "windup": 0.0, "recovery": 1.0,
+		"name": "袍冠女巫", "role": "四式咒术 第四关首领", "hp": 52, "damage": 2,
+		"speed": 1.8, "reach": 12.0, "windup": 0.80, "recovery": 1.2,
 		"gold": 160, "rank": 6, "color": Color("202636"), "boss": true,
 	},
 	"spore_guard": {
 		"name": "孢子守卫", "role": "近身扑咬 召唤物", "hp": 4, "damage": 1,
-		"speed": 3.0, "reach": 1.5, "windup": 0.0, "recovery": 0.8,
+		"speed": 3.0, "reach": 1.5, "windup": 0.45, "recovery": 0.9,
 		"gold": 0, "rank": 1, "color": Color("7a8f5a"), "boss": false,
 	},
 }

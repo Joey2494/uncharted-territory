@@ -1,6 +1,6 @@
 # 第三关敌人模块整合说明
 
-2026-11-23：直接攻击版本见 [DIRECT_COMBAT.md](DIRECT_COMBAT.md)。五类敌人取消所有攻击前提示/范围网格，`attack_telegraphed`仅保留兼容声明且不再发射；UI/音效请监听新增`attack_started(enemy_id,mode)`。沙王沙印改为可阻挡的飞行沙咒，半血只加速不召唤；旧说明中的预警和半血召唤条目已失效。
+2026-11-25：当前版恢复模型前摇与收招，保持无地面范围显示。`attack_telegraphed(enemy_id,mode,duration)` 在蓄力开始发出，`attack_started(enemy_id,mode)` 在实际释放发出，`attack_resolved` 在动作结束发出。沙王沙印使用可阻挡的飞行沙咒，半血只加速不召唤。房间清单以 `level03_preview.gd.ENEMY_ROSTER` 为准；数值与节奏见 [combat_balance.md](../../docs/combat_balance.md)。下方较早的半血援军说明和 DIRECT_COMBAT.md 属于历史版本。
 
 版本 1.0 · 2026-11-17 · 提交人 字远
 

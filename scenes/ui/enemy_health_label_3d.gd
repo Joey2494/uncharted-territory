@@ -2,6 +2,10 @@ extends Label3D
 ## Billboard bar. Ordinary: aggro or recent hit; elite: active encounter. Never draw through walls.
 @export var hide_when_empty := true
 @export var elite := false
+@export var fit_visual_size := true
+@export var minimum_width := 40.0
+@export var maximum_width := 108.0
+var _body_width := 1.2
 var _source: WeakRef
 var _bar: Control
 var _current := 0
@@ -58,7 +62,7 @@ func update_hp(current: int, maximum: int) -> void:
 		_bar.current = _current
 		_bar.maximum = maxi(0, maximum)
 		_bar.elite = elite
-		_bar.size = Vector2(84, 18) if elite else Vector2(72, 17)
+		_bar.size = Vector2(clampf(_bar.size.x, minimum_width, maximum_width), 18 if elite else 17)
 		_bar.queue_redraw()
 	visible = _current > 0 and maximum > 0
 
@@ -79,8 +83,14 @@ func _process(delta: float) -> void:
 		visible = get_world_3d().direct_space_state.intersect_ray(ray).is_empty()
 	if not visible: return
 	var screen := get_viewport().get_visible_rect().size
+	if fit_visual_size:
+		var world_scale: Vector3 = source.global_basis.get_scale().abs()
+		var right := camera.global_basis.x * _body_width * maxf(world_scale.x, world_scale.z) * 0.5
+		var pixels := camera.unproject_position(global_position + right).distance_to(camera.unproject_position(global_position - right))
+		_bar.size.x = clampf(pixels, minimum_width, maximum_width)
 	# Keep the full bar and HP readout above the anchor, leaving a clear pixel gap.
-	var at := camera.unproject_position(global_position) - Vector2(_bar.size.x * 0.5, _bar.size.y + 14.0)
+	var gap := 5.0 if _body_width < 1.0 else 8.0
+	var at := camera.unproject_position(global_position) - Vector2(_bar.size.x * 0.5, _bar.size.y + gap)
 	if at.x < 0 or at.x + _bar.size.x > screen.x or at.y < 0 or at.y + _bar.size.y > screen.y:
 		return
 	# Resolve nearby overhead bars in stable instance order.
@@ -97,10 +107,28 @@ func bind_health_source(source: Node, initial_hp: int, maximum: int) -> bool:
 	unbind_health_source()
 	if not is_instance_valid(source) or not source.has_signal("hp_changed"): return false
 	_source = weakref(source)
+	if fit_visual_size: _fit_to_visuals(source)
 	source.connect("hp_changed", update_hp)
 	source.tree_exiting.connect(_on_source_exiting, CONNECT_ONE_SHOT)
 	update_hp(initial_hp, maximum)
 	return true
+
+func _fit_to_visuals(source: Node) -> void:
+	var visuals := source.get_node_or_null("Visuals") as Node3D
+	if visuals == null or not source is Node3D: return
+	var bounds := AABB()
+	var found := false
+	var meshes: Array[Node] = visuals.find_children("*", "MeshInstance3D", true, false)
+	for node in meshes:
+		var mesh := node as MeshInstance3D
+		if mesh.mesh == null or not mesh.is_visible_in_tree(): continue
+		var box: AABB = (source.global_transform.affine_inverse() * mesh.global_transform) * mesh.get_aabb()
+		bounds = bounds.merge(box) if found else box
+		found = true
+	if not found: return
+	# Fit the actor's own model once, so idle/attack animation cannot jitter the bar.
+	position = Vector3(bounds.get_center().x, bounds.end.y + 0.12, bounds.get_center().z)
+	_body_width = clampf(maxf(bounds.size.x, bounds.size.z) * 0.85, 0.45, 3.5)
 
 func unbind_health_source() -> void:
 	var source = _source.get_ref() if _source != null else null

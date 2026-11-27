@@ -57,6 +57,14 @@ func _process(delta: float) -> void:
 	else:
 		_strike = maxf(0, _strike - delta * 5)
 		_body.rotation.x = lerpf(_body.rotation.x, (-0.22 if windup else 0.0) + _strike * 0.35, minf(1.0, delta * 16))
+		if is_instance_valid(_actor) and _actor.get("_charging") != null:
+			if _actor._charging:
+				var progress: float = 1.0 - _actor._remaining / _actor._windup_total
+				_body.rotation.x = -progress * 0.35
+				_body.position.y -= progress * 0.1
+			elif _actor._recovering > 0:
+				_body.rotation.x = 0.25 * minf(1.0, _actor._recovering / 0.8)
+				_body.position.y -= 0.06
 
 
 func _on_death() -> void:

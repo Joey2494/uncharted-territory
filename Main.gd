@@ -33,7 +33,7 @@ func _enter_tree() -> void:
 
 @onready var _overlay: Control = $UILayer/RunOverlay
 
-enum RunState { MENU, PLAYING, DEAD, VICTORY, DYING, PAUSED, GUIDE }
+enum RunState { MENU, PLAYING, DEAD, VICTORY, DYING, PAUSED, GUIDE, CODEX }
 
 var _transition_queued: bool = false
 var _transition_executing: bool = false
@@ -46,6 +46,8 @@ var _run_result: Dictionary = {}
 var _death_room_index: int = 0
 var _settlement_id := ""
 var _settled := false
+var _failure_settled := false
+var _revive_boss_bar_visible := false
 
 
 func _ready() -> void:
@@ -94,6 +96,7 @@ func _ready() -> void:
 	_hud.bind_combat_actions(_player)
 	_player.hp_changed.connect(_hud.update_hp_bar)
 	_player.died.connect(_on_player_died)
+	_player.revival_host = self
 	_player.death_animation_finished.connect(_on_player_death_animation_finished)
 	_hud.restart_requested.connect(_on_restart_requested)
 	_hud.next_level_requested.connect(advance_to_next_level)
@@ -124,6 +127,9 @@ func _ready() -> void:
 	var navigation := preload("res://scripts/integration/menu_navigation.gd").new()
 	navigation.name = "MenuNavigation"
 	add_child(navigation)
+	var enemy_codex := preload("res://scripts/integration/enemy_codex_controller.gd").new()
+	enemy_codex.name = "EnemyCodexController"
+	add_child(enemy_codex)
 	var victory_presentation := preload("res://scenes/ui/victory_battlefield.gd").new()
 	victory_presentation.name = "VictoryPresentation"
 	add_child(victory_presentation)
@@ -275,9 +281,10 @@ func _on_player_died() -> void:
 	# Stop the run clock and reject victory immediately; keep the world processing
 	# while the already input-locked player completes Death_A.
 	_run_state = RunState.DYING
-	# Failed-run assets never enter the permanent wallet/backpack.
-	_items.discard_run()
-	_commerce.finish_run()
+	_commerce.close_all()
+	_commerce.set_run_active(false)
+	if not _player.revival_pending: _finalize_failure()
+	_revive_boss_bar_visible = _boss_bar.visible
 	_boss_bar.hide()
 	_death_room_index = _dungeon.get_visited_count() - 1
 	_refresh_overlay()
@@ -289,6 +296,41 @@ func _on_player_death_animation_finished() -> void:
 	_run_state = RunState.DEAD
 	_dungeon.process_mode = Node.PROCESS_MODE_DISABLED
 	_hud.show_death_screen(_death_room_index)
+	var screen: Control = _hud.get_result_screen()
+	screen.revive_requested.connect(_use_revival_card)
+	screen.forfeit_requested.connect(_decline_revival)
+	screen.set_revival_choice(_items.revival_card_count if _player.revival_pending else 0)
+	if not _player.revival_pending and not _failure_settled:
+		screen.show_failure_error(PROFILE.message)
+
+
+func allows_revival() -> bool:
+	return _run_state == RunState.DEAD and _player.revival_pending and not _transition_queued
+
+
+func _use_revival_card() -> void:
+	if not allows_revival() or not _items.try_use_revival_card(self): return
+	_hud.dismiss_result_screen()
+	_run_state = RunState.PLAYING
+	_dungeon.process_mode = Node.PROCESS_MODE_PAUSABLE
+	_commerce.set_run_active(true)
+	_boss_bar.visible = _revive_boss_bar_visible
+	_refresh_overlay()
+
+
+func _decline_revival() -> void:
+	if not allows_revival(): return
+	_player.confirm_death()
+	_finalize_failure()
+	var screen: Control = _hud.get_result_screen()
+	screen.set_revival_choice(0)
+	if not _failure_settled: screen.show_failure_error(PROFILE.message)
+
+
+func _finalize_failure() -> bool:
+	if not _failure_settled: _failure_settled = _items.forfeit_run(_settlement_id)
+	_commerce.finish_run()
+	return _failure_settled
 
 
 ## 暂停与指引共用世界冻结机制。终局和切换期间拒绝状态变更。
@@ -346,7 +388,8 @@ func _resume_playing() -> void:
 
 ## 路线图与机关面板自行处理关闭按键，防止同一帧叠开共享暂停界面。
 func _is_dungeon_modal_open() -> bool:
-	return _dungeon.has_method("is_modal_open") and _dungeon.is_modal_open()
+	var codex := get_node_or_null("EnemyCodexController")
+	return (codex != null and codex.is_open()) or (_dungeon.has_method("is_modal_open") and _dungeon.is_modal_open())
 
 
 func _input(event: InputEvent) -> void:
@@ -418,6 +461,13 @@ func advance_to_level02() -> bool:
 func request_scene_change(destination: String, handoff: Dictionary = {}) -> bool:
 	if _transition_queued or not is_inside_tree() or is_queued_for_deletion():
 		return false
+	if _run_state == RunState.CODEX: return false
+	if _run_state in [RunState.DYING, RunState.DEAD]:
+		if _player.revival_pending: return false
+		if not _finalize_failure():
+			var death_screen: Control = _hud.get_result_screen()
+			if is_instance_valid(death_screen): death_screen.show_failure_error(PROFILE.message)
+			return false
 	var character_id: String = handoff.get("character_id", CHARACTERS.selected_id)
 	if character_id not in CHARACTERS.IDS or not PROFILE.owns(character_id):
 		return false

@@ -205,11 +205,20 @@ func pose(state: int, progress: float, moving: float, delta: float, strike := 0)
 	head.rotation.y = sin(clock * 0.7) * 0.04
 	left_arm.rotation = Vector3(-0.7, 0, -0.65)
 	right_arm.rotation = Vector3(0, 0, 0.2)
-	if state == 3:
+	if state == 2:
+		right_arm.rotation.x = -progress * 1.8
+		left_arm.rotation.x -= progress * 0.8
+		body.rotation.x = progress * 0.10
+	elif state == 3:
 		left_arm.rotation.x -= sin(progress * PI) * 0.5
-		right_arm.rotation.x -= sin(progress * PI) * 0.22
+		right_arm.rotation.x = -1.8 + progress * 2.2
+		body.rotation.x = -sin(progress * PI) * 0.12
+	elif state == 4:
+		right_arm.rotation.x = (1.0 - progress) * 0.4
+		body.rotation.x = (1.0 - progress) * -0.12
 	elif state == 5:
 		left_arm.rotation.z = -1.1
+	if state not in [2, 3, 4]: body.rotation.x = 0.0
 	if is_instance_valid(raven):
 		raven.basis = left_arm.basis.inverse().scaled(Vector3.ONE * 0.65)
 		raven.rotate_y(sin(clock * 0.9) * 0.14)

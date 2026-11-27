@@ -280,7 +280,7 @@ func _refresh() -> void:
 	shop.set_shop_data(_inventory.gold, Presenter.products(_inventory, self))
 	backpack.set_inventory_data(Presenter.backpack(_inventory, self))
 	if _inventory.uses_shared_wallet:
-		var note := "永久金币 %d · 本轮变动 %+d\n成功通关后保存本轮金币和剩余道具；失败或重开不保留本轮变动。" % [preload("res://scripts/integration/player_profile.gd").coins,_inventory.pending_gold()]
+		var note := "已保存金币 %d · 本轮变动 %+d\n通关保存金币和剩余道具；最终失败清空携带的金币与全部道具。" % [preload("res://scripts/integration/player_profile.gd").coins,_inventory.pending_gold()]
 		shop.get_node("%WalletLabel").tooltip_text = note
 		backpack.get_node("%CapacityLabel").tooltip_text = note
 	_update_shortcut()

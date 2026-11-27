@@ -36,15 +36,19 @@ func wait_handoff(path: String, previous_id := 0) -> void:
 
 func run() -> void:
 	var masks := range(16)
+	var focused := false
 	west_first = "--west-first" in OS.get_cmdline_user_args()
 	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--only-mask="):
+			focused = true
+			masks = [int(arg.get_slice("=",1))]
 		if arg.begins_with("--walk-mask="):
 			walking = true
 			masks = [int(arg.get_slice("=",1))]
 	for mask: int in masks:
 		await route(mask)
 		if failures: break
-	if not walking and not failures:
+	if not walking and not failures and not focused:
 		west_first = true
 		await route(0)
 		keep_print_in_tray = true
@@ -61,7 +65,9 @@ func run() -> void:
 
 func start() -> void:
 	paused = false
+	var previous_id := current_scene.get_instance_id() if is_instance_valid(current_scene) else 0
 	change_scene_to_file(PREVIEW)
+	await wait_handoff(PREVIEW, previous_id)
 	await frames(5)
 	level = current_scene
 
@@ -251,7 +257,8 @@ func route(mask: int) -> void:
 		await use(&"left")
 		await frames(75)
 		await use(&"right")
-		check(get_nodes_in_group("observatory_maintenance_supply").size() == 1, "反复换边只放置一瓶检修廊药剂")
+		var drops := get_nodes_in_group("item_pickups").filter(func(n): return n.get("item_type") == level.CATALOG.REVIVAL_CARD)
+		check(drops.is_empty(), "配重井换边不产生复活卡；复活卡由邮轨右侧选项提供")
 		check(level.layout.passage_open("D","F"),"换边保留检修道")
 		approach = "D"
 		expected += "D"
@@ -380,7 +387,7 @@ func failure_case() -> void:
 	check(not level.use_station(&"mail_take") and not level.mail.chosen(),"背包满时可回来取货")
 	level.inventory.energy_potion_count = 0
 	check(level.use_station(&"mail_take") and not level.use_station(&"mail_send"),"直接取药和发车互斥")
-	check(level.inventory.energy_potion_count == 1,"直接取药仅一次")
+	check(level.inventory.energy_potion_count == 2,"补给包中的两瓶星蓝药剂只领取一次")
 	level.player.take_damage(999)
 	await frames(3)
 	check(level.finished and not level.won and paused,"死亡优先并冻结场景")

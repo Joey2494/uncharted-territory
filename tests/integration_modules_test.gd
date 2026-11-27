@@ -86,7 +86,7 @@ func run() -> void:
 				tutorial.skip()
 				check(tutorial.finished and not hud.get_node("%TutorialPrompt").visible, "skip clears lesson prompt")
 			else:
-				check(main.get_node("DungeonTest/Boss").max_hp == 54, "upgraded scorpion Boss is present")
+				check(main.get_node("DungeonTest/Boss").max_hp == 36, "balanced scorpion Boss is present")
 				check(main.get_node("DungeonTest/Enemies/Relay2").get_script().resource_path.ends_with("spider_combat.gd") and main.get_node("DungeonTest/Enemies/Relay2").attack_kind == 1, "brood mother uses the current campaign enemy contract")
 			player._invulnerability_remaining = 0.0
 			items.guard_active = false

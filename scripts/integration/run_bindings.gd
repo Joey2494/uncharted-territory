@@ -46,16 +46,15 @@ func _ready() -> void:
 func _refresh_inventory(_snapshot: Dictionary) -> void:
 	hud.update_gold(items.gold)
 	hud.gold_label.text = str(items.gold)
-	hud.gold_label.tooltip_text = "永久金币 %d · 本轮变动 %+d\n成功通关后金币和剩余道具存入永久背包；失败、退出或重开丢弃本轮变动。" % [Profile.coins,items.pending_gold()]
+	hud.gold_label.tooltip_text = "已保存金币 %d · 本轮变动 %+d\n通关保存金币与剩余道具；最终失败清空携带的金币与全部道具。" % [Profile.coins,items.pending_gold()]
 	if host.practice_run:
 		hud.gold_label.text = "试玩 %d" % items.gold
 		hud.gold_label.tooltip_text = "试玩金币 %d · 可在本局商城使用，试玩结束后清零。" % items.gold
 	hud.update_guard_rune(&"active" if items.guard_active else (&"ready" if items.guard_count > 0 else &"none"), 1 if items.guard_active else items.guard_count)
 	var slots: Array = []
-	for id in [Catalog.HEALTH_POTION, Catalog.ATTACK_RUNE, Catalog.GUARD_RUNE, Catalog.ENERGY_POTION]:
+	for id in [Catalog.HEALTH_POTION, Catalog.ATTACK_RUNE, Catalog.GUARD_RUNE, Catalog.ENERGY_POTION, Catalog.REVIVAL_CARD]:
 		var product := Catalog.get_item(id)
 		slots.append({"id": StringName(product.key), "icon": Presenter.ICONS[id], "count": items.get_count(id), "tint": Presenter.TINTS[id]})
-	slots.append({}) # Fifth slot is reserved until another usable item is defined.
 	hud.set_hotbar_data(slots)
 
 func _use_hotbar(_index: int, key: StringName) -> void:

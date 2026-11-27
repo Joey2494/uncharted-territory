@@ -7,6 +7,7 @@ signal feedback(message: String)
 const Encounter = preload("res://scenes/dungeon/components/combat_room_encounter.gd")
 const Gate = preload("res://scenes/dungeon/components/progression_gate.gd")
 const Progress = preload("res://scenes/dungeon/components/room_progress_controller.gd")
+const Rewards = preload("res://data/reward_balance.gd")
 const ARRIVAL := &"l2_arrival"
 const HUB := &"l2_hub"
 const RELAY := &"l2_relay"
@@ -56,7 +57,7 @@ func _ready() -> void:
 		[$Gates/BossSouth, $Gates/BossNorth]) and _configured
 	if not _configured:
 		push_error("第二关战斗配置无效")
-	player.died.connect(stop_run)
+	player.run_failed.connect(stop_run)
 	puzzle.feedback.connect(func(message: String) -> void: feedback.emit(message))
 	$Camera3D.set_safe_frame(Rect2(0.13, 0.16, 0.74, 0.67))
 	$Camera3D.reset_follow()
@@ -133,6 +134,8 @@ func _physics_process(_delta: float) -> void:
 		return
 	var id := get_current_room_id()
 	if id != &"":
+		if not _visited.has(id) and id in [RELAY, ARCHIVE, ANTECHAMBER]:
+			Rewards.scatter(self, "l2_random:" + String(id), 2, get_region_at(player.global_position).global_position + Vector3(2, 0.34, 2))
 		_visited[id] = true
 	if _encounters.has(id) and (id not in [ANTECHAMBER, BOSS] or relay_activated):
 		_encounters[id].try_activate()
@@ -143,6 +146,9 @@ func _physics_process(_delta: float) -> void:
 		exit_reached.emit()
 
 func _on_room_completed(id: StringName) -> void:
+	if id in [HUB, RELAY, ANTECHAMBER, BOSS]:
+		var region := {HUB:$Regions/Hub, RELAY:$Regions/Relay, ANTECHAMBER:$Regions/Antechamber, BOSS:$Regions/Boss}[id] as Node3D
+		Rewards.spawn_task(self, "l2_clear:" + String(id), String(id), region.global_position + Vector3(-2, 0.34, 2))
 	match id:
 		ARRIVAL:
 			$Gates/Arrival.open_gate()

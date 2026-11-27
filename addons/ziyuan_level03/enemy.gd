@@ -191,16 +191,19 @@ func begin_attack(mode: int=-1) -> bool:
 	_start_attack()
 	return true
 func _start_attack() -> void:
-	# 直接进入执行动作；保留 WINDUP 枚举和旧信号用于外部兼容，永不进入或发射。
+	# 模型蓄力提供反应时间；不绘制地面预警或攻击范围。
 	_clear_warning()
 	var offset:=_target.global_position-global_position
 	offset.y=0
 	_direction=offset.normalized() if offset.length()>0.01 else Vector3.FORWARD
 	_visual.rotation.y=atan2(-_direction.x,-_direction.z)
 	_marks.clear()
-	_begin_strike()
-	attack_started.emit(enemy_id,_mode)
-	var message: String=definition.name+" 攻击"
+	state=State.WINDUP
+	_duration=maxf(0.35,definition.windup*(0.85 if _phase_two else 1.0))
+	if enemy_id=="chain_jailer" and _strike_index>0: _duration=0.4
+	_remaining=_duration
+	attack_telegraphed.emit(enemy_id,_mode,_duration)
+	var message: String=definition.name+" 蓄力"
 	if is_boss(): message=["绷带撕扯","飞行沙咒","沙王重踏"][_mode]
 	state_changed.emit(("狂暴 " if _phase_two else "")+message)
 func _begin_strike() -> void:
@@ -211,6 +214,7 @@ func _begin_strike() -> void:
 	_hit.clear()
 	_accepted_hit=false
 	_dash_left=6.5
+	attack_started.emit(enemy_id,_mode)
 func _tick_strike(delta: float) -> void:
 	if state!=State.STRIKE or not _live_target(): return
 	var old:=1.0-_remaining/_duration
@@ -248,7 +252,7 @@ func _tick_strike(delta: float) -> void:
 				b.sand_curse=true
 				get_parent().add_child(b)
 				b.global_position=global_position+Vector3.UP*1.25+_direction*0.9
-				b.launch(self,_target,_direction.rotated(Vector3.UP,(i-1)*0.2),definition.damage+1)
+				b.launch(self,_target,_direction.rotated(Vector3.UP,(i-1)*0.2),definition.damage)
 		else: _zone(global_position,5.3,definition.damage,360); FX.burst(get_parent(),global_position+Vector3.UP*0.1,Color("c6a16b"),5.3)
 		_clear_warning()
 	if _remaining<=0:
@@ -259,7 +263,7 @@ func _tick_strike(delta: float) -> void:
 		else:
 			_clear_warning()
 			state=State.RECOVER
-			_remaining=definition.recovery*(0.75 if _phase_two else 1.0)
+			_remaining=maxf(0.8,definition.recovery*(0.85 if _phase_two else 1.0))
 			_duration=_remaining
 			state_changed.emit("收招破绽 可反击")
 func _zone(origin: Vector3, radius: float, damage: int, degrees: float, inner := 0.0, facing := Vector3.ZERO) -> void:

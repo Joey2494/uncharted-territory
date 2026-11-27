@@ -61,8 +61,8 @@ func run() -> void:
 		var ui = host._hud.get_node("CooldownBar/MeleeCooldown")
 		print("CAMERA_PROBE size=",dimensions," player_visible=",camera.is_position_in_frustum(player.global_position+Vector3.UP)," boss_visible=",camera.is_position_in_frustum(witch.global_position+Vector3.UP)," boss_can_see=",witch._can_see(player.global_position)," distance=",witch.global_position.distance_to(player.global_position)," native_attack_reach=",witch.definition.reach," J_size=",ui.size)
 	witch._pursue(0.016)
-	print("BOSS_PROBE native_state_after_pursue=",witch.state," strike_state=",witch.State.STRIKE)
-	if witch.state != witch.State.STRIKE: failures += 1
+	print("BOSS_PROBE native_state_after_pursue=",witch.state," windup_state=",witch.State.WINDUP)
+	if witch.state != witch.State.WINDUP: failures += 1
 	current_scene.queue_free()
 	await frames()
 	print("LEVEL04_COMBAT_VISIBILITY_RESULT failures=%d" % failures)
