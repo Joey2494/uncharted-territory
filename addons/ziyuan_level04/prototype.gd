@@ -249,6 +249,19 @@ func load_wave(index: int) -> void:
 				actor.take_damage(actor.max_hp / 2 + 1)
 func spawn_enemy(id: String, at: Vector3, is_guard := false) -> Node:
 	if _ended or not is_instance_valid(player) or player.is_dead(): return null
+	# Death animations free guards while the witch can still summon another batch.
+	_actors = _actors.filter(func(entry): return is_instance_valid(entry) and not entry.is_queued_for_deletion())
+	_guards = _guards.filter(func(entry): return is_instance_valid(entry) and not entry.is_queued_for_deletion())
+	var summoner: Node = null
+	if is_guard:
+		for boss in _actors:
+			if boss.enemy_id != "witch" or boss.is_dead(): continue
+			summoner = boss
+			var slot: Dictionary = boss.find_minion_spawn(at)
+			if slot.is_empty(): return null
+			at = slot.position
+			break
+		if summoner == null: return null
 	var actor := Factory.create(id, player)
 	if actor == null: return null
 	if id == "witch": actor.reward_source_id = "lab:%d:witch" % _generation
@@ -258,8 +271,8 @@ func spawn_enemy(id: String, at: Vector3, is_guard := false) -> Node:
 	_actors.append(actor)
 	if is_guard:
 		_guards.append(actor)
-		for boss in _actors:
-			if boss.enemy_id == "witch": boss.register_minion(actor)
+		summoner.register_minion(actor)
+		FX.burst(arena, actor.global_position + Vector3.UP * 0.2, Color("9ac77a"), 0.4)
 	var generation := _generation
 	actor.died.connect(func() -> void: _check_cleared.call_deferred(generation))
 	if id == "witch":

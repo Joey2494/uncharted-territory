@@ -18,11 +18,11 @@ const Coins = preload("res://scenes/items/coin_pickup.gd")
 
 @export var boss_name := "灾厄巨蝎"
 @export var target_path := NodePath("../Player")
-@export var max_hp: int = 54
+@export var max_hp: int = 36
 @export var move_speed: float = 3.2
 @export var detection_range: float = 13.0
 @export var shock_radius: float = 5.5
-@export var shock_damage: int = 3
+@export var shock_damage: int = 2
 @export var shock_windup: float = 0.85
 @export var energy_windup: float = 0.65
 @export var energy_damage: int = 2
@@ -137,10 +137,10 @@ func _begin_windup() -> void:
 	if attack_kind == Attack.COMBO:
 		_impact_point += _direction * 2.0
 	var durations := [shock_windup, energy_windup, combo_windup]
-	var messages := ["巨尾横扫 · 撤出红色扇区", "毒刺齐射 · 侧移躲开五条预警", "尾针连刺 %d/%d" % [_combo_index + 1, combo_strikes]]
+	var messages := ["巨尾蓄力 · 侧移避开横扫", "毒刺蓄力 · 留意尾针朝向", "尾针连刺 %d/%d" % [_combo_index + 1, combo_strikes]]
 	_remaining = maxf(0.1, durations[attack_kind])
 	_set_state(State.WINDUP, messages[attack_kind])
-	_warning.show()
+	_warning.hide() # Model windup provides the cue; no ground attack-range preview.
 	_disc.visible = attack_kind != Attack.ENERGY
 	var radius := shock_radius if attack_kind == Attack.SHOCKWAVE else combo_radius
 	_disc.scale = Vector3.ONE

@@ -10,15 +10,17 @@ var _cooldown := 1.0
 var _direction := Vector3.FORWARD
 var _warning: Node3D
 var _offspring: Array[WeakRef] = []
-@export_range(16, 48) var brood_wave_size := 32
-@export_range(32, 96) var brood_alive_limit := 64
+var _recovering := 0.0
+var _windup_total := 0.55
+@export_range(4, 48) var brood_wave_size := 8
+@export_range(8, 96) var brood_alive_limit := 16
 
 func _ready() -> void:
 	if attack_kind == 0:
 		max_hp = maxi(max_hp, 4)
 		move_speed = maxf(move_speed, 3.4)
 		hurt_duration = 0.1
-		_cooldown = 0.0
+		_cooldown = 0.65
 	super._ready()
 	_attack.attack_enabled = false
 	attack_distance = 0.0
@@ -27,15 +29,17 @@ func _ready() -> void:
 	$HealthLabel.update_hp(hp, max_hp)
 	_warning = Node3D.new()
 	add_child(_warning)
-	if attack_kind == 1:
-		for i in range(20):
-			var a := i * TAU / 20
-			var b := (i + 1) * TAU / 20
-			FX.strand(_warning, Vector3(cos(a), 0.07, sin(a)) * 1.5, Vector3(cos(b), 0.07, sin(b)) * 1.5, Color("dfa34f"), 0.035)
 	_warning.hide()
 
 func _physics_process(delta: float) -> void:
 	_cooldown = maxf(0, _cooldown - delta)
+	if _recovering > 0:
+		velocity = Vector3.ZERO
+		_recovering = maxf(0.0, _recovering - delta)
+		_hurt_remaining = maxf(0.0, _hurt_remaining - delta)
+		_control_remaining = maxf(0.0, _control_remaining - delta)
+		state = State.ATTACK
+		return
 	if _charging:
 		velocity = Vector3.ZERO
 		_hurt_remaining = maxf(0, _hurt_remaining - delta)
@@ -49,27 +53,21 @@ func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
 
 func _update_pursuit(delta: float) -> void:
+	if _charging or _recovering > 0: return
 	var offset := _target.global_position - global_position
 	offset.y = 0
 	if offset.length() <= detection_range and _can_see_target(): _aggro = true
 	if _aggro and offset.length() <= (9.5 if attack_kind == 0 else 7.0) and _can_see_target():
 		state = State.IDLE
 		if _cooldown <= 0:
-			if attack_kind == 0:
-				# React and fire in this physics tick: no aiming phase or ground preview.
-				_direction = offset.normalized()
-				_visuals.rotation.y = atan2(-_direction.x, -_direction.z)
-				_release()
-				state = State.ATTACK
-				return
 			_offspring = _offspring.filter(func(w: WeakRef) -> bool: return is_instance_valid(w.get_ref()))
 			if attack_kind == 1 and _offspring.size() >= brood_alive_limit: return
 			_charging = true
-			_remaining = 1.25
+			_windup_total = 0.55 if attack_kind == 0 else 0.9
+			_remaining = _windup_total
 			_direction = offset.normalized()
 			_visuals.rotation.y = atan2(-_direction.x, -_direction.z)
 			_warning.rotation.y = _visuals.rotation.y
-			_warning.show()
 			state = State.ATTACK
 		return
 	super._update_pursuit(delta)
@@ -77,7 +75,8 @@ func _update_pursuit(delta: float) -> void:
 func _release() -> void:
 	_charging = false
 	_warning.hide()
-	_cooldown = 0.95 if attack_kind == 0 else 5.0
+	_recovering = 0.8 if attack_kind == 0 else 1.1
+	_cooldown = 1.8 if attack_kind == 0 else 5.0
 	_offspring = _offspring.filter(func(w: WeakRef) -> bool: return is_instance_valid(w.get_ref()))
 	var count := 1 if attack_kind == 0 else maxi(0, mini(brood_wave_size, brood_alive_limit - _offspring.size()))
 	var holes: Array[Vector3] = []
@@ -107,7 +106,12 @@ func _release() -> void:
 func _cancel_special() -> void:
 	_charging = false
 	_warning.hide()
-	_cooldown = maxf(_cooldown, 0.12 if attack_kind == 0 else 1.0)
+	_recovering = 0.0
+	_cooldown = maxf(_cooldown, 0.8 if attack_kind == 0 else 1.1)
+
+func apply_control(duration: float) -> void:
+	super.apply_control(duration)
+	_cancel_special()
 
 func take_damage(amount: int) -> bool:
 	var accepted := super.take_damage(amount)

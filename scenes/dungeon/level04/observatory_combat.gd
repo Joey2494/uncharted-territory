@@ -164,6 +164,12 @@ func is_clear(room: String) -> bool:
 func enemy_count() -> int:
 	return _enemies.size()
 
+func get_encounter_enemies() -> Array[Node]:
+	var result: Array[Node] = []
+	for enemy in _enemies:
+		if is_instance_valid(enemy) and not enemy.is_dead(): result.append(enemy)
+	return result
+
 func boss_guard() -> CharacterBody3D:
 	return _jailer if is_instance_valid(_jailer) else null
 
@@ -262,12 +268,13 @@ func _spawn(kind: String, xz: Vector2) -> void:
 	if kind == "witch" and is_instance_valid(prepared_dome_boss):
 		guard = prepared_dome_boss
 		guard.collision_layer = 4
-		guard.collision_mask = 3
+		guard.collision_mask = 7
 		guard.show()
 	else:
 		guard = _create_guard(active_room,kind,xz)
 	_enemies.append(guard)
 	guard.set_encounter_active(true)
+	if kind != "witch": guard._attack_cd = 1.5 + (_spawn_serial % 3) * 0.35
 	if kind == "witch":
 		_jailer = guard
 		if guard == prepared_dome_boss: guard.start_dome_encounter()
@@ -367,14 +374,17 @@ func _queue_minion(kind: String, point: Vector3) -> void:
 func _spawn_minion(generation: int, kind: String, point: Vector3) -> void:
 	if generation != _generation or _stopped or active_room != "I" or _player.is_dead(): return
 	if not is_instance_valid(_jailer) or not _jailer.is_encounter_active(): return
+	var slot: Dictionary = _jailer.find_minion_spawn(point)
+	if slot.is_empty(): return
 	var minion: CharacterBody3D = _factory.create(kind,_player)
 	if minion == null: return
 	minion.set_meta("is_summoned",true)
 	add_child(minion)
-	minion.global_position = point
+	minion.global_position = slot.position
 	minion.set_encounter_active(true)
 	_minions.append(minion)
 	_jailer.register_minion(minion)
+	preload("res://addons/ziyuan_level04/effects.gd").burst(self, minion.global_position + Vector3.UP * 0.2, Color("9ac77a"), 0.4)
 
 func _clear_minions() -> void:
 	_generation += 1

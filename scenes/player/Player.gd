@@ -3,6 +3,8 @@ extends CharacterBody3D
 signal hp_changed(current: int, maximum: int)
 signal damage_received(amount: int)
 signal died
+signal run_failed
+signal revived
 signal death_animation_finished
 signal dodge_started
 signal dodge_finished
@@ -34,6 +36,9 @@ var max_shield: int = 0
 
 var hp: int
 var _dead: bool = false
+var revival_host: Node
+var revival_pending := false
+var _failure_confirmed := false
 var web_remaining := 0.0
 var _web_visual: Node3D
 var _sand_slow_remaining := 0.0
@@ -201,6 +206,38 @@ func is_dead() -> bool:
 	return _dead
 
 
+func confirm_death() -> void:
+	if not _dead or _failure_confirmed: return
+	revival_pending = false
+	_failure_confirmed = true
+	run_failed.emit()
+
+
+func revive_from_card(host: Node) -> bool:
+	if not _dead or not revival_pending or _failure_confirmed or host != revival_host \
+		or not _items._publishing or not is_instance_valid(host) or not host.allows_revival(): return false
+	revival_pending = false
+	_dead = false
+	hp = max_hp
+	web_remaining = 0.0
+	_sand_slow_remaining = 0.0
+	_invulnerability_remaining = 3.0
+	_dodge_cooldown_remaining = 0.0
+	velocity = Vector3.ZERO
+	set_physics_process(true)
+	set_process_unhandled_input(true)
+	$EnergyShock.set_process_unhandled_input(true)
+	_items.set_process_unhandled_input(true)
+	_attack.process_mode = Node.PROCESS_MODE_INHERIT
+	_attack.attack_enabled = true
+	$DeathAnimation.reset_after_revival()
+	$LocomotionAnimation.set_physics_process(true)
+	$LocomotionAnimation.set_action_override(false)
+	hp_changed.emit(hp, max_hp)
+	revived.emit()
+	return true
+
+
 func heal(amount: int, menu: Node = null) -> int:
 	var menu_healing: bool = is_instance_valid(menu) and menu.is_in_group("commerce_controllers") \
 		and menu.has_method("allows_inventory_action") and menu.allows_inventory_action(_items, false)
@@ -268,6 +305,7 @@ func take_damage(amount: int) -> bool:
 	hp_changed.emit(hp, max_hp)
 	damage_received.emit(applied)
 	if _dead:
+		revival_pending = is_instance_valid(revival_host) and _items.revival_card_count > 0
 		if is_dodging():
 			_finish_dodge()
 		velocity = Vector3.ZERO
@@ -281,4 +319,5 @@ func take_damage(amount: int) -> bool:
 		web_remaining = 0
 		if is_instance_valid(_web_visual): _web_visual.hide()
 		died.emit()
+		if not revival_pending: confirm_death()
 	return true

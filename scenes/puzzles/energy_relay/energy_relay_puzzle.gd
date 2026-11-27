@@ -108,7 +108,7 @@ func get_control_prompt(id: StringName) -> String:
 		&"reset":
 			return "档案室复位 · " + ("等待确认\n[E] 再次确认复位" if _reset_pending else "能源归架、通路收起\n[E] 请求复位")
 		&"reward":
-			return "强化符文、生命药剂、星蓝药剂各一份\n[E] 领取档案室补给"
+			return "生命药剂、守护符文各一份，金币 ×20\n[E] 领取档案室补给"
 	var names := {&"rack": "能源托架", &"bridge": "桥台插槽", &"a": "接收器一", &"b": "接收器二", &"lever": "步道开关"}
 	var name: String = names.get(id, "机关")
 	if _state == State.SUPPLY_OFF:
@@ -279,14 +279,13 @@ func _confirm_reset() -> void:
 func _claim_reward(player: CharacterBody3D) -> bool:
 	_claiming = true
 	var inventory := player.get_node_or_null("ItemInventory") as Inventory
-	var delivered := inventory != null and inventory.grant_reward("level02_archive", {
-		Inventory.ATTACK_RUNE: 1, Inventory.HEALTH_POTION: 1, Inventory.Catalog.ENERGY_POTION: 1})
+	var delivered := inventory != null and preload("res://data/reward_balance.gd").grant(inventory, "level02_archive", "l2_archive")
 	if delivered:
 		_reward_taken = true
 		_state = State.CLAIMED
 		_refresh_devices()
 		reward_claimed.emit()
-		feedback.emit("获得强化符文、生命药剂、星蓝药剂各一份。")
+		feedback.emit("获得生命药剂、守护符文各一，金币 ×20。")
 	else:
 		feedback.emit("背包空间不足，补给仍留在档案室。")
 	_claiming = false

@@ -31,19 +31,20 @@ var _control := 0.0
 var _slow := 0.0
 var _hit: Dictionary = {}
 var _flash: Node
+var _health: Node3D
 func _ready() -> void:
 	definition = Catalog.definition(enemy_id)
 	assert(not definition.is_empty(), "Unknown level04 enemy_id")
 	max_hp = definition.hp
 	hp = max_hp
 	collision_layer = 4
-	collision_mask = 3
+	collision_mask = 7 # Keep player, witch and other guards physically separated.
 	add_to_group("l4_enemies")
 	var shape := CollisionShape3D.new()
 	shape.name = "CollisionShape3D"
 	var capsule := CapsuleShape3D.new()
-	capsule.radius = 0.42
-	capsule.height = 1.6
+	capsule.radius = 0.52
+	capsule.height = 1.1
 	shape.shape = capsule
 	shape.position.y = capsule.height * 0.5
 	add_child(shape)
@@ -59,6 +60,11 @@ func _ready() -> void:
 	_flash = preload("res://scenes/ui/hit_flash_3d.gd").new()
 	_flash.visual_root = NodePath("../Visuals")
 	add_child(_flash)
+	_health = preload("res://scenes/ui/enemy_health_label_3d.tscn").instantiate()
+	_health.name = "HealthLabel"
+	_health.position.y = 2.65
+	add_child(_health)
+	_health.bind_health_source(self, hp, max_hp)
 	if _target == null: _target = get_node_or_null(target_path) as Node3D
 	set_encounter_active(start_active)
 func is_boss() -> bool: return false
@@ -72,7 +78,11 @@ func set_encounter_active(active: bool) -> void:
 	if is_dead(): return
 	_enabled = active and not is_dead()
 	_aggro = false
-	if not active: _clear_warning()
+	if not active:
+		_clear_warning()
+		state = State.IDLE
+		_remaining = 0.0
+		_control = 0.0
 	process_mode = Node.PROCESS_MODE_PAUSABLE if _enabled else Node.PROCESS_MODE_DISABLED
 func _clear_warning() -> void:
 	if not is_instance_valid(_warning): return
@@ -124,7 +134,9 @@ func _pursue(_delta: float) -> void:
 	_visual.rotation.y = atan2(-_direction.x, -_direction.z)
 	if distance <= definition.reach and _can_see(_target.global_position):
 		_clear_warning()
-		_begin_strike()
+		state = State.WINDUP
+		_duration = definition.windup
+		_remaining = _duration
 	else:
 		state = State.CHASE
 		var speed: float = definition.speed * (0.65 if _slow > 0 else 1.0)

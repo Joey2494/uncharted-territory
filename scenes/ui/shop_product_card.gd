@@ -84,6 +84,7 @@ func _init() -> void:
 
 func update_product(data: Dictionary) -> void:
 	_id = StringName(data.id)
+	_icon.custom_minimum_size = Vector2(46, 64) if _id == &"revival_card" else Vector2(36, 36)
 	_icon.texture = data.get("icon")
 	_icon.self_modulate = data.get("tint",Color("c8b47b"))
 	_name_label.text = str(data.get("name","物品"))

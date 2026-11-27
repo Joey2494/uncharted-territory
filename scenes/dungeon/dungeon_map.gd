@@ -11,6 +11,7 @@ signal progression_feedback(message: String)
 enum ExitState { LOCKED, OPENING, OPEN }
 
 const CombatRoomEncounter = preload("res://scenes/dungeon/components/combat_room_encounter.gd")
+const Rewards = preload("res://data/reward_balance.gd")
 @onready var _player: CharacterBody3D = $Player
 @onready var _progress: Node = $RoomProgress
 var _entrance_started := false
@@ -22,7 +23,7 @@ var _current_region: Node3D
 var _visited: Dictionary = {}
 var _exit_announced: bool = false
 var _exit_state: ExitState = ExitState.LOCKED
-@export var room_gold_rewards: Dictionary = {"EntranceHall": 20, "Crossroads": 15, "SupplyChamber": 15}
+@export var room_gold_rewards: Dictionary = {"EntranceHall": 4, "SupplyChamber": 5}
 @export var enable_debug_shop_stands: bool = false
 
 
@@ -43,7 +44,7 @@ func _ready() -> void:
 	_add_encounter($Regions/BossArena, &"l1_boss", [$RuinGatekeeper],
 		[$Gates/BossWestSeal, $Gates/BossNorthSeal, $ExitGate])
 	_progress.room_completed.connect(_on_room_completed)
-	_player.died.connect(stop_run)
+	_player.run_failed.connect(stop_run)
 	$Gates/EntranceGate.opened.connect(_on_entrance_gate_opened)
 	$Gates/CourtyardGate.opened.connect(_on_courtyard_gate_opened)
 	$ExitGate.opened.connect(_finish_exit_unlock)
@@ -91,6 +92,10 @@ func _on_configuration_error(message: String) -> void:
 func _on_room_completed(room_id: StringName) -> void:
 	if _run_stopped or _player.is_dead():
 		return
+	if room_id == &"l1_crossroads":
+		Rewards.spawn_task(self, String(room_id), String(room_id), $Regions/Crossroads.global_position + Vector3(-2, 0.05, 2))
+	elif room_id == &"l1_boss":
+		Rewards.spawn_task(self, String(room_id), String(room_id), $RuinGatekeeper.global_position + Vector3(-2, 0.05, 1.5))
 	match room_id:
 		&"l1_entrance":
 			$Gates/EntranceGate.open_gate()
@@ -194,6 +199,8 @@ func _update_region() -> void:
 	if region == null or not region.visible or not region.exploration_room or region == _current_region:
 		return
 	_current_region = region
+	if _run_started and not _visited.has(region.name) and region.name in [&"SupplyChamber", &"HiddenRewardRoom"]:
+		Rewards.scatter(self, "l1_random:" + String(region.name), 1, region.global_position + Vector3(-1.5, 0.05, 1.5))
 	if not _visited.has(region.name) and room_gold_rewards.has(str(region.name)):
 		preload("res://scenes/items/coin_pickup.gd").spawn(
 			self, region.global_position + Vector3(1.2, 0.05, 1.2),

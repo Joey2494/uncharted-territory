@@ -69,7 +69,7 @@ func clear_lab() -> void:
 			if lab.arena.is_ancestor_of(node): node.queue_free()
 	await frames()
 func strike(a: Node) -> void:
-	# 直接施放已在 begin_attack 完成；只推进执行时间。
+	if a.state == a.State.WINDUP: a._physics_process(a._remaining)
 	a._tick_strike(0.26)
 func step_boss(delta: float) -> void:
 	# 玩家移出攻击距离，避免自动出招干扰计时器推进。
@@ -95,13 +95,14 @@ func run() -> void:
 	await clear_lab()
 	# ---------- 数值表与契约 ----------
 	check(Catalog.ENEMIES.size() == 2, "catalog registers witch boss and spore guard minion")
-	check(Catalog.ENEMIES.witch.hp == 60 and Catalog.ENEMIES.witch.gold == 160, "witch boss stats scaled to campaign baseline")
+	check(Catalog.ENEMIES.witch.hp == 52 and Catalog.ENEMIES.witch.gold == 160, "witch boss stats scaled to campaign baseline")
 	check(Catalog.ENEMIES.spore_guard.gold == 0, "spore guard drops no coins")
 	witch = await fresh_witch()
 	check(witch.has_signal("died") and witch.has_signal("reward_requested") and witch.has_signal("summon_requested") and witch.has_signal("minions_dissolved"), "witch exposes boss contract signals")
 	check(witch.has_signal("hp_changed") and witch.has_signal("state_changed") and witch.has_signal("battle_started") and witch.has_signal("attack_telegraphed") and witch.has_signal("attack_resolved"), "witch exposes hud and telegraph signals")
 	check(witch.has_method("bind_target") and witch.has_method("set_encounter_active") and witch.has_method("take_damage") and witch.has_method("take_direct_damage"), "witch exposes combat methods")
 	check(witch.has_method("apply_control") and witch.has_method("apply_slow") and witch.has_method("register_minion") and witch.is_boss(), "witch exposes control and minion contract")
+	check(witch.get_node("HealthLabel")._maximum == witch.max_hp, "witch binds native overhead HP bar")
 	check(not witch.bind_target(null) and witch.bind_target(player), "target binding validates the player interface")
 	check(witch.is_in_group("camera_targets") and witch.get_meta("camera_radius") == 2.2, "witch joins camera group with framing metadata")
 	var dormant := Factory.create("witch", player)
@@ -119,10 +120,12 @@ func run() -> void:
 	check(player.hp == 22 and stub.pool_count == 1, "single spore mark explodes for two damage and leaves one pool")
 	stub.free()
 	witch = await fresh_witch()
-	reset_player(Vector3(0, 0.05, 2))
+	reset_player(Vector3(-5, 0.05, 2))
 	tele_count = 0
 	witch.attack_telegraphed.connect(func(_id: String, _mode: int, _duration: float) -> void: tele_count += 1)
-	check(witch.begin_attack() and witch._mode == Witch.Move.TRIPLE and tele_count == 0 and witch.state == Witch.State.STRIKE, "triple shot starts directly without any telegraph signal or windup")
+	check(witch.begin_attack() and witch._mode == Witch.Move.TRIPLE and tele_count == 1 and witch.state == Witch.State.WINDUP, "triple shot starts with a visible windup")
+	check(count_kind("mark") == 0, "windup creates no damaging spores")
+	witch._physics_process(witch._remaining)
 	check(witch._warning.get_child_count() == 0, "direct cast creates no attack range meshes")
 	check(count_kind("mark") == 1, "first physical spore launches immediately")
 	witch._tick_strike(0.0)
@@ -192,6 +195,13 @@ func run() -> void:
 	guard.global_position = summon_points[0]
 	guard.set_encounter_active(true)
 	guard.set_physics_process(false)
+	check(guard.get_node("HealthLabel")._current == guard.hp, "summoned guard binds native overhead HP bar")
+	guard.global_position = player.global_position + Vector3(0, 0, -1)
+	guard._pursue(0.0)
+	check(guard.state == guard.State.WINDUP and guard._remaining >= 0.45, "summoned guard prepares before its lunge")
+	guard._physics_process(guard._remaining)
+	guard._tick_strike(guard._duration)
+	check(guard.state == guard.State.RECOVER and guard._remaining >= 0.9, "summoned guard leaves a recovery window")
 	check(witch.register_minion(guard) and witch._living_minions() == 1, "host registers living minions for summon decision")
 	witch.state = Witch.State.CHASE
 	check(witch.begin_attack(Witch.Move.GUARD) and witch._mode == Witch.Move.PULSE, "guard slot replaced by pulse while a batch is alive")
@@ -221,8 +231,8 @@ func run() -> void:
 	# ---------- 藤蔓横扫 ----------
 	await clear_lab()
 	witch = await fresh_witch()
-	reset_player(Vector3(0, 0.05, 2))
-	check(witch.begin_attack(Witch.Move.VINE) and witch._mode == Witch.Move.VINE and witch._vine_position == 0.0, "vine sweep locks its band on the player at windup start")
+	reset_player(Vector3(-4, 0.05, 2))
+	check(witch.begin_attack(Witch.Move.VINE) and witch._mode == Witch.Move.VINE and witch._vine_position == -4.0, "vine sweep locks its band on the player at windup start")
 	strike(witch)
 	check(count_kind("vine") == 1, "vine sweep hazard is live")
 	await frames(110)
@@ -232,13 +242,20 @@ func run() -> void:
 	witch = await fresh_witch()
 	reset_player(Vector3(0, 0.05, 2))
 	witch.begin_attack(Witch.Move.VINE)
+	strike(witch)
+	await frames(110)
+	check(player.hp == 24 and count_kind("vine") == 0, "central pillar blocks and consumes vine sweep")
+	await clear_lab()
+	witch = await fresh_witch()
+	reset_player(Vector3(-4, 0.05, 2))
+	witch.begin_attack(Witch.Move.VINE)
 	player.global_position = Vector3(3, 0.05, 2)
 	strike(witch)
 	await frames(110)
 	check(player.hp == 24, "stepping off the band avoids the sweep")
 	await clear_lab()
 	witch = await fresh_witch()
-	reset_player(Vector3(0, 0.05, 2))
+	reset_player(Vector3(-4, 0.05, 2))
 	witch.begin_attack(Witch.Move.VINE)
 	strike(witch)
 	player._dodge_invulnerability_remaining = 1.0
@@ -246,8 +263,8 @@ func run() -> void:
 	check(player.hp == 24, "roll invulnerability crosses the sweep")
 	await clear_lab()
 	witch = await fresh_witch()
-	reset_player(Vector3(0, 0.05, 2))
-	witch._spawn_pool(Vector3(0.4, 0.05, 2))
+	reset_player(Vector3(-4, 0.05, 2))
+	witch._spawn_pool(Vector3(-3.6, 0.05, 2))
 	await frames(3)
 	check(player.hp == 23, "overlapping pool ticks once before the sweep test")
 	player._invulnerability_remaining = 0
@@ -255,7 +272,7 @@ func run() -> void:
 	var live_pool: Node
 	for node in get_nodes_in_group("l4_hazards"):
 		if node.has_method("overlaps_band"): live_pool = node
-	check(live_pool.overlaps_band(0.0, 1.0) and not live_pool.overlaps_band(5.0, 1.0), "pool safe path tests the sweep x axis")
+	check(live_pool.overlaps_band(-4.0, 1.0) and not live_pool.overlaps_band(5.0, 1.0), "pool safe path tests the sweep x axis")
 	witch.begin_attack(Witch.Move.VINE)
 	strike(witch)
 	await frames(20)
@@ -384,6 +401,16 @@ func run() -> void:
 	room.add_child(marker)
 	lab.arena.add_child(room)
 	room.position = Vector3(50, 0, 40)
+	# A translated room needs actual support beneath its spawn points.
+	var translated_floor := StaticBody3D.new()
+	room.add_child(translated_floor)
+	var floor_shape := CollisionShape3D.new()
+	var floor_box := BoxShape3D.new()
+	floor_box.size = Vector3(26, 0.5, 22)
+	floor_shape.shape = floor_box
+	floor_shape.position.y = -0.25
+	translated_floor.add_child(floor_shape)
+	await frames()
 	var spawner := preload("enemy_spawner.gd").new()
 	lab.arena.add_child(spawner)
 	check(spawner.spawn_for_room(room, player, "", Vector3(50, 0, 40)) == null, "room adapter rejects empty reward identity")
@@ -393,6 +420,7 @@ func run() -> void:
 	spawner.set_encounter_active(true)
 	room_boss.set_physics_process(false)
 	room_boss.begin_attack(Witch.Move.GUARD)
+	room_boss._physics_process(room_boss._remaining)
 	await frames(3)
 	check(spawner.guards.size() == 2 and room_boss._living_minions() == 2, "adapter spawns and registers both minions")
 	spawner.set_encounter_active(false)
@@ -400,6 +428,7 @@ func run() -> void:
 	check(spawner.guards.is_empty() and room_boss.state == Witch.State.IDLE, "adapter stop clears guards and resets direct cast state")
 	spawner.set_encounter_active(true)
 	room_boss.begin_attack(Witch.Move.GUARD)
+	room_boss._physics_process(room_boss._remaining)
 	await frames(3)
 	check(spawner.guards.size() == 2, "adapter supports stop then restart without losing summon callbacks")
 	var room_rewards: Array[String] = []

@@ -123,7 +123,7 @@ func make_bird(parent: Node3D) -> Node3D:
 			orb(wing, Vector3(side * (0.17 + j * 0.08), 0, j * 0.025), Vector3(0.075, 0.045, 0.45), Color("303b50"))
 	orb(bird, Vector3(0, -0.04, 0.3), Vector3(0.15, 0.05, 0.4), Color("151c2a"))
 	return bird
-func pose(_state: int, _progress: float, moving: float, delta: float, _strike := 0) -> void:
+func pose(state: int, progress: float, moving: float, delta: float, _strike := 0) -> void:
 	_clock += delta
 	if not is_instance_valid(body): return
 	if enemy_id in ["dawn_shade", "dawn_echo"]:
@@ -135,6 +135,19 @@ func pose(_state: int, _progress: float, moving: float, delta: float, _strike :=
 		sun.position.x = sin(_clock * 3) * 0.12
 		sun.rotation.z = sin(_clock * 2) * 0.25
 	elif enemy_id == "iron_thistle": body.rotation.y = sin(_clock) * 0.025
+	# 原地收缩/后仰蓄力，释放后回落，收招时逐渐恢复站姿。
+	body.scale = Vector3.ONE
+	body.rotation.x = 0.0
+	if state == 2:
+		body.scale = Vector3(1.0 + progress * 0.12, 1.0 - progress * 0.18, 1.0 + progress * 0.12)
+		body.rotation.x = progress * 0.18
+		for limb in limbs: limb.rotation.x = -progress * 1.6
+	elif state == 3:
+		body.rotation.x = -sin(progress * PI) * 0.22
+		for limb in limbs: limb.rotation.x = -1.6 + progress * 2.0
+	elif state == 4:
+		body.rotation.x = -(1.0 - progress) * 0.15
+		for limb in limbs: limb.rotation.x = (1.0 - progress) * 0.4
 	for i in birds.size():
 		for side in [-1, 1]:
 			var wing := birds[i].get_node("WingL" if side < 0 else "WingR") as Node3D

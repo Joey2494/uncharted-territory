@@ -136,7 +136,7 @@ func run() -> void:
 	check(is_equal_approx(player.energy,15.0),"Astra restores exactly five energy on formal room clear")
 	combat.update_room("B",1.0)
 	check(is_equal_approx(player.energy,15.0),"revisit cannot repeat Astra reward")
-	check(level.inventory.gold == 44,"two real shade rewards plus one map supply reward; no decoy reward")
+	check(level.inventory.gold == 32,"two real shade rewards without extra entry supply or decoy reward")
 	var gold: int = level.inventory.gold
 	combat._grant_enemy_reward(shade_receipt,16)
 	check(level.inventory.gold == gold,"enemy reward receipt rejects duplicates")
@@ -160,7 +160,7 @@ func run() -> void:
 	await frames(75)
 	check(level.layout.passage_open("D","F") and level.optional_done("D"),"first physical placement unlocks D–F")
 	var bottles := get_nodes_in_group("observatory_maintenance_supply")
-	check(bottles.size() == 1, "first placement puts one physical bottle on the maintenance lane")
+	check(bottles.is_empty(), "cage placement adds no extra maintenance bottle under sparse reward rules")
 	if bottles.size() == 1:
 		var potion: Node3D = bottles[0]
 		player.global_position = potion.global_position + Vector3.UP * 0.06
@@ -215,8 +215,10 @@ func run() -> void:
 	verify_spawns()
 	var witch = combat.boss_guard()
 	check(witch == level.get_campaign_boss() and witch.is_in_group("bosses"),"shared boss HUD and skill immunity use the same witch")
+	check(witch.collision_mask == 7, "prepared witch retains guard collision after activation")
 	check(witch.begin_attack(witch.Move.GUARD),"witch casts native spore-guard skill")
-	await frames()
+	check(witch.state == witch.State.WINDUP and combat._minions.is_empty(),"summon windup has no instant guards")
+	await frames(52)
 	check(combat._minions.size() == 2 and witch._living_minions() == 2,"summoned guards registered with native witch lifecycle")
 	for minion in combat._minions:
 		check(minion.get_meta("is_summoned",false) and not minion.has_meta("combat_room_key"),"summon excluded from Iron passive and door roster")

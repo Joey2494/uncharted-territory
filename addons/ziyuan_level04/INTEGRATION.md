@@ -1,5 +1,7 @@
 # 第四关袍冠女巫 · 四人分工接入
 
+2026-11-25：当前版恢复模型蓄力与收招，内建普通敌人、召唤物和女巫头顶血条。攻击仍无地面范围显示。数值与正式房间强度见 [combat_balance.md](../../docs/combat_balance.md)。
+
 前四房新增：曦影、赤阳傀儡、白芒尖蓟、群鸦归巢。四房试玩入口 `FourRooms.tscn`，普通房接入使用 `RoomEncounter.tscn`；详细行为、场景清单、致盲状态与清场计数接口见 [FOUR_ROOMS.md](FOUR_ROOMS.md)。下文仍为女巫Boss接口。
 
 2026-11-23。模块在 `res://addons/ziyuan_level04/`，Godot 4.7.2 / Compatibility。无需新增 Autoload。沿用项目玩家、受击闪白、Boss 血条和地牢字体。
@@ -56,7 +58,7 @@ spawner.set_encounter_active(true)
 | `reward_requested(String, int)` | 稳定 source ID / 金币，宿主发放，不直接写钱包 |
 | `summon_requested(String, Vector3)` / `minions_dissolved()` | 生成 / 解散守卫，不用适配器时宿主自行处理 |
 | `attack_started(String, int)` / `attack_resolved(String, int)` | 实际施放开始 / 结束，mode：0 三点、1 脉冲、2 守卫、3 藤蔓 |
-| `attack_telegraphed(String, int, float)` | 旧草稿兼容声明，本版永不发射，不用于预警 |
+| `attack_telegraphed(String, int, float)` | 蓄力开始，参数为敌人 ID、招式和蓄力秒数；模型自带动作，HUD 无需绘制范围 |
 
 玩家推荐与当前项目一致让伤害方法返回 bool，表示本次伤害是否接受，毒液用它记录成功命中冷却。可选 `take_direct_damage` 额外接收来源位置，伤害仍服从玩家的护盾、翻滚和无敌规则。
 
@@ -76,4 +78,4 @@ Godot --headless --path 项目目录 res://addons/ziyuan_level04/Prototype.tscn 
 Godot --path 项目目录 --script res://addons/ziyuan_level04/capture_reference.gd
 ```
 
-覆盖无预警信号 / 范围网格、真实秒数、四招命中、池上限、召唤上限、阶段、架势、死亡幂等、暂停与非原点房间适配器。最终结果见 `evidence/VALIDATION.md`。
+覆盖前摇无伤害、无范围网格、真实秒数、四招命中、池上限、召唤上限、阶段、架势、死亡幂等、暂停与非原点房间适配器。`evidence/VALIDATION.md` 保留之前版本的验证记录。

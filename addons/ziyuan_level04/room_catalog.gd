@@ -1,11 +1,11 @@
 extends RefCounted
-## 第四关前四房敌人数值；首轮平衡初值，J=1 / K=2。
+## 当前双武器基础伤害 1/2；period 为完整攻击循环的目标间隔，含前后摇。
 const ENEMIES := {
-	"dawn_shade": {"name": "曦影", "hp": 8, "speed": 2.1, "damage": 1, "gold": 16, "period": 3.6},
-	"dawn_echo": {"name": "曦影假身", "hp": 1, "speed": 2.1, "damage": 0, "gold": 0, "period": 3.6},
-	"sun_puppet": {"name": "赤阳傀儡", "hp": 12, "speed": 1.5, "damage": 1, "gold": 20, "period": 3.8},
-	"iron_thistle": {"name": "白芒尖蓟", "hp": 14, "speed": 0.0, "damage": 1, "gold": 22, "period": 2.7},
-	"raven_roost": {"name": "群鸦归巢", "hp": 12, "speed": 2.0, "damage": 1, "gold": 24, "period": 4.2},
+	"dawn_shade": {"name": "曦影", "hp": 6, "speed": 2.1, "damage": 1, "gold": 16, "period": 3.6, "windup": 0.55, "active": 0.25, "recovery": 0.8},
+	"dawn_echo": {"name": "曦影假身", "hp": 1, "speed": 2.1, "damage": 0, "gold": 0, "period": 3.6, "windup": 0.55, "active": 0.25, "recovery": 0.8},
+	"sun_puppet": {"name": "赤阳傀儡", "hp": 8, "speed": 1.5, "damage": 1, "gold": 20, "period": 3.8, "windup": 0.75, "active": 0.25, "recovery": 1.0},
+	"iron_thistle": {"name": "白芒尖蓟", "hp": 10, "speed": 0.0, "damage": 1, "gold": 22, "period": 3.2, "windup": 0.65, "active": 0.25, "recovery": 1.0},
+	"raven_roost": {"name": "群鸦归巢", "hp": 12, "speed": 2.0, "damage": 1, "gold": 24, "period": 4.2, "windup": 0.7, "active": 1.7, "recovery": 1.0},
 }
 const ROOMS := [
 	{"id": "dawn_shade", "name": "第一房 · 薄光回廊", "tip": "曦影受击分身；击散假身后追踪本体。晨光会短暂扰乱视野。", "spawns": [Vector3(-4, 0.05, -4), Vector3(4, 0.05, -4)]},

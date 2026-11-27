@@ -3,6 +3,7 @@ extends RefCounted
 
 const Catalog = preload("res://data/item_catalog.gd")
 const ICONS := {
+	Catalog.REVIVAL_CARD: preload("res://assets/ui/revival_card.svg"),
 	Catalog.ENERGY_POTION: preload("res://assets/ui/energy_potion.svg"),
 	Catalog.HEALTH_POTION: preload("res://assets/ui/potion.svg"),
 	Catalog.ATTACK_RUNE: preload("res://assets/ui/attack_rune.svg"),
@@ -12,7 +13,7 @@ const ICONS := {
 	Catalog.PISTOL_AMMO: preload("res://assets/weapons/icons/pistol_ammo.svg"),
 	Catalog.COIL_AMMO: preload("res://assets/weapons/icons/coil_ammo.svg"),
 }
-const TINTS := {0:Color.WHITE,1:Color.WHITE,2:Color.WHITE,3:Color.WHITE,4:Color.WHITE,5:Color.WHITE,6:Color.WHITE,7:Color.WHITE}
+const TINTS := {0:Color.WHITE,1:Color.WHITE,2:Color.WHITE,3:Color.WHITE,4:Color.WHITE,5:Color.WHITE,6:Color.WHITE,7:Color.WHITE,8:Color.WHITE}
 
 
 static func item_id(key: StringName) -> int:
@@ -38,8 +39,8 @@ static func products(inventory: Node3D, menu: Node) -> Array[Dictionary]:
 		var error: String = inventory.get_purchase_error(product.id, 1, menu)
 		result.append({
 			"id": StringName(product.key), "name": product.name, "price": product.price,
-			"category": "弹药" if product.id in [Catalog.PISTOL_AMMO,Catalog.COIL_AMMO] else "消耗品",
-			"summary": description(product, inventory), "icon": ICONS[product.id],
+			"category": category(product.id),
+			"summary": "倒下后原地满血复活，无敌 3 秒。\n通关携带，最终失败清空。" if product.id == Catalog.REVIVAL_CARD else description(product, inventory), "icon": ICONS[product.id],
 			"tint": TINTS[product.id], "owned": inventory.get_count(product.id),
 			"can_buy": error.is_empty(),
 			"purchase_label": "购买" if error.is_empty() else error,
@@ -56,7 +57,10 @@ static func backpack(inventory: Node3D, menu: Node) -> Array[Dictionary]:
 			continue
 		var label := "使用物品"
 		var usable: bool = menu.allows_inventory_action(inventory, false)
-		if not usable:
+		if product.id == Catalog.REVIVAL_CARD:
+			label = "倒下后选择原地复活"
+			usable = false
+		elif not usable:
 			label = "进入游戏后使用"
 		elif product.id in [Catalog.AMMO,Catalog.PISTOL_AMMO,Catalog.COIL_AMMO]:
 			label = "备用弹药"
@@ -80,9 +84,14 @@ static func backpack(inventory: Node3D, menu: Node) -> Array[Dictionary]:
 			usable = false
 		result.append({
 			"id": StringName(product.key), "name": product.name, "count": count,
-			"category": "弹药" if product.id in [Catalog.PISTOL_AMMO,Catalog.COIL_AMMO] else "消耗品",
+			"category": category(product.id),
 			"description": description(product, inventory), "icon": ICONS[product.id],
 			"tint": TINTS[product.id], "can_use": usable, "use_label": label,
 			"equipped": product.id == Catalog.FIREARM and inventory.equipped_weapon == Catalog.FIREARM,
 		})
 	return result
+
+
+static func category(id: int) -> String:
+	if id == Catalog.REVIVAL_CARD: return "珍贵消耗品 · 归生"
+	return "弹药" if id in [Catalog.PISTOL_AMMO,Catalog.COIL_AMMO] else "消耗品"

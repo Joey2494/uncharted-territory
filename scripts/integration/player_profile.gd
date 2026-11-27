@@ -9,13 +9,16 @@ static var _loaded_path := ""
 static var coins: int = 0
 static var inventory: Dictionary = {}
 static var unlocked: Array[String] = ["knight"]
+static var discovered_enemies: Array[String] = []
+static var bestiary_unsaved := false
 static var _selected_character: String = "knight"
 static var settled_runs: Array = []
 static var message := ""
 const PRICES := {"lan": 100, "iron": 150, "astra": 180}
 const MAX_COINS := 100000000
 const Catalog = preload("res://data/item_catalog.gd")
-const BAG_IDS := [Catalog.HEALTH_POTION,Catalog.ATTACK_RUNE,Catalog.GUARD_RUNE,Catalog.ENERGY_POTION,Catalog.PISTOL_AMMO,Catalog.COIL_AMMO]
+const EnemyCodex = preload("res://data/enemy_codex.gd")
+const BAG_IDS := [Catalog.HEALTH_POTION,Catalog.ATTACK_RUNE,Catalog.GUARD_RUNE,Catalog.ENERGY_POTION,Catalog.PISTOL_AMMO,Catalog.COIL_AMMO,Catalog.REVIVAL_CARD]
 
 static func ensure_loaded() -> void:
 	var path := override_path if not override_path.is_empty() else "user://player_profile.cfg"
@@ -24,6 +27,8 @@ static func ensure_loaded() -> void:
 	coins = 0
 	inventory = {}
 	unlocked = ["knight"]
+	discovered_enemies = []
+	bestiary_unsaved = false
 	_selected_character = "knight"
 	settled_runs = []
 	message = ""
@@ -47,6 +52,18 @@ static func ensure_loaded() -> void:
 	var selected: Variant = config.get_value("profile", "selected_character", "knight")
 	if (selected is String or selected is StringName) and String(selected) in unlocked:
 		_selected_character = String(selected)
+	var discoveries: Variant = config.get_value("profile", "discovered_enemies", [])
+	if discoveries is Array:
+		for id in discoveries:
+			if id is String and id in EnemyCodex.IDS and id not in discovered_enemies: discovered_enemies.append(id)
+
+static func discover_enemy(id: String) -> bool:
+	ensure_loaded()
+	if id not in EnemyCodex.IDS or id in discovered_enemies: return false
+	discovered_enemies.append(id)
+	# A failed save retains session discoveries and exposes a retry in the codex.
+	if not save(): bestiary_unsaved = true
+	return true
 
 static func owns(id: String) -> bool:
 	ensure_loaded()
@@ -79,6 +96,7 @@ static func save() -> bool:
 	config.set_value("profile", "inventory", inventory)
 	config.set_value("profile", "settled_runs", settled_runs)
 	config.set_value("profile", "characters", unlocked)
+	config.set_value("profile", "discovered_enemies", discovered_enemies)
 	config.set_value("profile", "selected_character", get_selected_character())
 	# Write beside the destination, then replace it only after the complete file
 	# is closed. Keep the last valid profile as a recovery copy.
@@ -93,6 +111,7 @@ static func save() -> bool:
 	if not ok and FileAccess.file_exists(temporary):
 		DirAccess.remove_absolute(temporary)
 	message = "" if ok else "存档失败，请检查存储权限后重试"
+	if ok: bestiary_unsaved = false
 	return ok
 
 static func set_coins(amount: int) -> bool:
@@ -133,6 +152,12 @@ static func settle_run(run_id: String, pending: int) -> bool:
 	ensure_loaded()
 	if pending < 0: return false
 	return commit_run(run_id,pending,inventory.duplicate())
+
+## Final defeat forfeits the complete carried wallet/bag, including prior clears.
+## Character ownership and campaign progress are independent of run assets.
+static func forfeit_run(run_id: String) -> bool:
+	ensure_loaded()
+	return commit_run("defeat:" + run_id, -coins, {}) if not run_id.is_empty() else false
 
 ## Commit wallet delta and the complete surviving backpack in one atomic save.
 static func commit_run(run_id: String, delta: int, bag: Dictionary) -> bool:

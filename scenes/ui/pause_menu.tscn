@@ -156,5 +156,14 @@ text = "背包"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.64, 0.60, 0.51, 1)
 theme_override_font_sizes/font_size = 13
-text = "Esc 继续游戏 · 重新开始将重置本局进度"
+text = "Esc 继续游戏 · B 敌人图鉴"
 horizontal_alignment = 1
+
+[node name="EnemyCodexButton" type="Button" parent="Center/Card/Padding/Content/CommerceActions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0,40)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 15
+text = "图鉴"
+mouse_default_cursor_shape = 2

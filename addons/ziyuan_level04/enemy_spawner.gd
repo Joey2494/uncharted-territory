@@ -34,13 +34,16 @@ func spawn_for_room(room: Node3D, player: Node3D, source_id: String, center: Vec
 func _spawn_guard(generation: int, kind: String, at: Vector3) -> void:
 	if generation != _generation or not is_instance_valid(boss) or not boss.is_encounter_active(): return
 	if not is_instance_valid(_player) or _player.is_dead(): return
+	var slot: Dictionary = boss.find_minion_spawn(at)
+	if slot.is_empty(): return
 	var guard := Factory.create(kind, _player)
 	if guard == null: return
 	add_child(guard)
-	guard.global_position = at
+	guard.global_position = slot.position
 	guard.set_encounter_active(true)
 	guards.append(guard)
 	boss.register_minion(guard)
+	preload("effects.gd").burst(self, guard.global_position + Vector3.UP * 0.2, Color("9ac77a"), 0.4)
 	enemy_spawned.emit(guard)
 
 func set_encounter_active(active: bool) -> void:

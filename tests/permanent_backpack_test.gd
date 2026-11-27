@@ -45,14 +45,19 @@ func run() -> void:
 		check(items.gold == 425 and PROFILE.coins == 400 and items.pistol_ammo == 19 and PROFILE.inventory[6] == 3,"purchase is part of temporary run backpack")
 		host._commerce.close_all()
 		host._player.take_damage(999)
-		check(items.gold == 400 and items.potion_count == 2 and items.pistol_ammo == 3,"failure discards all run gains and restores settled assets")
-		check(PROFILE.coins == 400 and PROFILE.inventory[0] == 2,"failed run never writes permanent assets")
+		check(items.gold == 0 and items.potion_count == 0 and items.pistol_ammo == 0,"final defeat clears the complete carried wallet and backpack")
+		check(PROFILE.coins == 0 and PROFILE.inventory.is_empty(),"defeat saves the forfeiture of prior-level and current assets")
 		change_scene_to_file(path)
 		await frames(12)
 		host = current_scene
 		items = host._items
+		check(items.gold == 0 and items.potion_count == 0 and items.pistol_ammo == 0,"restart cannot restore forfeited assets")
+		# Independent success fixture, after verifying that the failed bag stayed empty.
+		PROFILE.inventory = {0:2,1:1,2:1,5:1,6:3,7:5}
+		PROFILE.set_coins(400)
+		items.discard_run()
 		host._on_run_started()
-		check(items.gold == 400 and items.potion_count == 2 and items.pistol_ammo == 3,"restart/continue cannot restore failed gains")
+		check(items.gold == 400 and items.potion_count == 2 and items.pistol_ammo == 3,"success fixture loads settled assets")
 		check(items.add_gold(50,"success-gold") and items.add_item(0,3) and items.add_item(7,6),"successful-run candidate rewards")
 		host._commerce.open_shop()
 		check(items.try_purchase(5,1,host._commerce),"successful-run shop purchase")

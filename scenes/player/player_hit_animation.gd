@@ -11,7 +11,7 @@ const HIT: StringName = &"hit/Hit_A"
 
 var _playing: bool = false
 var _elapsed: float = 0.0
-var _previous_callback_mode: int
+var _previous_callback_mode: AnimationMixer.AnimationCallbackModeProcess
 
 
 func _ready() -> void:

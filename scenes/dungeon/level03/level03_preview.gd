@@ -15,6 +15,7 @@ const Encounter = preload("res://scenes/dungeon/level03/tide_enemy_encounter.gd"
 const Gate = preload("res://scenes/dungeon/components/ProgressionGate.tscn")
 const EnemyFactory = preload("res://addons/ziyuan_level03/factory.gd")
 const CoinPickup = preload("res://scenes/items/coin_pickup.gd")
+const Rewards = preload("res://data/reward_balance.gd")
 const REWARD_ID := "level03_overflow_garden"
 const RESET_CONFIRM_PROMPT := "4秒内再次按 E 确认\n重置水位、导体、储能和机关门\n清场记录与已领取奖励保留"
 
@@ -66,6 +67,9 @@ var _conductor := Conductor.RACK
 var _storage := Storage.EMPTY
 var _highwalk := false
 var _service := false
+var _revival_revealed := false
+var _previous_reward_position := Vector3.ZERO
+var _random_reward_rooms: Dictionary = {}
 var _active_room: StringName = &""
 var _encounters: Array[Node] = []
 var _reset_armed := 0.0
@@ -99,13 +103,16 @@ func _ready() -> void:
 	_create_exit()
 	if _layout.has_method("finish_tomb"): _layout.finish_tomb(self)
 	_refresh_world()
-	_player.died.connect(_finish.bind(false))
+	_player.run_failed.connect(_finish.bind(false))
+	_previous_reward_position = _player.global_position
 	feedback.emit("靠近检修沙盘按 E，了解潮位如何改变通路。")
 
 
 func _physics_process(delta: float) -> void:
 	if _terminal or not _run_active:
 		return
+	_update_revival_drop()
+	_scatter_room_supply()
 	if _reset_armed > 0.0:
 		var station: Node3D = $Stations/reset
 		var offset: Vector3 = _player.global_position - station.global_position
@@ -118,6 +125,31 @@ func _physics_process(delta: float) -> void:
 
 func get_storage_state() -> int:
 	return _storage
+
+
+## The horizontal I→D return leg is red in the reference. D→north is green.
+## Cross a plane on the horizontal leg, rather than merely entering the bend.
+func _update_revival_drop() -> void:
+	var point: Vector3 = _player.global_position
+	var previous := _previous_reward_position
+	_previous_reward_position = point
+	if _revival_revealed or _player.is_dead() or _high or not _service or not _progress.is_complete(&"I"): return
+	if previous.x > -42.0 and point.x <= -42.0 and point.x >= -48.0 \
+		and absf(previous.z + 24.0) < 2.0 and absf(point.z + 24.0) < 2.0 \
+		and previous.distance_to(point) < 3.0:
+		_revival_revealed = true
+		_refresh_world()
+		feedback.emit("维修回廊的余烬亮起 · 转角处出现一张复活卡")
+
+
+func _scatter_room_supply() -> void:
+	for id in [&"A", &"B", &"D", &"H"]:
+		if _random_reward_rooms.has(id): continue
+		var room := $Rooms.get_node(String(id))
+		if room.get_world_bounds().has_point(Vector2(_player.position.x, _player.position.z)):
+			_random_reward_rooms[id] = true
+			var offset: Vector3 = {&"B":Vector3(-5, 0.05, 5), &"D":Vector3(3.5, 0.05, 3.5), &"H":Vector3(-3.5, 0.05, 3.5)}.get(id, Vector3(2.5, 0.05, 2.5))
+			Rewards.scatter(self, "level03_random:" + String(id), 3, room.global_position + offset)
 
 
 func is_victorious() -> bool:
@@ -201,7 +233,7 @@ func use_station(action: StringName) -> bool:
 		&"service":
 			if _storage == Storage.RELEASED:
 				_service = true
-				message = "I–D 维修捷径已打开，转角有生命药剂。"
+				message = "I–D 维修捷径已打开。清场后沿西侧回廊前行，转角可发现复活卡。"
 			else:
 				message = "泄压成功后可开启 I–D 小回环。"
 		&"reward":
@@ -278,6 +310,7 @@ func _release() -> String:
 	if not missing.is_empty():
 		return "泄压条件不足 · " + " / ".join(missing)
 	_storage = Storage.RELEASED
+	Rewards.spawn_task(self, "level03_release", "l3_release", $Stations/release.global_position + Vector3(0, 0.05, 2))
 	return "回流成功 · G 闸门永久解锁。"
 
 
@@ -287,8 +320,8 @@ func _garden_reward() -> String:
 	var record := "溢流记录 · 停机后，F 的储能可沿 □ 西向线路回流至 I。"
 	if _inventory.has_claimed(REWARD_ID):
 		return record
-	if _inventory.grant_reward(REWARD_ID, {_inventory.ATTACK_RUNE: 1, _inventory.Catalog.ENERGY_POTION: 2}):
-		return record + " 获得强化符文 ×1、星蓝药剂 ×2。"
+	if Rewards.grant(_inventory, REWARD_ID, "l3_garden"):
+		return record + " 获得守护符文 ×1、金币 ×10。"
 	return record + " 背包已满，可稍后领取。"
 
 
@@ -453,6 +486,7 @@ func _battle_started(id: StringName) -> void:
 
 
 func _battle_completed(id: StringName) -> void:
+	Rewards.spawn_task(self, "level03_clear:" + String(id), "l3_" + String(id), $Rooms.get_node(String(id)).global_position + Vector3(0, 0.05, 3.5))
 	if _active_room == id:
 		_active_room = &""
 	if id == &"G":
@@ -483,8 +517,8 @@ func _refresh_world() -> void:
 	# 未取走的补给跟随通路状态；拾取后节点已释放，调潮或重置不会再次生成。
 	var highwalk_potion := get_node_or_null("Supplies/HighwalkPotion") as Node3D
 	if highwalk_potion: highwalk_potion.visible = _highwalk
-	var service_potion := get_node_or_null("Supplies/ServicePotion") as Node3D
-	if service_potion: service_potion.visible = _service and not _high
+	var revival := get_node_or_null("Supplies/ServiceRevivalCard") as Node3D
+	if revival: revival.visible = _revival_revealed and not _high
 	_station_lamps[&"conductor"].visible = _conductor == Conductor.RACK
 	_station_lamps[&"charge"].visible = _storage == Storage.STORED
 	_station_lamps[&"release"].visible = _storage == Storage.RELEASED or (_storage == Storage.STORED and _conductor == Conductor.WEST and not _high)

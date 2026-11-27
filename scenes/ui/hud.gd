@@ -483,6 +483,13 @@ func get_result_screen() -> Control:
 	return _result_screen
 
 
+func dismiss_result_screen() -> void:
+	if is_instance_valid(_result_screen):
+		_result_screen.hide()
+		_result_screen.queue_free()
+	_result_screen = null
+
+
 func _show_result_screen(screen: Control) -> void:
 	if not is_instance_valid(_result_layer):
 		_result_layer = CanvasLayer.new()

@@ -4,6 +4,7 @@ signal damage_received(amount: int)
 signal died
 signal enemy_died(enemy: Node3D)
 signal reward_requested(source_id: String, coins: int)
+signal attack_telegraphed(enemy_id: String, mode: int, duration: float)
 signal attack_started(enemy_id: String, mode: int)
 signal attack_resolved(enemy_id: String, mode: int)
 signal status_requested(target: Node3D, status_id: String, duration: float, strength: float)
@@ -32,7 +33,6 @@ var _attack_cd := 1.5
 var _split_cd := 0.0
 var _control := 0.0
 var _slow := 0.0
-var _contact_cd := 0.0
 var _shared_hit_cd := 0.0
 var _cycle := 0
 var _echo_life := 6.0
@@ -44,6 +44,12 @@ var _dive_target := Vector3.ZERO
 var _dive_origin := Vector3.ZERO
 var _dive_age := -1.0
 var _flash: Node
+var _health: Node3D
+var _attack_phase := 0 # 0 idle, 1 windup, 2 active, 3 recovery
+var _attack_remaining := 0.0
+var _attack_mode := 0
+var _attack_direction := Vector3.FORWARD
+var _aggro := false
 func _ready() -> void:
 	definition = Catalog.definition(enemy_id)
 	max_hp = definition.hp
@@ -64,12 +70,20 @@ func _ready() -> void:
 		_visual.enemy_id = enemy_id
 		add_child(_visual)
 	_visual.build(enemy_id)
-	# 曦影不挂血条或闪白，以免标记本体；其余敌人可由 HUD 消费 hp_changed。
-	if enemy_id not in ["dawn_shade", "dawn_echo"]:
-		_flash = preload("res://scenes/ui/hit_flash_3d.gd").new()
-		_flash.visual_root = NodePath("../Visuals")
-		_visual.name = "Visuals"
-		add_child(_flash)
+	_flash = preload("res://scenes/ui/hit_flash_3d.gd").new()
+	_flash.visual_root = NodePath("../Visuals")
+	_visual.name = "Visuals"
+	add_child(_flash)
+	_health = preload("res://scenes/ui/enemy_health_label_3d.tscn").instantiate()
+	_health.name = "HealthLabel"
+	_health.position.y = 3.0
+	add_child(_health)
+	_health.bind_health_source(self, hp, max_hp)
+	# 假身复制本体的血条读数，保持镜像迷惑；仍然一击消散、不产生奖励。
+	var owner_actor = _owner_ref.get_ref() if _owner_ref else null
+	if is_decoy() and is_instance_valid(owner_actor):
+		_health.update_hp(owner_actor.hp, owner_actor.max_hp)
+		owner_actor.hp_changed.connect(_health.update_hp)
 	if _target == null: _target = get_node_or_null(target_path)
 	if enemy_id in ["dawn_shade", "dawn_echo"] and _target is PhysicsBody3D:
 		# 虚影穿过玩家身体；形状仍保留给玩家攻击查询使用。
@@ -99,10 +113,14 @@ func bind_target(target: Node3D) -> bool:
 func set_encounter_active(active: bool) -> void:
 	if _dead: return
 	_enabled = active
+	_aggro = active
 	if not active:
 		_clear_owned()
 		_dive_age = -1
 		_attack_cd = 1.5
+		_attack_phase = 0
+		_attack_remaining = 0.0
+		_control = 0.0
 	process_mode = Node.PROCESS_MODE_PAUSABLE if active else Node.PROCESS_MODE_DISABLED
 func can_see(at: Vector3) -> bool:
 	var start := global_position + Vector3.UP
@@ -114,12 +132,29 @@ func _physics_process(delta: float) -> void:
 	if not is_encounter_active(): return
 	if not is_instance_valid(_target) or _target.is_dead():
 		_clear_owned()
+		_attack_phase = 0
+		_dive_age = -1.0
 		return
 	_clock += delta
+	var released := false
+	if _control > 0:
+		_control = maxf(0.0, _control - delta)
+	elif _attack_phase == 1:
+		_attack_remaining = maxf(0.0, _attack_remaining - delta)
+		if _attack_remaining <= 0.0:
+			_release_attack()
+			released = true
+	elif _attack_phase == 2 and enemy_id != "raven_roost":
+		_attack_remaining = maxf(0.0, _attack_remaining - delta)
+		if _attack_remaining <= 0.0:
+			_attack_phase = 3
+			_attack_remaining = definition.recovery
+			attack_resolved.emit(enemy_id, _attack_mode)
+	elif _attack_phase == 3:
+		_attack_remaining = maxf(0.0, _attack_remaining - delta)
+		if _attack_remaining <= 0.0: _attack_phase = 0
 	_split_cd = maxf(0, _split_cd - delta)
 	_shared_hit_cd = maxf(0, _shared_hit_cd - delta)
-	_contact_cd = maxf(0, _contact_cd - delta)
-	_control = maxf(0, _control - delta)
 	_slow = maxf(0, _slow - delta)
 	if is_decoy():
 		_echo_life -= delta
@@ -131,32 +166,49 @@ func _physics_process(delta: float) -> void:
 	offset.y = 0
 	var direction := offset.normalized()
 	velocity = Vector3.ZERO
-	if _control <= 0:
+	if _control <= 0 and _attack_phase == 0:
 		var speed: float = definition.speed * (0.7 if _slow > 0 else 1)
 		var desired := direction
 		if enemy_id in ["dawn_shade", "dawn_echo"]:
 			desired = direction.rotated(Vector3.UP, 1.2) if offset.length() < 6 else direction
 		elif enemy_id == "raven_roost": desired = direction.rotated(Vector3.UP, 1.1) if offset.length() < 5 else direction
 		velocity = desired * speed
-		_attack_cd -= delta
-		if _attack_cd <= 0 and not is_decoy(): perform_attack()
+		if _attack_cd <= 0 and not is_decoy() and _attack_phase == 0:
+			if perform_attack(): velocity = Vector3.ZERO
+	if _control <= 0: _attack_cd = maxf(0.0, _attack_cd - delta)
 	if enemy_id not in ["dawn_shade", "dawn_echo", "raven_roost"]:
 		velocity.y = -1
 	move_and_slide()
 	global_position = _clamp(global_position)
-	if enemy_id != "raven_roost" and direction.length() > 0.01: _visual.rotation.y = atan2(-direction.x, -direction.z)
-	_visual.pose(0, 0, velocity.length(), delta)
-	if enemy_id == "raven_roost": _update_flock(delta)
-	elif enemy_id in ["sun_puppet", "dawn_shade"] and offset.length() < 1.3 and _contact_cd <= 0 and can_see(_target.global_position):
-		_contact_cd = 1.2
-		_hurt_player(global_position)
+	if enemy_id != "raven_roost" and direction.length() > 0.01 and _attack_phase == 0: _visual.rotation.y = atan2(-direction.x, -direction.z)
+	var pose_state: int = [0, 2, 3, 4][_attack_phase]
+	var duration: float = [1.0, definition.windup, definition.active, definition.recovery][_attack_phase]
+	_visual.pose(pose_state, clampf(1.0 - _attack_remaining / duration, 0.0, 1.0), velocity.length(), delta)
+	if enemy_id == "raven_roost": _update_flock(0.0 if released else delta)
 func perform_attack() -> bool:
-	if not is_encounter_active() or not is_instance_valid(_target) or _target.is_dead() or _control > 0: return false
+	if not is_encounter_active() or not is_instance_valid(_target) or _target.is_dead() or _control > 0 or _attack_phase != 0 or is_decoy(): return false
 	_attack_cd = definition.period
 	_cycle += 1
-	attack_started.emit(enemy_id, _cycle % 2)
+	_attack_mode = _cycle % 2
+	_attack_phase = 1
+	_attack_remaining = definition.get("windup", 0.5)
+	_attack_direction = (_target.global_position - global_position) * Vector3(1, 0, 1)
+	_attack_direction = _attack_direction.normalized()
+	if enemy_id != "raven_roost": _visual.rotation.y = atan2(-_attack_direction.x, -_attack_direction.z)
+	_dive_origin = global_position
+	_dive_target = _clamp(_target.global_position)
+	attack_telegraphed.emit(enemy_id, _attack_mode, _attack_remaining)
+	_visual.pose(2, 0.0, 0.0, 0.0)
+	return true
+
+func _release_attack() -> void:
+	if not is_encounter_active() or _attack_phase != 1 or _control > 0: return
+	_attack_phase = 2
+	_attack_remaining = definition.get("active", 0.25)
+	attack_started.emit(enemy_id, _attack_mode)
 	match enemy_id:
 		"dawn_shade":
+			if global_position.distance_to(_target.global_position) < 1.3 and can_see(_target.global_position): _hurt_player(global_position)
 			if global_position.distance_to(_target.global_position) < 7 and can_see(_target.global_position):
 				# 只是实际闪光，不以锁定线或地面图形预告。
 				FX.burst(get_parent(), global_position + Vector3.UP * 1.8, Color("fbe8b6"), 0.6)
@@ -170,26 +222,23 @@ func perform_attack() -> bool:
 					var dir := Vector3(sin(i * TAU / 6), 0, cos(i * TAU / 6))
 					_spawn_hazard("thorns", _clamp(global_position + dir * 2.0))
 		"raven_roost":
-			_dive_origin = global_position
-			_dive_target = _clamp(_target.global_position)
 			_dive_age = 0
 			_dive_hits.clear()
-	if enemy_id != "raven_roost": attack_resolved.emit(enemy_id, _cycle % 2)
-	return true
+	if enemy_id == "raven_roost":
+		_attack_remaining = definition.get("active", 1.7)
 func _spawn_hazard(kind: String, at: Vector3) -> void:
 	var hazard := Hazard.new()
 	get_parent().add_child(hazard)
 	hazard.launch(self, _target, kind, at)
 func _fire_thorns() -> void:
-	var dir := _target.global_position - global_position
-	dir.y = 0
+	var dir := _attack_direction
 	if not can_see(_target.global_position): return
 	for i in 7:
 		var bolt := Bolt.new()
 		get_parent().add_child(bolt)
 		bolt.global_position = global_position + Vector3.UP
 		bolt.speed = 7.0
-		bolt.launch(self, _target, dir.normalized().rotated(Vector3.UP, (i - 3) * 0.19), 1)
+		bolt.launch(self, _target, dir.normalized().rotated(Vector3.UP, (i - 3) * 0.19), definition.damage)
 		# 用白亮的细针实体替换种子球体。
 		var seed := bolt.get_child(1) as MeshInstance3D
 		var needle := CylinderMesh.new()
@@ -200,21 +249,28 @@ func _fire_thorns() -> void:
 		seed.mesh = needle
 		seed.rotation.x = PI * 0.5
 func _update_flock(delta: float) -> void:
+	var previous_age := _dive_age
 	if _dive_age >= 0: _dive_age += delta
 	for i in 7:
 		var a := i * TAU / 7 + _clock * 0.35
 		var orbit := global_position + Vector3(sin(a) * 2.3, 0, cos(a) * 2.3)
 		var at := orbit
+		var swooping := false
+		if _attack_phase == 1:
+			var prep: float = 1.0 - _attack_remaining / definition.windup
+			at = global_position + Vector3(sin(a), 0, cos(a)) * lerpf(2.3, 1.1, prep)
 		if _dive_age >= 0:
 			if _cycle % 2 == 1:
 				# 四散后逐只穿过锁定点，每只起飞错开 0.12 秒。
 				var t := clampf((_dive_age - i * 0.12) / 0.7, 0, 1)
+				swooping = _dive_age >= i * 0.12 and previous_age < i * 0.12 + 0.7
 				var start := _dive_origin + Vector3(sin(a) * 3.4, 0, cos(a) * 3.4)
 				var end := _dive_target + (_dive_target - start).normalized() * 2
 				at = start.lerp(end, t) if t < 1 else orbit
 			else:
 				# 鸟群从开始即聚拢并前进，聚拢是本次攻击的实际运动。
 				var t := clampf(_dive_age / 0.9, 0, 1)
+				swooping = previous_age < 0.9
 				at = _dive_origin.lerp(_dive_target, t) + Vector3(sin(a) * 0.45, 0, cos(a) * 0.45)
 		at = _clamp(at)
 		var bird: Node3D = _visual.birds[i]
@@ -223,15 +279,17 @@ func _update_flock(delta: float) -> void:
 		var previous := proxy.global_position
 		proxy.global_position = at
 		var nearest := Geometry3D.get_closest_point_to_segment(_target.global_position, previous, at)
-		if _dive_age >= 0 and _control <= 0 and not _dive_hits.has(i) and nearest.distance_to(_target.global_position) < 0.8 and can_see(at) and can_see(_target.global_position):
+		if swooping and _control <= 0 and not _dive_hits.has(-1) and not _dive_hits.has(i) and nearest.distance_to(_target.global_position) < 0.8 and can_see(at) and can_see(_target.global_position):
 			_dive_hits[i] = true
-			_hurt_player(at)
+			if _hurt_player(at): _dive_hits[-1] = true # 同一轮鸟群最多造成一次有效伤害。
 	if _dive_age > 1.7:
 		_dive_age = -1
+		_attack_phase = 3
+		_attack_remaining = definition.recovery
 		attack_resolved.emit(enemy_id, _cycle % 2)
-func _hurt_player(at: Vector3) -> void:
-	if _target.has_method("take_direct_damage"): _target.take_direct_damage(definition.damage, at)
-	else: _target.take_damage(definition.damage)
+func _hurt_player(at: Vector3) -> bool:
+	if _target.has_method("take_direct_damage"): return _target.take_direct_damage(definition.damage, at)
+	return _target.take_damage(definition.damage)
 func take_direct_damage(amount: int, _at: Vector3) -> bool: return take_damage(amount)
 func take_damage(amount: int) -> bool:
 	if not is_encounter_active() or amount <= 0: return false
@@ -272,7 +330,12 @@ func split_mirrors() -> void:
 		_echoes.append(weakref(echo))
 		decoy_spawned.emit(echo)
 func apply_control(duration: float) -> void:
-	if is_encounter_active(): _control = maxf(_control, minf(duration, 2))
+	if not is_encounter_active() or duration <= 0: return
+	_control = maxf(_control, minf(duration, 2))
+	_attack_phase = 3
+	_attack_remaining = definition.recovery
+	_attack_cd = maxf(_attack_cd, definition.recovery)
+	_dive_age = -1.0
 func apply_slow(duration: float) -> void:
 	if is_encounter_active(): _slow = maxf(_slow, minf(duration, 4))
 func _clear_owned() -> void:
@@ -288,6 +351,7 @@ func _die(reward: bool) -> void:
 	if _dead: return
 	_dead = true
 	_enabled = false
+	_health.update_hp(0, max_hp)
 	_clear_owned()
 	set_deferred("collision_layer", 0)
 	set_deferred("collision_mask", 0)

@@ -15,7 +15,7 @@ const RIGHT: StringName = &"dodge/Dodge_Right"
 
 var _playing: bool = false
 var _clip: StringName = &""
-var _previous_callback_mode: int
+var _previous_callback_mode: AnimationMixer.AnimationCallbackModeProcess
 
 
 func _ready() -> void:

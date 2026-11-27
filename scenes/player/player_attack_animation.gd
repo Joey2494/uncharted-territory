@@ -19,7 +19,7 @@ var _playing: bool = false
 var _presentation_suspended: bool = false
 var _start_cooldown: float = 0.0
 var _rest_yaw: float = 0.0
-var _previous_callback_mode: int
+var _previous_callback_mode: AnimationMixer.AnimationCallbackModeProcess
 
 
 func _ready() -> void:

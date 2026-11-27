@@ -1,5 +1,5 @@
 extends CharacterBody3D
-## Swept collision. Web/venom shots never track after launch. Broodlings can be killed or shaken off.
+## Web/venom and broodlings burst and disappear at the first player/world contact.
 const FX = preload("res://scenes/enemies/creature_fx.gd")
 var target_path := NodePath()
 var _source: WeakRef
@@ -9,12 +9,10 @@ var kind := 0 # silk / broodling / venom stinger
 var _direction := Vector3.FORWARD
 var _speed := 9.0
 var _life := 3.0
-var _attached := false
-var _bite := 0.0
+var _attached := false # Compatibility for swarm separation; never attaches after impact.
 var _dead := false
 var _visual: Node3D
 var _silk: MeshInstance3D
-var _latched := false
 var _emerge_remaining := 0.0
 var _emerge_total := 0.55
 var emergence_delay := 0.0
@@ -87,6 +85,7 @@ func _update_silk(source: Node3D) -> void:
 	_silk.global_transform = Transform3D(Basis(right, up, right.cross(up)).orthonormalized(), (mouth + end) * 0.5)
 
 func _physics_process(delta: float) -> void:
+	if _dead: return
 	var source = _source.get_ref() if _source else null
 	var target = _target.get_ref() if _target else null
 	if not is_instance_valid(source) or source.is_dead() or not source.can_process() or not is_instance_valid(target) or target.is_dead():
@@ -97,10 +96,6 @@ func _physics_process(delta: float) -> void:
 		queue_free()
 		return
 	if kind == 0:
-		if _latched:
-			global_position = target.global_position + Vector3.UP * 0.8
-			_update_silk(source)
-			return
 		_update_silk(source)
 	if kind == 1 and _emerge_remaining > 0:
 		_emerge_remaining = maxf(0, _emerge_remaining - delta)
@@ -110,17 +105,6 @@ func _physics_process(delta: float) -> void:
 		if _emerge_remaining <= 0:
 			collision_mask = 3
 			collision_layer = 4
-		return
-	if _attached:
-		if target.is_dodging():
-			FX.burst(get_parent(), global_position, Color("b6fa46"), 0.4)
-			queue_free()
-			return
-		global_position = target.global_position + Vector3(sin(_life * 8) * 0.32, 0.8, cos(_life * 8) * 0.32)
-		_bite -= delta
-		if _bite <= 0:
-			_bite = 1.0
-			target.take_direct_damage(hit_damage, source.global_position)
 		return
 	if kind == 1:
 		var spread := Vector3(cos(_swarm_phase + _life * 1.3), 0, sin(_swarm_phase + _life * 1.3)) * 0.32
@@ -140,24 +124,11 @@ func _physics_process(delta: float) -> void:
 		if hit and not guarded and not target.is_dead():
 			if kind == 0:
 				target.apply_web(2.2)
-				_latched = true
-				_life = 0.28
-				_update_silk(source)
-				return
-			if kind == 1:
-				_attached = true
-				_life = 2.6
-				_bite = 1.0
-				collision_layer = 0
-				collision_mask = 0
-				target.feedback.emit("幼蛛附身 · 按空格翻滚甩脱")
-				return
-	if kind == 1 and body != target:
-		# Slide around a wall rather than destroying the entire swarm on contact.
-		var slide := _direction.slide(collision.get_normal()).normalized()
-		if slide.length() > 0.01: move_and_collide(slide * _speed * delta)
-		return
-	if kind != 0: FX.burst(get_parent(), global_position, Color("b6fa46"), 0.35)
+	elif body is Node and body.is_in_group("breakable_cover"):
+		body.take_damage(hit_damage)
+	_dead = true
+	FX.burst(get_parent(), collision.get_position(), Color("e3f0f4") if kind == 0 else Color("b6fa46"), 0.35)
+	hide()
 	queue_free()
 
 func take_damage(amount: int) -> bool:

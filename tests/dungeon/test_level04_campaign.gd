@@ -133,11 +133,10 @@ func continue_and_lose() -> void:
 	check(level.visited.size() == 1 and not level.puzzles.calibrated,"继续游戏按既有规则重新整备")
 	level.inventory.add_gold(8)
 	level.inventory.add_item(0,3)
-	var saved_potions: int = PROFILE.inventory.get(0,0)
 	level.player.take_damage(999)
 	await frames(180)
 	check(host.get_run_state() == host.RunState.DEAD and is_instance_valid(host._hud.get_result_screen()),"死亡显示统一失败面板")
-	check(PROFILE.coins == wallet and level.inventory.gold == wallet and level.inventory.potion_count == saved_potions and progress.is_completed(&"level4"),"失败丢弃本轮金币道具，保留永久背包和已完成记录")
+	check(PROFILE.coins == 0 and level.inventory.gold == 0 and level.inventory.potion_count == 0 and progress.is_completed(&"level4"),"最终失败清空所有携带金币道具，保留已完成记录")
 
 func key_press(code: Key) -> void:
 	var event := InputEventKey.new()

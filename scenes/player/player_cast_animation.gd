@@ -20,7 +20,7 @@ var _elapsed: float = 0.0
 var _source_start: float = 0.0
 var _release_yaw: float = 0.0
 var _rest_yaw: float = 0.0
-var _previous_callback_mode: int
+var _previous_callback_mode: AnimationMixer.AnimationCallbackModeProcess
 
 
 func _ready() -> void:

@@ -33,6 +33,7 @@ func launch(source: Node3D, target: Node3D, direction: Vector3, amount: int) -> 
 	seed.material_override = FX.mat(Color("c8f08a"), true)
 	add_child(seed)
 func _physics_process(delta: float) -> void:
+	if _done: return
 	var source = _source.get_ref() if _source else null
 	var target = _target.get_ref() if _target else null
 	if not is_instance_valid(source) or source.is_dead() or not source.is_encounter_active() or not is_instance_valid(target) or target.is_dead():
@@ -50,5 +51,7 @@ func _physics_process(delta: float) -> void:
 		if receiver == target:
 			if receiver.has_method("take_direct_damage"): receiver.take_direct_damage(damage, source.global_position)
 			else: receiver.take_damage(damage)
-		FX.burst(get_parent(), global_position, Color("c8f08a"), 0.3)
+		elif receiver is Node and receiver.is_in_group("breakable_cover"): receiver.take_damage(damage)
+		FX.burst(get_parent(), hit.get_position(), Color("c8f08a"), 0.3)
+	hide()
 	queue_free()

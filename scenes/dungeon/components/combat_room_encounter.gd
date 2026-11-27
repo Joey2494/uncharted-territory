@@ -60,6 +60,12 @@ func _configuration_ready() -> bool:
 		and is_instance_valid(_controller) and _controller is RoomProgress and _controller.is_node_ready())
 
 ## 游戏开始后由地图每个物理帧调用。只有玩家完整入场且前置达成才激活一次。
+func get_encounter_enemies() -> Array[Node]:
+	var result: Array[Node] = []
+	for enemy in _enemy_modes:
+		if is_instance_valid(enemy) and not enemy.is_dead(): result.append(enemy)
+	return result
+
 func try_activate() -> bool:
 	if not _configured or _stopped or _active or _completed or not can_process():
 		return false
